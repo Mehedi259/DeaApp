@@ -1,0 +1,431 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:mobile_app_dea/themes/create_qutes.dart';
+
+class SuggestedTaskOverview extends StatefulWidget {
+  const SuggestedTaskOverview({super.key});
+
+  @override
+  State<SuggestedTaskOverview> createState() => _SuggestedTaskOverviewState();
+}
+
+class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
+  bool isCallEnabled = true;
+  bool isRepeatQuestEnabled = true;
+  bool isSetAlarmEnabled = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final baseScale = width / 390.0;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF89B6F8),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(Assets.images.suggestedTaskOverview.path),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.0 * baseScale,
+                  vertical: 12.0 * baseScale,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 10 * baseScale),
+                    // Header with back button, emoji, and edit button
+                    _buildHeader(baseScale),
+                    SizedBox(height: 16 * baseScale),
+
+                    // "Soft steps" badge
+                    _buildSoftStepsBadge(baseScale),
+                    SizedBox(height: 12 * baseScale),
+
+                    // "TO SLEEP" title
+                    Text(
+                      'TO SLEEP',
+                      style: AppTextStylesQutes.alfaSlabOneTitle,
+                    ),
+                    SizedBox(height: 12 * baseScale),
+
+                    // Today + Time row
+                    _buildDateTimeRow(baseScale),
+                    SizedBox(height: 20 * baseScale),
+
+                    // Enable Call card
+                    _buildEnableCallCard(baseScale),
+                    SizedBox(height: 12 * baseScale),
+
+                    // Repeat Quest card
+                    _buildRepeatQuestCard(baseScale),
+                    SizedBox(height: 12 * baseScale),
+
+                    // Set Alarm card
+                    _buildSetAlarmCard(baseScale),
+                    SizedBox(height: 12 * baseScale),
+
+                    // Call info text
+                    _buildCallInfoText(baseScale),
+
+                    SizedBox(height: 130 * baseScale),
+                  ],
+                ),
+              ),
+
+              // Fixed "Add quest" button at bottom
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildAddQuestButton(width, baseScale),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(double s) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Back button
+        GestureDetector(
+          onTap: () {
+            context.pop();
+          },
+          child: Container(
+            width: 40 * s,
+            height: 40 * s,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.5),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.arrow_back,
+              color: const Color(0xFF011F54),
+              size: 32 * s,
+            ),
+          ),
+        ),
+
+        // Emoji avatar
+        SizedBox(
+          width: 74 * s,
+          height: 74 * s,
+          child: Image.asset(
+            Assets.images.emojiFun.path,
+            fit: BoxFit.contain,
+            width: 74 * s,
+            height: 74 * s,
+          ),
+        ),
+
+        // Edit button
+        GestureDetector(
+          onTap: () {
+            context.push('/edit_quest');
+          },
+          child: SizedBox(
+            width: 54 * s,
+            height: 54 * s,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(8 * s),
+                child: Image.asset(
+                  Assets.svgIcons.clearAllAIMemoryPng.path,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSoftStepsBadge(double s) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16 * s, vertical: 6 * s),
+      decoration: BoxDecoration(
+        color: const Color(0xFFA0E871),
+        borderRadius: BorderRadius.circular(20 * s),
+      ),
+      child: Text(
+        'Soft steps',
+        style: GoogleFonts.workSans(
+          color: const Color(0xFF011F54), // Text-text-default
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          height: 1.40,
+          letterSpacing: -0.90,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateTimeRow(double s) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset(
+          Assets.images.today.path,
+          height: 16 * s,
+          width: 16 * s,
+          fit: BoxFit.cover,
+        ),
+
+        // Icon(
+        //   Icons.calendar_today,
+        //   size: 16 * s,
+        //   color: const Color(0xFF011F54),
+        // ),
+        SizedBox(width: 6 * s),
+        Text(
+          'Today',
+          style: GoogleFonts.workSans(
+            fontWeight: FontWeight.w600,
+            fontSize: 16 * s,
+            color: const Color(0xFF011F54),
+          ),
+        ),
+        SizedBox(width: 16 * s),
+        Image.asset(
+          Assets.images.clock1.path,
+          height: 16 * s,
+          width: 16 * s,
+          fit: BoxFit.cover,
+        ),
+        SizedBox(width: 6 * s),
+        Text(
+          '22:00',
+          style: GoogleFonts.workSans(
+            fontWeight: FontWeight.w600,
+            fontSize: 16 * s,
+            color: const Color(0xFF011F54),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnableCallCard(double s) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16 * s),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFEF8),
+        borderRadius: BorderRadius.circular(16 * s),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row with switch and title
+          Row(
+            children: [
+              Transform.scale(
+                scale: s,
+                child: Switch(
+                  value: isCallEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      isCallEnabled = value;
+                    });
+                  },
+                  activeThumbColor: Colors.white,
+                  activeTrackColor: const Color(0xFF4542EB),
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: const Color(0xFFB0B0B0),
+                ),
+              ),
+              SizedBox(width: 4 * s),
+              Text('ENABLE CALL', style: AppTextStylesQutes.workSansBlack24),
+            ],
+          ),
+          SizedBox(height: 8 * s),
+          // Description
+          Padding(
+            padding: EdgeInsets.only(left: 4 * s),
+            child: Text(
+              '💬 A real-time 10-min support call will help you stay on track. You can add more time later if needed.',
+              style: GoogleFonts.workSans(
+                color: const Color(0xFF4C586E), // Text-text-primary-default
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                height: 1.40,
+                letterSpacing: -0.50,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRepeatQuestCard(double s) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16 * s),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFEF8),
+        borderRadius: BorderRadius.circular(16 * s),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row with switch and title
+          Row(
+            children: [
+              Transform.scale(
+                scale: s,
+                child: Switch(
+                  value: isRepeatQuestEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      isRepeatQuestEnabled = value;
+                    });
+                  },
+                  activeThumbColor: Colors.white,
+                  activeTrackColor: const Color(0xFF4542EB),
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: const Color(0xFFB0B0B0),
+                ),
+              ),
+              SizedBox(width: 4 * s),
+              Text('REPEAT QUEST', style: AppTextStylesQutes.workSansBlack24),
+            ],
+          ),
+          SizedBox(height: 8 * s),
+          // Description
+          Padding(
+            padding: EdgeInsets.only(left: 4 * s),
+            child: Text(
+              'Turn this on to repeat the quest daily, weekly or on custom days.',
+              style: GoogleFonts.workSans(
+                color: const Color(0xFF4C586E), // Text-text-primary-default
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                height: 1.40,
+                letterSpacing: -0.50,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSetAlarmCard(double s) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16 * s),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFEF8),
+        borderRadius: BorderRadius.circular(16 * s),
+      ),
+      child: Row(
+        children: [
+          Transform.scale(
+            scale: s,
+            child: Switch(
+              value: isSetAlarmEnabled,
+              onChanged: (value) {
+                setState(() {
+                  isSetAlarmEnabled = value;
+                });
+              },
+              activeThumbColor: Colors.white,
+              activeTrackColor: const Color(0xFF4542EB),
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: const Color(0xFFB0B0B0),
+            ),
+          ),
+          SizedBox(width: 4 * s),
+          // Alarm icon
+          Image.asset(
+            Assets.images.clock.path,
+            height: 24 * s,
+            width: 24 * s,
+            fit: BoxFit.cover,
+          ),
+          SizedBox(width: 8 * s),
+          Text('SET ALARM', style: AppTextStylesQutes.workSansBlack24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCallInfoText(double s) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8 * s),
+      child: Text(
+        "You're having a 10-minute call with your Bestie Fizzy during this task.",
+        style: GoogleFonts.workSans(
+          fontWeight: FontWeight.w400,
+          fontSize: 14 * s,
+          height: 1.5,
+          color: const Color(0xFF011F54),
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget _buildAddQuestButton(double width, double s) {
+    return Container(
+      width: width,
+      padding: EdgeInsets.only(
+        top: 12 * s,
+        left: 20 * s,
+        right: 20 * s,
+        bottom: 32 * s,
+      ),
+      child: GestureDetector(
+        onTap: () {
+          // Handle add quest
+        },
+        child: Container(
+          width: double.infinity,
+          height: 64 * s,
+          decoration: BoxDecoration(
+            color: const Color(0xFF4542EB),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add, color: Colors.white, size: 24 * s),
+              SizedBox(width: 8 * s),
+              Text(
+                'Add quest',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.workSans(
+                  color: Colors.white,
+                  fontSize: 20 * s,
+                  fontWeight: FontWeight.w900,
+                  height: 0.80,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
