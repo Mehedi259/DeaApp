@@ -1226,8 +1226,7 @@ class $AssetsSvgImagesGen {
   AssetGenImage get xCircle =>
       const AssetGenImage('assets/svg_images/XCircle.png');
 
-  /// File path: assets/svg_images/app-release.apk
-  String get appRelease => 'assets/svg_images/app-release.apk';
+
 
   /// File path: assets/svg_images/callStarted.png
   AssetGenImage get callStarted =>
@@ -1325,7 +1324,6 @@ class $AssetsSvgImagesGen {
     trash,
     vector,
     xCircle,
-    appRelease,
     callStarted,
     deaMagi,
     enttryTwoScrenn,
