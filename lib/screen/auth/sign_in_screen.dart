@@ -182,7 +182,9 @@ class _SignInScreenState extends State<SignInScreen>
               borderRadius: BorderRadius.circular(30),
             ),
           ),
-          onPressed: () {},
+          onPressed: () {
+            context.push("/onboardingFlow");
+          },
         ),
       );
     }

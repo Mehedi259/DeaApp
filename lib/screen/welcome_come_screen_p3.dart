@@ -75,7 +75,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    context.push("/readyToStartScreen");
+                    context.push("/onboardingFlow");
                   },
                 ),
               ),
@@ -137,7 +137,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    context.push("/readyToStartScreen");
+                    context.push("/onboardingFlow");
                   },
                 ),
               ),

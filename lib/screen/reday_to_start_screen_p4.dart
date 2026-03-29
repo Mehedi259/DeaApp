@@ -196,7 +196,7 @@ class _ReadyToStartScreenState extends State<ReadyToStartScreen>
                         ),
                       ),
                       onPressed: () {
-                        context.push('/signInScreen');
+                        context.push('/onboardingFlow');
                       },
                     ),
                   ),
@@ -233,7 +233,7 @@ class _ReadyToStartScreenState extends State<ReadyToStartScreen>
                         ),
                       ),
                       onPressed: () {
-                        context.push('/signInScreen');
+                        context.push('/onboardingFlow');
                       },
                     ),
                   ),

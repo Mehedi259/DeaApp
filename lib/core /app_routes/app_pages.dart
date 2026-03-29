@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/screen/Onboarding/energy_check_in_screen.dart';
@@ -49,6 +50,7 @@ import 'package:mobile_app_dea/screen/Onboarding/popup_choose_mood_updates.dart'
 class AppPages {
   static final GoRouter router = GoRouter(
     // initialLocation: AppRoutespath.onboardingFlow, // 👈 এখানে add করুন
+    debugLogDiagnostics: true,
     routes: [
       GoRoute(
         path: AppRoutespath.splash,

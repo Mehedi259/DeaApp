@@ -500,7 +500,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        onPressed: () {},
+        onPressed: () {
+          context.push("/onboardingFlow");
+        },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
