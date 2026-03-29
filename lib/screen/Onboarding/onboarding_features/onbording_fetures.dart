@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
 
 class OnboardingFeatures extends StatelessWidget {
   const OnboardingFeatures({super.key});
@@ -41,7 +42,15 @@ class OnboardingFeatures extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// Top bar
-              _buildTopBar(context, size, isSmallDevice, isMediumDevice),
+              AnimatedOnboardingTopbar(
+                currentStep: 3,
+                totalSteps: 6,
+                backRoute: "/onboardingFlow",
+                skipRoute: "/nowliHowToUse",
+                isSmallDevice: isSmallDevice,
+                isMediumDevice: isMediumDevice,
+                screenWidth: screenWidth,
+              ),
               SizedBox(height: headerTitleSpacing),
               Text(
                 "MEET NOWLII",
@@ -177,91 +186,6 @@ class OnboardingFeatures extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTopBar(
-    BuildContext context,
-    Size size,
-    bool isSmallDevice,
-    bool isMediumDevice,
-  ) {
-    final screenWidth = size.width;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: () => context.push("/onboardingFlow"),
-          child: SizedBox(
-            width: isSmallDevice ? 44 : (isMediumDevice ? 50 : 56),
-            height: isSmallDevice ? 44 : (isMediumDevice ? 50 : 56),
-            child: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              child: SvgPicture.asset(
-                Assets.svgIcons.backIconSvg.path,
-                width: isSmallDevice ? 44 : (isMediumDevice ? 50 : 56),
-                height: isSmallDevice ? 44 : (isMediumDevice ? 50 : 56),
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(width: screenWidth * 0.015),
-        Expanded(
-          child: Container(
-            height: isSmallDevice ? 6 : 8,
-            decoration: ShapeDecoration(
-              color: const Color(0xFFC3DBFF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: 0.5,
-              child: Container(
-                decoration: ShapeDecoration(
-                  color: const Color(0xFF3D87F5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(width: screenWidth * 0.01),
-        Text(
-          '3/6',
-          style: GoogleFonts.workSans(
-            color: const Color(0xFF4C586E),
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            height: 1.40,
-          ),
-        ),
-        SizedBox(width: screenWidth * 0.015),
-        GestureDetector(
-          onTap: () => context.push("/nowliHowToUse"),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isSmallDevice ? 8 : 12,
-              vertical: isSmallDevice ? 6 : 8,
-            ),
-            child: Text(
-              'Skip',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.workSans(
-                color: const Color(0xFF011F54),
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                height: 0.80,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

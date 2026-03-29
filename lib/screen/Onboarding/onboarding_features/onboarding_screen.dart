@@ -609,6 +609,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -630,12 +631,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallDevice = screenHeight < 700;
+    final isMediumDevice = screenHeight >= 700 && screenHeight < 800;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF5E6),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: AnimatedOnboardingTopbar(
+                currentStep: 6,
+                totalSteps: 6,
+                backRoute: "/animation",
+                skipRoute: "/popupSpeking",
+                isSmallDevice: isSmallDevice,
+                isMediumDevice: isMediumDevice,
+                screenWidth: screenWidth,
+              ),
+            ),
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -729,171 +746,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
-
-  Widget _buildHeader({double progress = 1.0}) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          /// 🔙 Back Button
-          GestureDetector(
-            onTap: () {
-              context.push("/onbordingFetures");
-            },
-            child: SizedBox(
-              height: 56,
-              width: 56,
-              child: CircleAvatar(
-                child: Assets.svgIcons.backIconSvg.svg(height: 56, width: 56),
-              ),
-            ),
-          ),
-          const SizedBox(width: 20),
-
-          /// 📊 Progress Bar
-          Expanded(
-            child: Container(
-              height: 10,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0), // 🔹 Background Color
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Stack(
-                children: [
-                  FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: progress, // 0.0 to 1.0
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3D87F5), // 🔵 Progress Color
-                        // gradient: const LinearGradient(
-                        //   colors: [
-                        //     Color(0xFF3D87F5), // 🔵 Start Color
-                        //     Color(0xFF6FB1FF), // 🔵 End Color
-                        //   ],
-                        // ),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 15),
-
-          /// Step Text
-          const Text(
-            '6/6',
-            style: TextStyle(
-              color: Color(0xFF4C586E),
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-
-          /// Skip Button
-          GestureDetector(
-            onTap: () {
-              context.push("/onboardingScreen");
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Text(
-                'Skip',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.workSans(
-                  color: const Color(0xFF011F54),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  height: 0.80,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget _buildHeader() {
-  //   return Padding(
-  //     padding: const EdgeInsets.all(16.0),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       crossAxisAlignment: CrossAxisAlignment.center,
-  //       children: [
-  //         GestureDetector(
-  //           onTap: () {
-  //             context.push("/onbordingFetures");
-  //           },
-  //           child: SizedBox(
-  //             height: 56,
-  //             width: 56,
-  //             child: CircleAvatar(
-  //               child: Assets.svgIcons.backIconSvg.svg(height: 56, width: 56),
-  //             ),
-  //           ),
-  //         ),
-  //         const SizedBox(width: 20),
-  //         Expanded(
-  //           child: Container(
-  //             height: 10,
-  //             decoration: ShapeDecoration(
-  //               color: const Color(0xFFC3DBFF),
-  //               shape: RoundedRectangleBorder(
-  //                 borderRadius: BorderRadius.circular(999),
-  //               ),
-  //             ),
-  //             child: FractionallySizedBox(
-  //               alignment: Alignment.centerLeft,
-  //               widthFactor: 0.5,
-  //               child: Container(
-  //                 decoration: ShapeDecoration(
-  //                   color: const Color(0xFF3D87F5),
-  //                   shape: RoundedRectangleBorder(
-  //                     borderRadius: BorderRadius.circular(999),
-  //                   ),
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //         const SizedBox(width: 15),
-  //         Text(
-  //           '6/6',
-  //           style: GoogleFonts.workSans(
-  //             color: const Color(0xFF4C586E),
-  //             fontSize: 12,
-  //             fontWeight: FontWeight.w400,
-  //             height: 1.40,
-  //           ),
-  //         ),
-  // GestureDetector(
-  //   onTap: () {
-  //     context.push("/onboardingScreen");
-  //   },
-  //   child: Container(
-  //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-  //     child: Text(
-  //       'Skip',
-  //       textAlign: TextAlign.center,
-  //       style: GoogleFonts.workSans(
-  //         color: const Color(0xFF011F54),
-  //         fontSize: 18,
-  //         fontWeight: FontWeight.w900,
-  //         height: 0.80,
-  //       ),
-  //     ),
-  //   ),
-  // ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }
 
 // ─────────────────────────────────────────────

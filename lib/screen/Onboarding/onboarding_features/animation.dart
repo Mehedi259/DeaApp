@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
 
 class Animation extends StatefulWidget {
   const Animation({super.key});
@@ -17,6 +18,11 @@ class _AnimationState extends State<Animation> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallDevice = screenHeight < 700;
+    final isMediumDevice = screenHeight >= 700 && screenHeight < 800;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8ED),
       body: SafeArea(
@@ -25,92 +31,14 @@ class _AnimationState extends State<Animation> {
             // Header with back button, progress bar, and skip
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Back button
-                  GestureDetector(
-                    onTap: () {
-                      context.push("/onbordingFetures");
-                    },
-                    child: SizedBox(
-                      height: 56,
-                      width: 56,
-                      child: CircleAvatar(
-                        child: Assets.svgIcons.backIconSvg.svg(
-                          height: 56,
-                          width: 56,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(width: 15),
-
-                  // Progress bar
-                  Expanded(
-                    child: Container(
-                      height: 10,
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFFC3DBFF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: 0.9, // 3/6 = 0.5
-                        child: Container(
-                          decoration: ShapeDecoration(
-                            color: const Color(0xFF3D87F5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(width: 10),
-
-                  // Progress text
-                  Text(
-                    '5/6',
-                    style: GoogleFonts.workSans(
-                      color: const Color(0xFF4C586E),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      height: 1.40,
-                    ),
-                  ),
-
-                  // SizedBox(width: 5),
-
-                  // Skip button - Fixed navigation
-                  GestureDetector(
-                    onTap: () {
-                      context.push("/onboardingScreen"); // Skip to next screen
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      child: Text(
-                        'Skip',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.workSans(
-                          color: const Color(0xFF011F54),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          height: 0.80,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: AnimatedOnboardingTopbar(
+                currentStep: 5,
+                totalSteps: 6,
+                backRoute: "/nowliHowToUse",
+                skipRoute: "/onboardingScreen",
+                isSmallDevice: isSmallDevice,
+                isMediumDevice: isMediumDevice,
+                screenWidth: screenWidth,
               ),
             ),
 

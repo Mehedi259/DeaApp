@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
 
 class NowliHowToUse extends StatelessWidget {
   const NowliHowToUse({super.key});
@@ -11,12 +12,8 @@ class NowliHowToUse extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    bool isSmallDevice =
-        screenWidth < 400; // Example threshold for small devices
-
-    // Dynamic sizes
-    final backIconSize = screenWidth * 0.08;
-    final horizontalPadding = screenWidth * 0.04;
+    final isSmallDevice = screenHeight < 700;
+    final isMediumDevice = screenHeight >= 700 && screenHeight < 800;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -25,92 +22,21 @@ class NowliHowToUse extends StatelessWidget {
           SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding,
+                horizontal: screenWidth * 0.04,
                 vertical: screenHeight * 0.02,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Top Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () => context.push("/onbordingFetures"),
-                        child: SizedBox(
-                          height: backIconSize * 2,
-                          width: backIconSize * 2,
-                          child: CircleAvatar(
-                            backgroundColor: const Color(0xFFFFF1E8),
-                            child: Assets.svgIcons.backIconPng.image(
-                              height: backIconSize,
-                              width: backIconSize,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(width: screenWidth * 0.03),
-
-                      // Progress bar
-                      Expanded(
-                        child: Container(
-                          height: isSmallDevice ? 6 : 8,
-                          decoration: ShapeDecoration(
-                            color: const Color(0xFFC3DBFF),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: 0.7,
-                            child: Container(
-                              decoration: ShapeDecoration(
-                                color: const Color(0xFF3D87F5),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(width: screenWidth * 0.015),
-
-                      Text(
-                        '4/6',
-                        style: GoogleFonts.workSans(
-                          color: const Color(0xFF4C586E),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          height: 1.40,
-                        ),
-                      ),
-
-                      SizedBox(width: screenWidth * 0.03),
-
-                      GestureDetector(
-                        onTap: () => context.push("/animation"),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.025,
-                            vertical: screenWidth * 0.015,
-                          ),
-                          child: Text(
-                            'Skip',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.workSans(
-                              color: const Color(0xFF011F54),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              height: 0.80,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  AnimatedOnboardingTopbar(
+                    currentStep: 4,
+                    totalSteps: 6,
+                    backRoute: "/onbordingFetures",
+                    skipRoute: "/animation",
+                    isSmallDevice: isSmallDevice,
+                    isMediumDevice: isMediumDevice,
+                    screenWidth: screenWidth,
                   ),
 
                   SizedBox(height: screenHeight * 0.03),
