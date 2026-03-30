@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 
 class AnimatedOnboardingTopbar extends StatefulWidget {
   final int currentStep;
@@ -100,14 +102,23 @@ class _AnimatedOnboardingTopbarState extends State<AnimatedOnboardingTopbar>
             }
           },
           child: SizedBox(
-            width: widget.isSmallDevice ? 40 : (widget.isMediumDevice ? 44 : 48),
-            height: widget.isSmallDevice ? 40 : (widget.isMediumDevice ? 44 : 48),
+            width: widget.isSmallDevice
+                ? 44
+                : (widget.isMediumDevice ? 50 : 56),
+            height: widget.isSmallDevice
+                ? 44
+                : (widget.isMediumDevice ? 50 : 56),
             child: CircleAvatar(
-              backgroundColor: Colors.blue.shade100,
-              child: Icon(
-                Icons.chevron_left,
-                color: Colors.black87,
-                size: widget.isSmallDevice ? 24 : (widget.isMediumDevice ? 26 : 28),
+              backgroundColor: Colors.transparent,
+              child: SvgPicture.asset(
+                Assets.svgIcons.backIconSvg.path,
+                width: widget.isSmallDevice
+                    ? 44
+                    : (widget.isMediumDevice ? 50 : 56),
+                height: widget.isSmallDevice
+                    ? 44
+                    : (widget.isMediumDevice ? 50 : 56),
+                fit: BoxFit.contain,
               ),
             ),
           ),
