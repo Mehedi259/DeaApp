@@ -45,7 +45,7 @@ class OnboardingFeatures extends StatelessWidget {
               AnimatedOnboardingTopbar(
                 currentStep: 3,
                 totalSteps: 6,
-                backRoute: "/onboardingFlow",
+                backRoute: "/onboardingFlow?page=1",
                 skipRoute: "/nowliHowToUse",
                 isSmallDevice: isSmallDevice,
                 isMediumDevice: isMediumDevice,

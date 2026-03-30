@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 
 class AnimatedOnboardingTopbar extends StatefulWidget {
   final int currentStep;
@@ -12,6 +10,7 @@ class AnimatedOnboardingTopbar extends StatefulWidget {
   final bool isSmallDevice;
   final bool isMediumDevice;
   final double screenWidth;
+  final VoidCallback? onBackPressed;
 
   const AnimatedOnboardingTopbar({
     super.key,
@@ -22,6 +21,7 @@ class AnimatedOnboardingTopbar extends StatefulWidget {
     this.isSmallDevice = false,
     this.isMediumDevice = false,
     required this.screenWidth,
+    this.onBackPressed,
   });
 
   @override
@@ -43,6 +43,20 @@ class _AnimatedOnboardingTopbarState extends State<AnimatedOnboardingTopbar>
       vsync: this,
     );
 
+    _updateAnimations();
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedOnboardingTopbar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentStep != widget.currentStep) {
+      _updateAnimations();
+      _controller.forward(from: 0);
+    }
+  }
+
+  void _updateAnimations() {
     final targetProgress = widget.currentStep / widget.totalSteps;
     _progressAnimation = Tween<double>(
       begin: 0.0,
@@ -63,8 +77,6 @@ class _AnimatedOnboardingTopbarState extends State<AnimatedOnboardingTopbar>
         curve: Curves.easeInOut,
       ),
     );
-
-    _controller.forward();
   }
 
   @override
@@ -80,25 +92,22 @@ class _AnimatedOnboardingTopbarState extends State<AnimatedOnboardingTopbar>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         GestureDetector(
-          onTap: () => context.push(widget.backRoute),
+          onTap: () {
+            if (widget.onBackPressed != null) {
+              widget.onBackPressed!();
+            } else if (widget.backRoute.isNotEmpty) {
+              context.push(widget.backRoute);
+            }
+          },
           child: SizedBox(
-            width: widget.isSmallDevice
-                ? 44
-                : (widget.isMediumDevice ? 50 : 56),
-            height: widget.isSmallDevice
-                ? 44
-                : (widget.isMediumDevice ? 50 : 56),
+            width: widget.isSmallDevice ? 40 : (widget.isMediumDevice ? 44 : 48),
+            height: widget.isSmallDevice ? 40 : (widget.isMediumDevice ? 44 : 48),
             child: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              child: SvgPicture.asset(
-                Assets.svgIcons.backIconSvg.path,
-                width: widget.isSmallDevice
-                    ? 44
-                    : (widget.isMediumDevice ? 50 : 56),
-                height: widget.isSmallDevice
-                    ? 44
-                    : (widget.isMediumDevice ? 50 : 56),
-                fit: BoxFit.contain,
+              backgroundColor: Colors.blue.shade100,
+              child: Icon(
+                Icons.chevron_left,
+                color: Colors.black87,
+                size: widget.isSmallDevice ? 24 : (widget.isMediumDevice ? 26 : 28),
               ),
             ),
           ),

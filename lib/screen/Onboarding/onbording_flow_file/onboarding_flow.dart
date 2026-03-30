@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/screen/Onboarding/onbording_flow_file/gender_page.dart';
-import 'package:mobile_app_dea/screen/Onboarding/onbording_flow_file/name_page.dart'
+import 'package:mobile_app_dea/screen/Onboarding/ProfileSetup/gender_page.dart';
+import 'package:mobile_app_dea/screen/Onboarding/ProfileSetup/name_page.dart'
     show NamePage;
+import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
 
 class OnboardingFlow extends StatefulWidget {
-  const OnboardingFlow({super.key});
+  final int initialPage;
+
+  const OnboardingFlow({
+    super.key,
+    this.initialPage = 0,
+  });
 
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
 }
 
 class _OnboardingFlowState extends State<OnboardingFlow> {
-  int currentPage = 0;
-  final PageController _pageController = PageController();
+  late int currentPage;
+  late PageController _pageController;
   String userName = '';
   String selectedGender = '';
+
+  @override
+  void initState() {
+    super.initState();
+    currentPage = widget.initialPage;
+    _pageController = PageController(initialPage: widget.initialPage);
+  }
 
   @override
   void dispose() {
@@ -70,6 +82,11 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallDevice = screenHeight < 700;
+    final isMediumDevice = screenHeight >= 700 && screenHeight < 800;
+
     return Scaffold(
       backgroundColor: const Color(0xFFD6E4F0),
       body: SafeArea(
@@ -77,45 +94,15 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: previousPage,
-                    icon: Assets.svgIcons.signUnBackScrren.svg(height: 60),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Container(
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFC3DBFF),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                        FractionallySizedBox(
-                          widthFactor: (currentPage + 1) / 5,
-                          child: Container(
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3D87F5),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    '${currentPage + 1}/5',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A2B5F),
-                    ),
-                  ),
-                ],
+              child: AnimatedOnboardingTopbar(
+                currentStep: currentPage + 1,
+                totalSteps: 6,
+                backRoute: "/welcome",
+                skipRoute: "/onbordingFetures",
+                isSmallDevice: isSmallDevice,
+                isMediumDevice: isMediumDevice,
+                screenWidth: screenWidth,
+                onBackPressed: currentPage > 0 ? previousPage : null,
               ),
             ),
             Expanded(

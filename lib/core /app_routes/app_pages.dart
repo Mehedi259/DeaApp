@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/screen/Onboarding/energy_check_in_screen.dart';
@@ -116,7 +115,11 @@ class AppPages {
       /* onboarding */
       GoRoute(
         path: AppRoutespath.onboardingFlow,
-        builder: (context, state) => const OnboardingFlow(),
+        builder: (context, state) {
+          final page = state.uri.queryParameters['page'];
+          final initialPage = page != null ? int.tryParse(page) ?? 0 : 0;
+          return OnboardingFlow(initialPage: initialPage);
+        },
       ),
 
       /*  create a quets start here  */
