@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:go_router/go_router.dart';
 
 class PopupSpeaking extends StatefulWidget {
   const PopupSpeaking({super.key});
@@ -16,6 +17,8 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
   late List<Animation<double>> _rippleAnimations;
   String selectedVoice = 'Female';
   String selectedLanguage = 'English';
+  String typingText = '';
+  bool showLetsStart = false;
 
   @override
   void initState() {
@@ -53,12 +56,45 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
     super.dispose();
   }
 
+  void _startTypingAnimation() {
+    Future.delayed(Duration(seconds: 3), () {
+      if (mounted && currentScreen == 1) {
+        setState(() {
+          showLetsStart = true;
+        });
+        _typeText("Let's start!");
+      }
+    });
+  }
+
+  void _typeText(String text) async {
+    for (int i = 0; i <= text.length; i++) {
+      if (mounted && currentScreen == 1) {
+        await Future.delayed(Duration(milliseconds: 100));
+        setState(() {
+          typingText = text.substring(0, i);
+        });
+      }
+    }
+    
+    // After typing completes, wait 1 second then navigate to loading screen
+    if (mounted && currentScreen == 1) {
+      await Future.delayed(Duration(seconds: 1));
+      if (mounted) {
+        context.go('/noticeLoaderScreen');
+      }
+    }
+  }
+
   Future<void> _requestMicrophonePermission() async {
     final status = await Permission.microphone.request();
     if (status.isGranted) {
       setState(() {
         currentScreen = 1;
+        showLetsStart = false;
+        typingText = '';
       });
+      _startTypingAnimation();
     } else if (status.isDenied) {
       _showPermissionDeniedDialog();
     } else if (status.isPermanentlyDenied) {
@@ -548,6 +584,19 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
                   height: 0.80,
                 ),
               ),
+              SizedBox(height: 15),
+              if (showLetsStart)
+                Text(
+                  typingText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF4542EB),
+                    fontSize: 24,
+                    fontFamily: 'Work Sans',
+                    fontWeight: FontWeight.w900,
+                    height: 0.80,
+                  ),
+                ),
               Spacer(),
               Center(
                 child: AnimatedBuilder(
