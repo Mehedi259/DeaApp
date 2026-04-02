@@ -38,7 +38,7 @@ import 'package:mobile_app_dea/screen/settings/contact_support/sopprt/support.da
 import 'package:mobile_app_dea/screen/settings/setting.dart';
 import 'package:mobile_app_dea/screen/splash.dart';
 import 'package:mobile_app_dea/screen/welcome_activetion_flow/notice_loader_screen.dart';
-import 'package:mobile_app_dea/screen/welcome_activetion_flow/popup_speking.dart';
+import 'package:mobile_app_dea/screen/welcome_activetion_flow/popup_speaking.dart';
 import 'package:mobile_app_dea/screen/welcome_activetion_flow/procrastination_screen.dart';
 import 'package:mobile_app_dea/screen/settings/subcription/subscription_popup.dart';
 import 'package:mobile_app_dea/screen/settings/subcription/nowli_pro_subcription.dart';
@@ -48,7 +48,6 @@ import 'package:mobile_app_dea/screen/Onboarding/popup_choose_mood_updates.dart'
 
 class AppPages {
   static final GoRouter router = GoRouter(
-    // initialLocation: AppRoutespath.onboardingFlow, // 👈 এখানে add করুন
     debugLogDiagnostics: true,
     routes: [
       GoRoute(
@@ -169,7 +168,7 @@ class AppPages {
       ),
       GoRoute(
         path: AppRoutespath.popupSpeking,
-        builder: (context, state) => PopupSpeking(),
+        builder: (context, state) => const PopupSpeaking(),
       ),
       GoRoute(
         path: AppRoutespath.procrastinationScreen,
