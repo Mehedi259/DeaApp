@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});
@@ -25,12 +26,24 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
 
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(_controller);
 
-    Future.delayed(Duration(seconds: 5), () {
-      // Navigate to the next screen after the splash duration
-      if (mounted) {
-        context.go('/entryScreen');
-      }
-    });
+    _checkFirstTime();
+  }
+
+  Future<void> _checkFirstTime() async {
+    await Future.delayed(Duration(seconds: 5));
+    
+    if (!mounted) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+    
+    if (isFirstTime) {
+      // First time user - show onboarding
+      context.go('/entryScreen');
+    } else {
+      // Returning user - go directly to home
+      context.go('/homeScreen');
+    }
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NoticeLoaderScreen extends StatefulWidget {
   const NoticeLoaderScreen({super.key});
@@ -14,11 +15,19 @@ class _NoticeLoaderScreenState extends State<NoticeLoaderScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 4), () {
-      if (mounted) {
-        context.push("/homeScreen");
-      }
-    });
+    _completeOnboarding();
+  }
+
+  Future<void> _completeOnboarding() async {
+    // Mark onboarding as completed
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isFirstTime', false);
+    
+    // Navigate to home after 4 seconds
+    await Future.delayed(const Duration(seconds: 4));
+    if (mounted) {
+      context.push("/homeScreen");
+    }
   }
 
   @override

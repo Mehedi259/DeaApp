@@ -91,16 +91,18 @@ class MyProgress extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset(Assets.svgIcons.fire.path, width: 44, height: 44),
-                const SizedBox(width: 8),
-                Text(
-                  '120 DAYS',
-                  style: TextStyle(
-                    color: const Color(0xFF3F3CD6),
-                    fontSize: 52,
-                    fontFamily: 'Wosker',
-                    fontWeight: FontWeight.w400,
-                    height: 0.80,
+                Image.asset(Assets.svgIcons.fire.path, width: 40, height: 40),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    '120 DAYS',
+                    style: TextStyle(
+                      color: const Color(0xFF3F3CD6),
+                      fontSize: 48,
+                      fontFamily: 'Wosker',
+                      fontWeight: FontWeight.w400,
+                      height: 0.80,
+                    ),
                   ),
                 ),
               ],
@@ -395,16 +397,22 @@ class MyProgress extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.trending_up, color: Color(0xFF1E3A8A)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Activity trend',
-                    style: AppsTextStyles.black24Uppercase,
-                  ),
-                ],
+              Flexible(
+                child: Row(
+                  children: [
+                    const Icon(Icons.trending_up, color: Color(0xFF1E3A8A), size: 20),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Activity trend',
+                        style: AppsTextStyles.black24Uppercase,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.only(
                   top: 4,

@@ -129,8 +129,6 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(icon, color: iconColor, width: 24, height: 24),
-            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -139,6 +137,8 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
+            const SizedBox(height: 4),
+            Image.asset(icon, color: iconColor, width: 24, height: 24),
           ],
         ),
       ),

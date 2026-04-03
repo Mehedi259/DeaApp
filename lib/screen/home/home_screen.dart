@@ -1542,6 +1542,7 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/swipe_button_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
@@ -1569,11 +1570,24 @@ class _HomeScreenState extends State<HomeScreen> {
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        OnboardingOverlay.show(context, onComplete: _showAllNotifications);
-      }
-    });
+    _checkAndShowOnboarding();
+  }
+
+  Future<void> _checkAndShowOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenHomeOnboarding = prefs.getBool('hasSeenHomeOnboarding') ?? false;
+    
+    if (!hasSeenHomeOnboarding && mounted) {
+      // Mark as seen
+      await prefs.setBool('hasSeenHomeOnboarding', true);
+      
+      // Show onboarding
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          OnboardingOverlay.show(context, onComplete: _showAllNotifications);
+        }
+      });
+    }
   }
 
   @override
