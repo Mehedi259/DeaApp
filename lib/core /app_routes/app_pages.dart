@@ -3,10 +3,13 @@ import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/screen/Onboarding/energy_check_in_screen.dart';
 import 'package:mobile_app_dea/screen/Onboarding/pop_spking_loding.dart';
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/swaipe_to_talk_loding.dart';
+import 'package:mobile_app_dea/screen/home/swaipe_to_talk/popup_share_how_you_feel.dart';
+import 'package:mobile_app_dea/screen/home/swaipe_to_talk/popup_speaking.dart';
+import 'package:mobile_app_dea/screen/home/swaipe_to_talk/popup_processing.dart';
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/poup_your_share_you.dart';
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/poup_spking.dart';
-import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/poup_error.dart';
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/poup_prossing.dart';
+import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/poup_error.dart';
 import 'package:mobile_app_dea/screen/Onboarding/loading_onboridng_nowli.dart';
 import 'package:mobile_app_dea/screen/Onboarding/nowli_how_to_use.dart';
 import 'package:mobile_app_dea/screen/Onboarding/onboarding_features/animation.dart';
@@ -14,6 +17,7 @@ import 'package:mobile_app_dea/screen/Onboarding/onboarding_features/onboarding_
 import 'package:mobile_app_dea/screen/Onboarding/onboarding_features/onbording_fetures.dart';
 import 'package:mobile_app_dea/screen/Onboarding/onbording_flow_file/onboarding_flow.dart';
 import 'package:mobile_app_dea/screen/ai_call/ai_voice.dart';
+import 'package:mobile_app_dea/screen/ai_call/call_summary_screen.dart';
 import 'package:mobile_app_dea/screen/ai_call/pop_po_sahre.dart';
 import 'package:mobile_app_dea/screen/auth/enter_new_password.dart';
 import 'package:mobile_app_dea/screen/auth/password_updated_popup_screen.dart';
@@ -176,9 +180,14 @@ class AppPages {
           return ProcrastinationScreen();
         },
       ),
+      // AI Voice Calling
       GoRoute(
         path: AppRoutespath.aiVoice,
-        builder: (context, state) => AiVoice(),
+        builder: (context, state) => const AiVoice(),
+      ),
+      GoRoute(
+        path: AppRoutespath.callSummary,
+        builder: (context, state) => const CallSummaryScreen(),
       ),
       GoRoute(
         path: AppRoutespath.popPoSahre,
@@ -194,6 +203,20 @@ class AppPages {
         path: AppRoutespath.swipeToTalkLoading,
         builder: (context, state) => const SwipeToTalkLoading(),
       ),
+      // Emotion Detection Flow (Daily once)
+      GoRoute(
+        path: AppRoutespath.emotionShareScreen,
+        builder: (context, state) => const EmotionShareScreen(),
+      ),
+      GoRoute(
+        path: AppRoutespath.emotionSpeakingScreen,
+        builder: (context, state) => const EmotionSpeakingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutespath.emotionProcessingScreen,
+        builder: (context, state) => const EmotionProcessingScreen(),
+      ),
+      // Old voice check screens (for calling)
       GoRoute(
         path: AppRoutespath.poupYourShareYou,
         builder: (context, state) => const PoupYourShareYou(),

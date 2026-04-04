@@ -22,8 +22,12 @@ class AppRoutespath {
   static const String popupSpeking = "/popupSpeking";
   static const String procrastinationScreen = "/procrastinationScreen";
   static const String aiVoice = "/aiVoice";
+  static const String callSummary = "/callSummary";
   static const String popPoSahre = "/popPoSahre";
   static const String swipeToTalkLoading = '/swipeToTalkLoading';
+  static const String emotionShareScreen = '/emotionShareScreen';
+  static const String emotionSpeakingScreen = '/emotionSpeakingScreen';
+  static const String emotionProcessingScreen = '/emotionProcessingScreen';
   static const String poupYourShareYou = '/poupYourShareYou';
   static const String poupSpking = '/poupSpking';
   static const String poupError = '/poupError';

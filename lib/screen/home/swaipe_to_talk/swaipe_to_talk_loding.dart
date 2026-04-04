@@ -38,9 +38,11 @@ class _SwipeToTalkLoadingState extends State<SwipeToTalkLoading>
   void _startDotAnimation() async {
     while (mounted) {
       await Future.delayed(const Duration(milliseconds: 250));
-      setState(() {
-        _currentDot = (_currentDot + 1) % 4;
-      });
+      if (mounted) {
+        setState(() {
+          _currentDot = (_currentDot + 1) % 4;
+        });
+      }
     }
   }
 

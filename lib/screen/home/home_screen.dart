@@ -1542,6 +1542,8 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/swipe_button_widget.dart';
+import 'package:mobile_app_dea/screen/home/swaipe_to_talk/emotion_detection_helper.dart';
+import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_saved_popup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
@@ -1571,6 +1573,29 @@ class _HomeScreenState extends State<HomeScreen> {
       duration: const Duration(seconds: 3),
     );
     _checkAndShowOnboarding();
+    _checkAndShowVoiceSavedPopup();
+  }
+
+  Future<void> _checkAndShowVoiceSavedPopup() async {
+    // Check if emotion detection was just completed
+    final prefs = await SharedPreferences.getInstance();
+    final shouldShowPopup = prefs.getBool('show_voice_saved_popup') ?? false;
+    
+    if (shouldShowPopup && mounted) {
+      // Clear the flag
+      await prefs.setBool('show_voice_saved_popup', false);
+      
+      // Show popup after a short delay
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              VoiceSavedPopup.show(context);
+            }
+          });
+        }
+      });
+    }
   }
 
   Future<void> _checkAndShowOnboarding() async {
@@ -2169,8 +2194,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSwipeButton() {
     return SwipeButtonWidget(
-      onSwipe: () {
-        context.push(AppRoutespath.swipeToTalkLoading);
+      onSwipe: () async {
+        // Check if emotion detection is needed today
+        final needsEmotionDetection = await EmotionDetectionHelper.shouldShowEmotionDetection();
+        
+        if (needsEmotionDetection) {
+          // First time today - show emotion detection flow
+          context.push(AppRoutespath.emotionShareScreen);
+        } else {
+          // Already done today - go directly to AI voice calling screen
+          context.push(AppRoutespath.aiVoice);
+        }
       },
     );
   }

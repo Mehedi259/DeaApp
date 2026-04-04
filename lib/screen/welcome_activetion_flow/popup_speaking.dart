@@ -87,7 +87,14 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
   }
 
   Future<void> _requestMicrophonePermission() async {
-    final status = await Permission.microphone.request();
+    // Check current permission status first
+    var status = await Permission.microphone.status;
+    
+    // If not determined yet, request permission
+    if (status.isDenied || status.isRestricted || status.isLimited) {
+      status = await Permission.microphone.request();
+    }
+    
     if (status.isGranted) {
       setState(() {
         currentScreen = 1;
