@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
 import 'package:mobile_app_dea/screen/auth/sign_in_controller.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
+import 'package:mobile_app_dea/api/auth_controller.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -125,9 +126,36 @@ class _SignInScreenState extends State<SignInScreen>
     super.dispose();
   }
 
+  Future<void> _handleSignIn(
+    BuildContext context,
+    SignInController controller,
+    AuthController authController,
+  ) async {
+    final success = await authController.login(
+      controller.emailController.text,
+      controller.passwordController.text,
+    );
+
+    if (success) {
+      if (context.mounted) {
+        context.push("/onboardingFlow");
+      }
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authController.errorMessage.value),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SignInController());
+    final authController = Get.put(AuthController());
 
     InputDecoration fieldDecoration({
       required String label,
@@ -351,22 +379,26 @@ class _SignInScreenState extends State<SignInScreen>
                 scale: _buttonScale,
                 child: FadeTransition(
                   opacity: _buttonFade,
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 64,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        context.push("/onboardingFlow");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF8F26),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  child: Obx(
+                    () => SizedBox(
+                      width: double.infinity,
+                      height: 64,
+                      child: ElevatedButton(
+                        onPressed: !authController.isLoading.value
+                            ? () => _handleSignIn(context, controller, authController)
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF8F26),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        "Continue",
-                        style: AppsTextStyles.signInContinueButton,
+                        child: authController.isLoading.value
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : Text(
+                                "Continue",
+                                style: AppsTextStyles.signInContinueButton,
+                              ),
                       ),
                     ),
                   ),

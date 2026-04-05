@@ -1,11 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart' show SvgPicture;
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
 import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
+import 'package:mobile_app_dea/api/auth_controller.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -27,6 +29,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordFocus = FocusNode();
 
   bool _isEmailValid = true;
+  final _authController = Get.put(AuthController());
 
   @override
   void initState() {
@@ -79,6 +82,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() => _isEmailValid = valid);
     }
     _validateForm();
+  }
+
+  Future<void> _handleSignUp() async {
+    final success = await _authController.register(
+      _emailController.text,
+      _nameController.text,
+      _passwordController.text,
+    );
+
+    if (success) {
+      if (mounted) {
+        context.push(
+          AppRoutespath.otpVerificationScreen,
+          extra: _emailController.text,
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_authController.errorMessage.value),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -410,33 +439,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
         // 🔘 Continue Button
         SizedBox(height: 20),
-        SizedBox(
-          width: double.infinity,
-          height: 60,
-          child: ElevatedButton(
-            onPressed: _isButtonEnabled
-                ? () {
-                    context.push(
-                      AppRoutespath.otpVerificationScreen,
-                      extra: _emailController.text,
-                    );
-                  }
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4A3AFF),
-              disabledBackgroundColor: const Color(0xFF4A3AFF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+        Obx(
+          () => SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              onPressed: _isButtonEnabled && !_authController.isLoading.value
+                  ? _handleSignUp
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4A3AFF),
+                disabledBackgroundColor: const Color(0xFF4A3AFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
-            ),
-            child: AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: AppsTextStyles.continueButton.copyWith(
-                color: _isAnyFieldFocused
-                    ? Colors.white
-                    : const Color(0xFFA9A8F6),
-              ),
-              child: const Text("Continue"),
+              child: _authController.isLoading.value
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      style: AppsTextStyles.continueButton.copyWith(
+                        color: _isAnyFieldFocused
+                            ? Colors.white
+                            : const Color(0xFFA9A8F6),
+                      ),
+                      child: const Text("Continue"),
+                    ),
             ),
           ),
         ),

@@ -565,7 +565,7 @@ class _EnterNewPasswordState extends State<EnterNewPassword> {
                 ),
               ),
 
-              // ✅ Title — Padding wrapper ও SizedBox(width:335) সরানো হয়েছে
+
               Text(
                 'ENTER  NEW  \nPASSWORD',
                 style: TextStyle(
@@ -577,7 +577,7 @@ class _EnterNewPasswordState extends State<EnterNewPassword> {
                 ),
               ),
 
-              // ✅ Subtitle — SizedBox(width:335) সরানো হয়েছে
+
               Text(
                 'Choose a new password that\'s easy for you to remember - you\'ve got this!',
                 style: GoogleFonts.workSans(

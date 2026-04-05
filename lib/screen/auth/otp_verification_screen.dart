@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
 import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
+import 'package:mobile_app_dea/api/auth_controller.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String email;
@@ -25,6 +28,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   bool _canResend = false;
   int _resendTimer = 30;
   Timer? _timer;
+  final _authController = Get.put(AuthController());
 
   @override
   void initState() {
@@ -103,11 +107,31 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
-  void _verifyOtp() {
+  Future<void> _verifyOtp() async {
     if (_isButtonEnabled) {
       final otp = _otpCode;
-      debugPrint('Verifying OTP: $otp');
-      // Navigate to next screen after successful verification
+      final success = await _authController.verifyOtp(widget.email, otp);
+
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration complete! Please sign in.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.go('/signInScreen');
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_authController.errorMessage.value),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -239,26 +263,32 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         const SizedBox(height: 40),
 
         // 🔘 Verify Button
-        SizedBox(
-          width: double.infinity,
-          height: 60,
-          child: ElevatedButton(
-            onPressed: _isButtonEnabled ? _verifyOtp : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4A3AFF),
-              disabledBackgroundColor: const Color(0xFF4A3AFF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+        Obx(
+          () => SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              onPressed: _isButtonEnabled && !_authController.isLoading.value
+                  ? _verifyOtp
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4A3AFF),
+                disabledBackgroundColor: const Color(0xFF4A3AFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
-            ),
-            child: AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: AppsTextStyles.continueButton.copyWith(
-                color: _isButtonEnabled
-                    ? Colors.white
-                    : const Color(0xFFA9A8F6),
-              ),
-              child: const Text("Verify"),
+              child: _authController.isLoading.value
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      style: AppsTextStyles.continueButton.copyWith(
+                        color: _isButtonEnabled
+                            ? Colors.white
+                            : const Color(0xFFA9A8F6),
+                      ),
+                      child: const Text("Verify"),
+                    ),
             ),
           ),
         ),
