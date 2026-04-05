@@ -459,14 +459,18 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
 import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
 import 'package:mobile_app_dea/screen/auth/password_updated_popup_screen.dart'
     show PasswordUpdatedPopupScreen;
+import 'package:mobile_app_dea/api/auth_controller.dart';
 
 class EnterNewPassword extends StatefulWidget {
-  const EnterNewPassword({super.key});
+  final String? email;
+  
+  const EnterNewPassword({super.key, this.email});
 
   @override
   State<EnterNewPassword> createState() => _EnterNewPasswordState();
@@ -484,6 +488,7 @@ class _EnterNewPasswordState extends State<EnterNewPassword> {
 
   bool _isPasswordValid = false;
   bool _isConfirmPasswordValid = false;
+  final _authController = Get.put(AuthController());
 
   @override
   void initState() {
@@ -533,6 +538,64 @@ class _EnterNewPasswordState extends State<EnterNewPassword> {
       setState(() => _isConfirmPasswordValid = valid);
     }
     _validateForm();
+  }
+
+  Future<void> _handleSetNewPassword() async {
+    if (widget.email == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email not found. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final success = await _authController.setNewPassword(
+      widget.email!,
+      _newPasswordController.text,
+      _confirmPasswordController.text,
+    );
+
+    if (success) {
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          isDismissible: false,
+          enableDrag: false,
+          builder: (context) => Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: const PasswordUpdatedPopupScreen(),
+            ),
+          ),
+        );
+        
+        // Auto-dismiss after 2 seconds and navigate to sign-in
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            Navigator.of(context).pop(); // Close the bottom sheet
+            // Navigate to sign-in, clearing all previous routes
+            while (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+            Navigator.of(context).pushReplacementNamed('/signInScreen');
+          }
+        });
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_authController.errorMessage.value),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -783,36 +846,27 @@ class _EnterNewPasswordState extends State<EnterNewPassword> {
               const SizedBox(height: 20),
 
               // ✅ Continue Button
-              SizedBox(
-                width: double.infinity,
-                height: 69,
-                child: ElevatedButton(
-                  onPressed: _isButtonEnabled
-                      ? () {
-                          showModalBottomSheet(
-                            context: context,
-                            backgroundColor: Colors.transparent,
-                            isScrollControlled: true,
-                            builder: (context) => Padding(
-                              padding: const EdgeInsets.only(bottom: 20),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: const PasswordUpdatedPopupScreen(),
-                              ),
-                            ),
-                          );
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF8F26),
-                    disabledBackgroundColor: const Color(0xFFFF8F26),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+              Obx(
+                () => SizedBox(
+                  width: double.infinity,
+                  height: 69,
+                  child: ElevatedButton(
+                    onPressed: _isButtonEnabled && !_authController.isLoading.value
+                        ? _handleSetNewPassword
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF8F26),
+                      disabledBackgroundColor: const Color(0xFFFF8F26),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    "Save & Continue",
-                    style: AppsTextStyles.sendResetLinkButton,
+                    child: _authController.isLoading.value
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            "Save & Continue",
+                            style: AppsTextStyles.sendResetLinkButton,
+                          ),
                   ),
                 ),
               ),

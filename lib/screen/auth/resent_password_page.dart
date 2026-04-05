@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
 import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
+import 'package:mobile_app_dea/api/auth_controller.dart';
 
 class ResentPasswordPage extends StatefulWidget {
   const ResentPasswordPage({super.key});
@@ -16,34 +18,29 @@ class _ResentPasswordPageState extends State<ResentPasswordPage> {
   bool _isButtonEnabled = false;
 
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
 
   final _emailFocus = FocusNode();
-  final _passwordFocus = FocusNode();
 
   bool _isEmailValid = true;
+  final _authController = Get.put(AuthController());
 
   @override
   void initState() {
     super.initState();
     _emailController.addListener(() => _onEmailChanged(_emailController.text));
-    _passwordController.addListener(_validateForm);
     _emailFocus.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     _emailFocus.dispose();
-    _passwordFocus.dispose();
     super.dispose();
   }
 
   void _validateForm() {
     final isValid =
         _emailController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty &&
         _isValidEmail(_emailController.text);
     if (isValid != _isButtonEnabled) {
       setState(() => _isButtonEnabled = isValid);
@@ -60,6 +57,31 @@ class _ResentPasswordPageState extends State<ResentPasswordPage> {
       setState(() => _isEmailValid = valid);
     }
     _validateForm();
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final success = await _authController.forgotPassword(_emailController.text);
+
+    if (success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('OTP sent to your email!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.push('/resetPasswordOtpScreen', extra: _emailController.text);
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_authController.errorMessage.value),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -234,18 +256,13 @@ class _ResentPasswordPageState extends State<ResentPasswordPage> {
               const SizedBox(height: 20),
 
               // Continue Button
-              GestureDetector(
-                onTap: () {
-                  context.push('/enterNewPassword');
-                },
-                child: SizedBox(
+              Obx(
+                () => SizedBox(
                   width: double.infinity,
                   height: 65.h,
                   child: ElevatedButton(
-                    onPressed: _isButtonEnabled
-                        ? () {
-                            // context.push('/enterNewPassword');
-                          }
+                    onPressed: _isButtonEnabled && !_authController.isLoading.value
+                        ? _handleForgotPassword
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF8F26),
@@ -254,10 +271,12 @@ class _ResentPasswordPageState extends State<ResentPasswordPage> {
                         borderRadius: BorderRadius.circular(50),
                       ),
                     ),
-                    child: Text(
-                      "Send Reset Link",
-                      style: AppsTextStyles.sendResetLinkButton,
-                    ),
+                    child: _authController.isLoading.value
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            "Send Reset Link",
+                            style: AppsTextStyles.sendResetLinkButton,
+                          ),
                   ),
                 ),
               ),
@@ -266,34 +285,37 @@ class _ResentPasswordPageState extends State<ResentPasswordPage> {
               // Divider with "or"
 
               // Sign In Text
-              SizedBox(
-                width: 335,
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: "Didn't get the email? → ",
-                        style: GoogleFonts.workSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF011F54),
-                          height: 1,
-                          letterSpacing: -0.50,
+              GestureDetector(
+                onTap: _isButtonEnabled ? _handleForgotPassword : null,
+                child: SizedBox(
+                  width: 335,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "Didn't get the email? → ",
+                          style: GoogleFonts.workSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF011F54),
+                            height: 1,
+                            letterSpacing: -0.50,
+                          ),
                         ),
-                      ),
-                      TextSpan(
-                        text: 'Resend link',
-                        style: GoogleFonts.workSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFFF8F26),
-                          height: 1,
-                          letterSpacing: -0.50,
+                        TextSpan(
+                          text: 'Resend link',
+                          style: GoogleFonts.workSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFFF8F26),
+                            height: 1,
+                            letterSpacing: -0.50,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
             ],

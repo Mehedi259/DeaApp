@@ -64,4 +64,60 @@ class AuthController extends GetxController {
   Future<void> logout() async {
     await _authService.logout();
   }
+
+  Future<bool> forgotPassword(String email) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final request = ForgotPasswordRequest(email: email);
+    final result = await _authService.forgotPassword(request);
+    isLoading.value = false;
+
+    if (result['success'] == true) {
+      return true;
+    } else {
+      errorMessage.value = result['message'] ?? 'Failed to send reset link';
+      return false;
+    }
+  }
+
+  Future<bool> verifyForgotPasswordOtp(String email, String otp) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final request = VerifyForgotPasswordOtpRequest(email: email, otp: otp);
+    final result = await _authService.verifyForgotPasswordOtp(request);
+    isLoading.value = false;
+
+    if (result['success'] == true) {
+      return true;
+    } else {
+      errorMessage.value = result['message'] ?? 'OTP verification failed';
+      return false;
+    }
+  }
+
+  Future<bool> setNewPassword(
+    String email,
+    String newPassword,
+    String confirmPassword,
+  ) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final request = SetNewPasswordRequest(
+      email: email,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+    final result = await _authService.setNewPassword(request);
+    isLoading.value = false;
+
+    if (result['success'] == true) {
+      return true;
+    } else {
+      errorMessage.value = result['message'] ?? 'Failed to reset password';
+      return false;
+    }
+  }
 }

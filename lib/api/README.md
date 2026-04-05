@@ -49,11 +49,41 @@ final success = await authController.login(
 await authController.logout();
 ```
 
+### Forgot Password Flow
+```dart
+final authController = Get.put(AuthController());
+
+// 1. Request password reset
+final success = await authController.forgotPassword(
+  email: 'user@example.com',
+);
+
+// 2. Verify OTP
+if (success) {
+  final verified = await authController.verifyForgotPasswordOtp(
+    email: 'user@example.com',
+    otp: '123456',
+  );
+  
+  // 3. Set new password
+  if (verified) {
+    final reset = await authController.setNewPassword(
+      email: 'user@example.com',
+      newPassword: 'newPassword123',
+      confirmPassword: 'newPassword123',
+    );
+  }
+}
+```
+
 ## API Endpoints
 
 - **POST** `/api/auth/register/` - Register new user
 - **POST** `/api/auth/verify-otp/` - Verify OTP code
 - **POST** `/api/auth/login/` - User login
+- **POST** `/api/auth/forgot-password/` - Request password reset
+- **POST** `/api/auth/verify-forgot-password-otp/` - Verify forgot password OTP
+- **POST** `/api/auth/set-new-password/` - Set new password
 
 ## Configuration
 

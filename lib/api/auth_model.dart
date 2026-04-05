@@ -78,3 +78,41 @@ class UserData {
         isSuperuser: json['is_superuser'],
       );
 }
+
+class ForgotPasswordRequest {
+  final String email;
+
+  ForgotPasswordRequest({required this.email});
+
+  Map<String, dynamic> toJson() => {'email': email};
+}
+
+class VerifyForgotPasswordOtpRequest {
+  final String email;
+  final String otp;
+
+  VerifyForgotPasswordOtpRequest({required this.email, required this.otp});
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'otp': otp,
+      };
+}
+
+class SetNewPasswordRequest {
+  final String email;
+  final String newPassword;
+  final String confirmPassword;
+
+  SetNewPasswordRequest({
+    required this.email,
+    required this.newPassword,
+    required this.confirmPassword,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'new_password': newPassword,
+        'confirm_password': confirmPassword,
+      };
+}

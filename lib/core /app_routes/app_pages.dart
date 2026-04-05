@@ -22,6 +22,7 @@ import 'package:mobile_app_dea/screen/ai_call/pop_po_sahre.dart';
 import 'package:mobile_app_dea/screen/auth/enter_new_password.dart';
 import 'package:mobile_app_dea/screen/auth/password_updated_popup_screen.dart';
 import 'package:mobile_app_dea/screen/auth/resent_password_page.dart';
+import 'package:mobile_app_dea/screen/auth/reset_password_otp_screen.dart';
 import 'package:mobile_app_dea/screen/auth/sign_in_screen.dart';
 import 'package:mobile_app_dea/screen/auth/sign_up.dart';
 import 'package:mobile_app_dea/screen/auth/otp_verification_screen.dart';
@@ -112,7 +113,17 @@ class AppPages {
       ),
       GoRoute(
         path: AppRoutespath.enterNewPassword,
-        builder: (context, state) => const EnterNewPassword(),
+        builder: (context, state) {
+          final email = state.extra as String?;
+          return EnterNewPassword(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/resetPasswordOtpScreen',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return ResetPasswordOtpScreen(email: email);
+        },
       ),
 
       /* onboarding */

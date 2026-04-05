@@ -48,4 +48,31 @@ class AuthService {
   Future<void> logout() async {
     await _storage.clearAll();
   }
+
+  Future<Map<String, dynamic>> forgotPassword(
+    ForgotPasswordRequest request,
+  ) async {
+    return await _apiService.post(
+      ApiConstants.forgotPassword,
+      request.toJson(),
+    );
+  }
+
+  Future<Map<String, dynamic>> verifyForgotPasswordOtp(
+    VerifyForgotPasswordOtpRequest request,
+  ) async {
+    return await _apiService.post(
+      ApiConstants.verifyForgotPasswordOtp,
+      request.toJson(),
+    );
+  }
+
+  Future<Map<String, dynamic>> setNewPassword(
+    SetNewPasswordRequest request,
+  ) async {
+    return await _apiService.post(
+      ApiConstants.setNewPassword,
+      request.toJson(),
+    );
+  }
 }
