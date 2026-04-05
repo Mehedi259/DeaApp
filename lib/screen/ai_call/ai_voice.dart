@@ -29,6 +29,13 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   bool _showMuteWarning = false;
   bool _showWrapUpDialog = false;
   bool _questCompleted = false;
+  
+  // Typing animation
+  bool _showTypingAnimation = false;
+  String _typedText = '';
+  Timer? _typingTimer;
+  int _typingIndex = 0;
+  final String _typingMessage = "You're doing great – keep it going";
 
   @override
   void initState() {
@@ -60,6 +67,11 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
           // Update progress
           _progressController.value = _elapsedTime.inSeconds / _totalDuration.inSeconds;
           
+          // Check for 5 minute mark to show typing animation
+          if (_elapsedTime.inSeconds == 300 && !_showTypingAnimation) {
+            _startTypingAnimation();
+          }
+          
           // Check for 5 minute mark (not 8)
           if (_elapsedTime.inMinutes == 8 && _elapsedTime.inSeconds % 60 == 0 && !_showTimeWarning) {
             _showTimeWarning = true;
@@ -70,6 +82,25 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
             _onQuestComplete();
           }
         });
+      }
+    });
+  }
+
+  void _startTypingAnimation() {
+    setState(() {
+      _showTypingAnimation = true;
+      _typedText = '';
+      _typingIndex = 0;
+    });
+    
+    _typingTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (_typingIndex < _typingMessage.length) {
+        setState(() {
+          _typedText = _typingMessage.substring(0, _typingIndex + 1);
+          _typingIndex++;
+        });
+      } else {
+        timer.cancel();
       }
     });
   }
@@ -194,6 +225,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   @override
   void dispose() {
     _timer?.cancel();
+    _typingTimer?.cancel();
     _progressController.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -243,9 +275,11 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
                   Text(
                     _questCompleted
                         ? 'Take a deep breath - you did great.\nI\'ll be here when you\'re ready for the next one.'
-                        : _totalDuration.inMinutes > 10
-                            ? 'New energy, new ${_totalDuration.inMinutes} minutes!'
-                            : 'You\'re doing great — keep it going',
+                        : _showTypingAnimation
+                            ? _typedText
+                            : _totalDuration.inMinutes > 10
+                                ? 'New energy, new ${_totalDuration.inMinutes} minutes!'
+                                : 'You\'re doing great — keep it going',
                     style: AppsTextStyles.regular16l,
                     textAlign: TextAlign.center,
                   ),
@@ -491,7 +525,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
               height: 280,
               child: CircularProgressIndicator(
                 value: _progressController.value,
-                strokeWidth: 8,
+                strokeWidth: 16,
                 backgroundColor: _timerColor.withOpacity(0.2),
                 valueColor: AlwaysStoppedAnimation(_timerColor),
               ),

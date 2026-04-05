@@ -37,6 +37,13 @@ class _AiVoiceCallingScreenState extends State<AiVoiceCallingScreen>
   bool _showNetworkError = false;
   bool _showWrapUpDialog = false;
   bool _questCompleted = false;
+  
+  // Typing animation
+  bool _showTypingAnimation = false;
+  String _typedText = '';
+  Timer? _typingTimer;
+  int _typingIndex = 0;
+  final String _typingMessage = "You're doing great – keep it going";
 
   @override
   void initState() {
@@ -70,6 +77,11 @@ class _AiVoiceCallingScreenState extends State<AiVoiceCallingScreen>
             final elapsed = _totalDuration.inSeconds - _remainingTime.inSeconds;
             _progressController.value = elapsed / _totalDuration.inSeconds;
             
+            // Check for 5 minute mark to show typing animation
+            if (elapsed == 300 && !_showTypingAnimation) {
+              _startTypingAnimation();
+            }
+            
             // Check for 8 minute mark (2 minutes remaining in 10 min call)
             final minutesRemaining = _remainingTime.inMinutes;
             if (minutesRemaining == 2 && !_showTimeWarning) {
@@ -82,6 +94,25 @@ class _AiVoiceCallingScreenState extends State<AiVoiceCallingScreen>
             }
           }
         });
+      }
+    });
+  }
+
+  void _startTypingAnimation() {
+    setState(() {
+      _showTypingAnimation = true;
+      _typedText = '';
+      _typingIndex = 0;
+    });
+    
+    _typingTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (_typingIndex < _typingMessage.length) {
+        setState(() {
+          _typedText = _typingMessage.substring(0, _typingIndex + 1);
+          _typingIndex++;
+        });
+      } else {
+        timer.cancel();
       }
     });
   }
@@ -163,6 +194,7 @@ class _AiVoiceCallingScreenState extends State<AiVoiceCallingScreen>
   @override
   void dispose() {
     _timer?.cancel();
+    _typingTimer?.cancel();
     _progressController.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -224,7 +256,9 @@ class _AiVoiceCallingScreenState extends State<AiVoiceCallingScreen>
                   child: Text(
                     _questCompleted 
                         ? 'Take a deep breath - you did great.\nI\'ll be here when you\'re ready for the next one.'
-                        : widget.subtitle,
+                        : _showTypingAnimation 
+                            ? _typedText
+                            : widget.subtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: const Color(0xFF011F54),
@@ -325,7 +359,7 @@ class _AiVoiceCallingScreenState extends State<AiVoiceCallingScreen>
               height: size.width * 0.65,
               child: CircularProgressIndicator(
                 value: _progressController.value,
-                strokeWidth: 8,
+                strokeWidth: 16,
                 backgroundColor: _timerColor.withOpacity(0.2),
                 valueColor: AlwaysStoppedAnimation(_timerColor),
               ),
