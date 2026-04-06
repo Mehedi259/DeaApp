@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_app_dea/api/onboarding_data.dart';
+import 'package:mobile_app_dea/api/profile_controller.dart';
 
 class NoticeLoaderScreen extends StatefulWidget {
   const NoticeLoaderScreen({super.key});
@@ -12,13 +14,53 @@ class NoticeLoaderScreen extends StatefulWidget {
 }
 
 class _NoticeLoaderScreenState extends State<NoticeLoaderScreen> {
+  final ProfileController _profileController = ProfileController();
+
   @override
   void initState() {
     super.initState();
-    _completeOnboarding();
+    _completeOnboardingAndCreateProfile();
   }
 
-  Future<void> _completeOnboarding() async {
+  Future<void> _completeOnboardingAndCreateProfile() async {
+    // Get all collected onboarding data
+    final onboardingData = OnboardingData();
+    
+    print('\n🎯 ========== CREATING PROFILE WITH ALL DATA ==========');
+    onboardingData.logAllData();
+    
+    // Create profile with all collected data
+    if (onboardingData.isComplete) {
+      final success = await _profileController.createProfile(
+        name: onboardingData.name!,
+        gender: onboardingData.gender!,
+        language: onboardingData.language!,
+        voice: onboardingData.voice!,
+        profileImage: onboardingData.profileImage,
+        avatarLogo: onboardingData.avatarLogo,
+        nowliiName: onboardingData.nowliiName,
+        customNowliiName: onboardingData.customNowliiName,
+      );
+
+      if (success) {
+        print('✅ Profile created successfully in onboarding!');
+        print('👤 Profile: ${_profileController.profile?.toJson()}');
+        
+        // Clear onboarding data after successful creation
+        onboardingData.clear();
+      } else {
+        print('❌ Profile creation failed: ${_profileController.errorMessage}');
+      }
+    } else {
+      print('⚠️ Onboarding data incomplete! Missing:');
+      if (onboardingData.name == null) print('  - Name');
+      if (onboardingData.gender == null) print('  - Gender');
+      if (onboardingData.language == null) print('  - Language');
+      if (onboardingData.voice == null) print('  - Voice');
+    }
+    
+    print('======================================================\n');
+    
     // Mark onboarding as completed
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstTime', false);
@@ -83,6 +125,20 @@ class _NoticeLoaderScreenState extends State<NoticeLoaderScreen> {
                   fontWeight: FontWeight.w400,
                 ),
               ),
+              
+              // Show loading indicator while creating profile
+              if (_profileController.isLoading) ...[
+                SizedBox(height: 24.sp),
+                const CircularProgressIndicator(),
+                SizedBox(height: 12.sp),
+                Text(
+                  'Creating your profile...',
+                  style: GoogleFonts.workSans(
+                    fontSize: 14,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

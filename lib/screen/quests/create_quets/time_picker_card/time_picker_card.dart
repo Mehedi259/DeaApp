@@ -5,8 +5,13 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 
 class TimePickerCard extends StatefulWidget {
   final double scale;
+  final String? initialTime;
 
-  const TimePickerCard({super.key, this.scale = 1.0});
+  const TimePickerCard({
+    super.key, 
+    this.scale = 1.0,
+    this.initialTime,
+  });
 
   @override
   State<TimePickerCard> createState() => _TimePickerCardState();
@@ -23,6 +28,24 @@ class _TimePickerCardState extends State<TimePickerCard> {
   @override
   void initState() {
     super.initState();
+    
+    // Parse initial time if provided (format: "10:00")
+    if (widget.initialTime != null) {
+      try {
+        final parts = widget.initialTime!.split(':');
+        if (parts.length == 2) {
+          final hour = int.parse(parts[0]);
+          final minute = int.parse(parts[1]);
+          _selectedHour = hour;
+          _selectedMinute = minute;
+          _isPM = hour >= 12;
+        }
+      } catch (e) {
+        // If parsing fails, use current time
+        debugPrint('Failed to parse initial time: $e');
+      }
+    }
+    
     _startTimer();
   }
 

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app_dea/api/onboarding_data.dart';
 import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 
 class LoadingOnboridngNowli extends StatefulWidget {
-  const LoadingOnboridngNowli({super.key});
+  final Map<String, dynamic>? userData;
+  
+  const LoadingOnboridngNowli({
+    super.key,
+    this.userData,
+  });
 
   @override
   State<LoadingOnboridngNowli> createState() => _LoadingOnboridngNowliState();
@@ -14,19 +20,30 @@ class _LoadingOnboridngNowliState extends State<LoadingOnboridngNowli> {
   @override
   void initState() {
     super.initState();
-    // Navigate to onboarding features after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        context.go(AppRoutespath.onbordingFetures);
-      }
-    });
+    _navigateAfterDelay();
+  }
+
+  Future<void> _navigateAfterDelay() async {
+    // Just show loading animation
+    // Profile will be created after popupSpeking when all data is collected
+    await Future.delayed(const Duration(seconds: 3));
+    
+    if (mounted) {
+      // Log current onboarding data
+      final onboardingData = OnboardingData();
+      onboardingData.logAllData();
+      
+      context.go(AppRoutespath.onbordingFetures);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFFDCEEFF), // light blue background
-      body: Center(child: LoadingContent()),
+      backgroundColor: Color(0xFFDCEEFF),
+      body: Center(
+        child: LoadingContent(),
+      ),
     );
   }
 }

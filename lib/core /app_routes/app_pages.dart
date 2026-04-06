@@ -34,7 +34,7 @@ import 'package:mobile_app_dea/screen/profile/Edit_profile/efit_name.dart';
 import 'package:mobile_app_dea/screen/profile/profile_menu_with_notification/profile_menu_with_notification.dart';
 import 'package:mobile_app_dea/screen/progress/progress.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/create_quets_default.dart';
-import 'package:mobile_app_dea/screen/quests/edit_quest/edit_qust.dart.dart';
+import 'package:mobile_app_dea/screen/quests/create_quets/edit_quest_page.dart';
 import 'package:mobile_app_dea/screen/quests/suggested/suggested_task_overview.dart';
 import 'package:mobile_app_dea/screen/quests/quests_my_quests_today_emty_state.dart';
 import 'package:mobile_app_dea/screen/reday_to_start_screen_p4.dart';
@@ -48,6 +48,7 @@ import 'package:mobile_app_dea/screen/welcome_activetion_flow/procrastination_sc
 import 'package:mobile_app_dea/screen/settings/subcription/subscription_popup.dart';
 import 'package:mobile_app_dea/screen/settings/subcription/nowli_pro_subcription.dart';
 import 'package:mobile_app_dea/screen/welcome_come_screen_p3.dart';
+import 'package:mobile_app_dea/screen/debug/profile_test_screen.dart';
 
 import 'package:mobile_app_dea/screen/Onboarding/popup_choose_mood_updates.dart';
 
@@ -147,7 +148,13 @@ class AppPages {
       ),
       GoRoute(
         path: AppRoutespath.editQuestPage,
-        builder: (context, state) => const EditQuestPage(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return EditQuestPage(
+            taskId: extra?['taskId'],
+            taskData: extra?['taskData'],
+          );
+        },
       ),
       GoRoute(
         path: AppRoutespath.suggestedTaskOverview,
@@ -167,7 +174,10 @@ class AppPages {
       ),
       GoRoute(
         path: AppRoutespath.loadingOnboardingNowli,
-        builder: (context, state) => const LoadingOnboridngNowli(),
+        builder: (context, state) {
+          final userData = state.extra as Map<String, dynamic>?;
+          return LoadingOnboridngNowli(userData: userData);
+        },
       ),
       GoRoute(
         path: AppRoutespath.nowliHowToUse,
@@ -318,6 +328,13 @@ class AppPages {
         path: AppRoutespath.supportChatScreen,
         builder: (context, state) {
           return const SupportChatScreen(); // Placeholder for SupportChatScreen
+        },
+      ),
+      // Debug routes
+      GoRoute(
+        path: AppRoutespath.profileTestScreen,
+        builder: (context, state) {
+          return const ProfileTestScreen();
         },
       ),
     ],

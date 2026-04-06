@@ -60,6 +60,9 @@ class AppRoutespath {
   static const String nowliProSubscription = '/nowliProSubscription';
   static const String supportScreen = '/supportScreen';
   static const String supportChatScreen = '/supportChatScreen';
+  
+  // Debug
+  static const String profileTestScreen = '/profileTestScreen';
 }
 
 // cl

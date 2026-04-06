@@ -606,6 +606,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_app_dea/api/onboarding_data.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
@@ -667,6 +668,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       setState(() {
                         _selectedName = name;
                       });
+                      
+                      // Save to onboarding data
+                      final onboardingData = OnboardingData();
+                      // Check if it's a custom name or default avatar name
+                      final avatarNames = ['KNOTTY', 'BLOOBY', 'FUZZY', 'SNOOZY', 'GRUMPY', 'SLEEPY'];
+                      if (avatarNames.contains(name)) {
+                        // Default avatar name
+                        onboardingData.setNowliiName(name);
+                      } else {
+                        // Custom typed name
+                        onboardingData.setCustomNowliiName(name);
+                      }
                     },
                   ),
                 ],
@@ -825,6 +838,10 @@ class _NameSelectionPageState extends State<NameSelectionPage>
     });
     widget.onNameSelected(avatars[_currentAvatarIndex].name);
     _bounceController.forward(from: 0);
+    
+    // Save avatar logo to onboarding data (can override animation screen selection)
+    final onboardingData = OnboardingData();
+    onboardingData.setAvatarLogo(avatars[_currentAvatarIndex].assetPath);
   }
 
   void _showCustomNameInput() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app_dea/api/onboarding_data.dart';
 import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/screen/Onboarding/ProfileSetup/gender_page.dart';
 import 'package:mobile_app_dea/screen/Onboarding/ProfileSetup/name_page.dart'
@@ -67,14 +68,24 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     setState(() {
       userName = name;
     });
+    
+    // Save to onboarding data
+    final onboardingData = OnboardingData();
+    onboardingData.setName(name);
   }
 
   void selectGender(String gender) {
     setState(() {
       selectedGender = gender;
     });
+    
+    // Save to onboarding data
+    final onboardingData = OnboardingData();
+    onboardingData.setGender(gender);
+    
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
+        // Don't create profile yet - wait for all data
         context.go(AppRoutespath.loadingOnboardingNowli);
       }
     });

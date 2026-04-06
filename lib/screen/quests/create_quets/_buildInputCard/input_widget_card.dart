@@ -4,11 +4,21 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 class InputCardWidget extends StatelessWidget {
   final double scale;
   final TextEditingController? controller;
+  final String? initialValue;
 
-  const InputCardWidget({super.key, this.scale = 1.0, this.controller});
+  const InputCardWidget({
+    super.key, 
+    this.scale = 1.0, 
+    this.controller,
+    this.initialValue,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Create controller with initial value if provided
+    final effectiveController = controller ?? 
+      (initialValue != null ? TextEditingController(text: initialValue) : null);
+    
     return Container(
       height: 160,
       width: double.infinity,
@@ -24,7 +34,7 @@ class InputCardWidget extends StatelessWidget {
         ],
       ),
       child: TextField(
-        controller: controller,
+        controller: effectiveController,
         decoration: InputDecoration(
           hintText: 'Write down your \n quest...',
           hintStyle: AppTextStylesQutes.workSansExtraBold32,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app_dea/api/onboarding_data.dart';
 
 class PopupSpeaking extends StatefulWidget {
   const PopupSpeaking({super.key});
@@ -23,6 +24,11 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
+    
+    // Save default language and voice to onboarding data
+    final onboardingData = OnboardingData();
+    onboardingData.setLanguage(selectedLanguage);
+    onboardingData.setVoice(selectedVoice);
     
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1200),
@@ -206,6 +212,11 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
             GestureDetector(
               onTap: () {
                 setState(() => selectedVoice = 'Female');
+                
+                // Save voice to onboarding data
+                final onboardingData = OnboardingData();
+                onboardingData.setVoice('Female');
+                
                 Navigator.pop(context);
               },
               child: Container(
@@ -234,6 +245,11 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
             GestureDetector(
               onTap: () {
                 setState(() => selectedVoice = 'Male');
+                
+                // Save voice to onboarding data
+                final onboardingData = OnboardingData();
+                onboardingData.setVoice('Male');
+                
                 Navigator.pop(context);
               },
               child: Container(
@@ -311,6 +327,11 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
               child: GestureDetector(
                 onTap: () {
                   setState(() => selectedLanguage = lang['value']!);
+                  
+                  // Save language to onboarding data
+                  final onboardingData = OnboardingData();
+                  onboardingData.setLanguage(lang['value']!);
+                  
                   Navigator.pop(context);
                 },
                 child: Row(

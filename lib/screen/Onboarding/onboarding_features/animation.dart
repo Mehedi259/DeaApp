@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_app_dea/api/onboarding_data.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
@@ -15,6 +16,16 @@ class Animation extends StatefulWidget {
 
 class _AnimationState extends State<Animation> {
   int selectedIndex = -1;
+  
+  // Avatar image paths mapping
+  final List<String> avatarPaths = [
+    'assets/svg_images/A.png',
+    'assets/svg_images/B.png',
+    'assets/svg_images/C.png',
+    'assets/svg_images/D.png',
+    'assets/svg_images/E.png',
+    'assets/svg_images/F.png',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -240,6 +251,10 @@ class _AnimationState extends State<Animation> {
         setState(() {
           selectedIndex = index;
         });
+        
+        // Save avatar logo to onboarding data
+        final onboardingData = OnboardingData();
+        onboardingData.setAvatarLogo(imagePath);
       },
       child: Container(
         decoration: BoxDecoration(

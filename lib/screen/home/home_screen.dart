@@ -2038,35 +2038,40 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 12),
           
           // Plan button
-          Container(
-            width: 78,
-            height: 84,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4542EB),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.add_circle_outline,
-                  color: Color(0xFFFFFDF7),
-                  size: 22,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Plan',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.workSans(
-                    color: const Color(0xFFFFFDF7),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    height: 1,
+          GestureDetector(
+            onTap: () {
+              context.push(AppRoutespath.createQuestPage);
+            },
+            child: Container(
+              width: 78,
+              height: 84,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4542EB),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.add_circle_outline,
+                    color: Color(0xFFFFFDF7),
+                    size: 22,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    'Plan',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.workSans(
+                      color: const Color(0xFFFFFDF7),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      height: 1,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -2160,19 +2165,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: InkWell(
             borderRadius: BorderRadius.circular(24),
             onTap: () {
-              NotificationManager().show(
-                context,
-                NotificationData(
-                  type: NotificationType.questSuggestion,
-                  title: 'Wake up or wind down with Nowlli! 😴🌞',
-                  subtitle:
-                      'You can schedule Nowlli for wake-up or bedtime calls! Just create a task, turn on repeat, and Nowlli will call you 10 minutes before — to help you wake up or drift off peacefully. 💕',
-                  buttonText: 'Add quest',
-                  onButtonPressed: () {
-                    debugPrint('Add quest pressed');
-                  },
-                ),
-              );
+              context.push(AppRoutespath.createQuestPage);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -2211,7 +2204,20 @@ class _HomeScreenState extends State<HomeScreen> {
       return AnimatedTaskItem(
         key: ValueKey('${task.title}_$index'),
         task: task,
-        onEdit: () => (index),
+        onEdit: () {
+          // Navigate to Edit Quest screen
+          context.push(
+            AppRoutespath.editQuestPage,
+            extra: {
+              'taskId': index, // or actual task ID from backend
+              'taskData': {
+                'title': task.title,
+                'time': task.time,
+                'isCompleted': task.isCompleted,
+              },
+            },
+          );
+        },
         onDelete: () => _deleteTask(index),
         onTomorrow: () => _moveToTomorrow(index),
         onToggle: () {

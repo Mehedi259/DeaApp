@@ -1,7 +1,7 @@
 # API Integration Guide
 
 ## Overview
-This directory contains all API-related code for authentication and user management.
+This directory contains all API-related code for authentication, user management, and profile management.
 
 ## Files Structure
 
@@ -10,7 +10,10 @@ This directory contains all API-related code for authentication and user managem
 - `auth_model.dart` - Data models for authentication
 - `auth_service.dart` - Authentication API service layer
 - `auth_controller.dart` - GetX controller for auth state management
-- `storage.dart` - Local storage for tokens and user data
+- `profile_model.dart` - Data models for user profile
+- `profile_service.dart` - Profile API service layer
+- `profile_controller.dart` - Controller for profile state management
+- `storage.dart` - Local storage for tokens, user data, and profile data
 
 ## Usage
 
@@ -76,14 +79,84 @@ if (success) {
 }
 ```
 
+### Profile Management
+
+#### Create Profile
+```dart
+final profileController = ProfileController();
+
+final success = await profileController.createProfile(
+  name: 'Mehedi',
+  gender: "I'm a man",
+  profileImage: 'https://example.com/image.jpg',
+  avatarLogo: 'https://example.com/avatar.jpg',
+  customNowliiName: 'fahad1',
+  language: 'English',
+  voice: 'Male',
+);
+
+if (success) {
+  print('Profile created: ${profileController.profile?.name}');
+} else {
+  print('Error: ${profileController.errorMessage}');
+}
+```
+
+#### Get Profile
+```dart
+final profileController = ProfileController();
+
+final success = await profileController.fetchProfile();
+
+if (success) {
+  final profile = profileController.profile;
+  print('Name: ${profile?.name}');
+  print('Gender: ${profile?.gender}');
+  print('Language: ${profile?.language}');
+}
+```
+
+#### Update Profile
+```dart
+final profileController = ProfileController();
+
+final success = await profileController.updateProfile(
+  name: 'Updated Name',
+  language: 'Bengali',
+  // Only pass fields you want to update
+);
+
+if (success) {
+  print('Profile updated successfully');
+}
+```
+
+#### Load Cached Profile
+```dart
+final profileController = ProfileController();
+
+// Load profile from local storage (offline access)
+await profileController.loadCachedProfile();
+
+if (profileController.profile != null) {
+  print('Cached profile: ${profileController.profile?.name}');
+}
+```
+
 ## API Endpoints
 
+### Authentication
 - **POST** `/api/auth/register/` - Register new user
 - **POST** `/api/auth/verify-otp/` - Verify OTP code
 - **POST** `/api/auth/login/` - User login
 - **POST** `/api/auth/forgot-password/` - Request password reset
 - **POST** `/api/auth/verify-forgot-password-otp/` - Verify forgot password OTP
 - **POST** `/api/auth/set-new-password/` - Set new password
+
+### Profile
+- **POST** `/api/profiles/` - Create user profile (requires auth token)
+- **GET** `/api/profiles/` - Get user profile (requires auth token)
+- **PATCH** `/api/profiles/` - Update user profile (requires auth token)
 
 ## Configuration
 
@@ -103,12 +176,79 @@ All API calls return a Map with:
 
 Access errors via:
 ```dart
+// Auth
 authController.errorMessage.value
+
+// Profile
+profileController.errorMessage
 ```
 
 ## Loading State
 
 Check loading state:
 ```dart
+// Auth
 authController.isLoading.value
+
+// Profile
+profileController.isLoading
+```
+
+## Profile Model
+
+```dart
+class ProfileModel {
+  final int? id;
+  final String name;
+  final String gender;
+  final String? profileImage;
+  final String? avatarLogo;
+  final String? nowliiName;
+  final String? customNowliiName;
+  final String language;
+  final String voice;
+}
+```
+
+### Gender Options
+- "I'm a man"
+- "I'm a woman"
+- "I'm non-binary"
+- "Prefer not to say"
+
+### Language Options
+- "English"
+- "Bengali"
+- "Spanish"
+- etc.
+
+### Voice Options
+- "Male"
+- "Female"
+
+## Example: Complete Onboarding Flow
+
+```dart
+// 1. Register
+await authController.register(...);
+
+// 2. Verify OTP
+await authController.verifyOtp(...);
+
+// 3. Login (if needed)
+await authController.login(...);
+
+// 4. Create Profile
+final profileController = ProfileController();
+await profileController.createProfile(
+  name: userName,
+  gender: selectedGender,
+  language: selectedLanguage,
+  voice: selectedVoice,
+);
+
+// 5. Navigate to home
+if (profileController.profile != null) {
+  context.go('/homeScreen');
+}
 ```
