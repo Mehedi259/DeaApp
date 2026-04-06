@@ -1994,75 +1994,141 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDateSection() {
     final now = DateTime.now();
-    return Row(
-      children: [
-        Container(
-          height: 84,
-          width: 78,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFDFEFFF),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFF4542EB), width: 2.5),
+    final tomorrow = now.add(const Duration(days: 1));
+    final dayAfterTomorrow = now.add(const Duration(days: 2));
+    
+    // Get day names
+    final List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    
+    String getDayName(DateTime date) {
+      return dayNames[date.weekday - 1];
+    }
+    
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          // Today
+          _buildDateCard(
+            label: 'Today',
+            day: now.day,
+            isToday: true,
+            hasIndicator: false,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Today',
-                style: GoogleFonts.workSans(
-                  color: const Color(0xFF011F54),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  height: 1,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${now.day}',
-                style: GoogleFonts.workSans(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  height: 1,
-                ),
-              ),
-            ],
+          const SizedBox(width: 12),
+          
+          // Tomorrow
+          _buildDateCard(
+            label: getDayName(tomorrow),
+            day: tomorrow.day,
+            isToday: false,
+            hasIndicator: true,
+            indicatorColor: const Color(0xFFFF8F26),
           ),
+          const SizedBox(width: 12),
+          
+          // Day after tomorrow
+          _buildDateCard(
+            label: getDayName(dayAfterTomorrow),
+            day: dayAfterTomorrow.day,
+            isToday: false,
+            hasIndicator: true,
+            indicatorColor: const Color(0xFF4542EB),
+          ),
+          const SizedBox(width: 12),
+          
+          // Plan button
+          Container(
+            width: 78,
+            height: 84,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4542EB),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.add_circle_outline,
+                  color: Color(0xFFFFFDF7),
+                  size: 22,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Plan',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.workSans(
+                    color: const Color(0xFFFFFDF7),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDateCard({
+    required String label,
+    required int day,
+    required bool isToday,
+    required bool hasIndicator,
+    Color? indicatorColor,
+  }) {
+    return Container(
+      height: 84,
+      width: 78,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      decoration: BoxDecoration(
+        color: isToday ? const Color(0xFFDFEFFF) : const Color(0xFFFFFDF7),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isToday ? const Color(0xFF4542EB) : const Color(0xFFC3DBFF),
+          width: isToday ? 2.5 : 1.5,
         ),
-        const SizedBox(width: 12),
-        Container(
-          width: 78,
-          height: 84,
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF4542EB),
-            borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.workSans(
+              color: const Color(0xFF011F54),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              height: 1,
+            ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.add_circle_outline,
-                color: Color(0xFFFFFDF7),
-                size: 22,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Plan',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.workSans(
-                  color: const Color(0xFFFFFDF7),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  height: 1,
-                ),
-              ),
-            ],
+          const SizedBox(height: 4),
+          Text(
+            '$day',
+            style: GoogleFonts.workSans(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1,
+              color: const Color(0xFF011F54),
+            ),
           ),
-        ),
-      ],
+          if (hasIndicator) ...[
+            const SizedBox(height: 4),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: indicatorColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
