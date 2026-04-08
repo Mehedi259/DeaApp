@@ -7,14 +7,14 @@ import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
 
-class Animation extends StatefulWidget {
-  const Animation({super.key});
+class AvatarLogo extends StatefulWidget {
+  const AvatarLogo({super.key});
 
   @override
-  State<Animation> createState() => _AnimationState();
+  State<AvatarLogo> createState() => _AvatarLogoState();
 }
 
-class _AnimationState extends State<Animation> {
+class _AvatarLogoState extends State<AvatarLogo> {
   int selectedIndex = -1;
   
   // Avatar image paths mapping
@@ -46,7 +46,7 @@ class _AnimationState extends State<Animation> {
                 currentStep: 5,
                 totalSteps: 6,
                 backRoute: "/nowliHowToUse",
-                skipRoute: "/onboardingScreen",
+                skipRoute: "/avatarLogoAndName",
                 isSmallDevice: isSmallDevice,
                 isMediumDevice: isMediumDevice,
                 screenWidth: screenWidth,
@@ -169,7 +169,7 @@ class _AnimationState extends State<Animation> {
             //   textStyle: AppsTextStyles.letsStartNext.copyWith(fontSize: 36),
             // ),
             GestureDetector(
-              onTap: () => context.push("/onboardingScreen"),
+              onTap: () => context.push("/avatarLogoAndName"),
               child: Container(
                 width: 354,
                 height: 116,

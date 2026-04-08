@@ -17,8 +17,8 @@ class AppRoutespath {
   static const String loadingOnboardingNowli = '/loadingOnboardingNowli';
   static const String onbordingFetures = '/onbordingFetures';
   static const String nowliHowToUse = "/nowliHowToUse";
-  static const String animation = "/animation";
-  static const String onboardingScreen = "/onboardingScreen";
+  static const String avatarLogo = "/avatarLogo";
+  static const String avatarLogoAndName = "/avatarLogoAndName";
   static const String popupSpeking = "/popupSpeking";
   static const String procrastinationScreen = "/procrastinationScreen";
   static const String aiVoice = "/aiVoice";

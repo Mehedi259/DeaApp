@@ -33,7 +33,7 @@ class NowliHowToUse extends StatelessWidget {
                     currentStep: 4,
                     totalSteps: 6,
                     backRoute: "/onbordingFetures",
-                    skipRoute: "/animation",
+                    skipRoute: "/avatarLogo",
                     isSmallDevice: isSmallDevice,
                     isMediumDevice: isMediumDevice,
                     screenWidth: screenWidth,
@@ -209,7 +209,7 @@ class NowliHowToUse extends StatelessWidget {
 
                     // Next Button
                     GestureDetector(
-                      onTap: () => context.push("/animation"),
+                      onTap: () => context.push("/avatarLogo"),
                       child: Container(
                         width: double.infinity,
                         height: screenHeight * 0.13,

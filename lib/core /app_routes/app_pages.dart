@@ -12,8 +12,6 @@ import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/poup_pros
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/poup_error.dart';
 import 'package:mobile_app_dea/screen/Onboarding/loading_onboridng_nowli.dart';
 import 'package:mobile_app_dea/screen/Onboarding/nowli_how_to_use.dart';
-import 'package:mobile_app_dea/screen/Onboarding/onboarding_features/animation.dart';
-import 'package:mobile_app_dea/screen/Onboarding/onboarding_features/onboarding_screen.dart';
 import 'package:mobile_app_dea/screen/Onboarding/onboarding_features/onbording_fetures.dart';
 import 'package:mobile_app_dea/screen/Onboarding/onbording_flow_file/onboarding_flow.dart';
 import 'package:mobile_app_dea/screen/ai_call/ai_voice.dart';
@@ -51,6 +49,9 @@ import 'package:mobile_app_dea/screen/welcome_come_screen_p3.dart';
 import 'package:mobile_app_dea/screen/debug/profile_test_screen.dart';
 
 import 'package:mobile_app_dea/screen/Onboarding/popup_choose_mood_updates.dart';
+
+import '../../screen/Onboarding/onboarding_features/avatar_logo&name_selection.dart';
+import '../../screen/Onboarding/onboarding_features/avatar_logo_selection.dart';
 
 class AppPages {
   static final GoRouter router = GoRouter(
@@ -184,12 +185,12 @@ class AppPages {
         builder: (context, state) => NowliHowToUse(),
       ),
       GoRoute(
-        path: AppRoutespath.animation,
-        builder: (context, state) => const Animation(),
+        path: AppRoutespath.avatarLogo,
+        builder: (context, state) => const AvatarLogo(),
       ),
       GoRoute(
-        path: AppRoutespath.onboardingScreen,
-        builder: (context, state) => const OnboardingScreen(),
+        path: AppRoutespath.avatarLogoAndName,
+        builder: (context, state) => const AvatarLogoAndName(),
       ),
       GoRoute(
         path: AppRoutespath.popupSpeking,
