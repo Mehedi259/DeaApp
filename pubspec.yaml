@@ -54,6 +54,7 @@ dependencies:
   permission_handler: ^11.3.1
   http: ^1.2.2
   shared_preferences: ^2.3.4
+  intl: ^0.19.0
   # evry dependencies must be added below this line
 
 

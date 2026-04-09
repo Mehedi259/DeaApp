@@ -17,6 +17,8 @@ import 'package:mobile_app_dea/screen/home/swaipe_to_talk/swipe_button_widget.da
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/emotion_detection_helper.dart';
 import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_saved_popup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_app_dea/services/profile_service.dart';
+import 'package:mobile_app_dea/services/quest_service.dart';
 import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
@@ -29,14 +31,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   late ConfettiController _confettiController;
-
-  final List<TaskItem> _tasks = [
-    TaskItem('☀️ To wake up ', '10:00', false),
-    TaskItem('🚶 To walk ', '10:30', false),
-    TaskItem('📚 To study ', '12:00', false),
-    TaskItem('💪 To train ', '16:00', false),
-    TaskItem('🌙 To Sleep ', '22:00', false, isSpecial: true),
-  ];
+  ProfileData? _profileData;
+  bool _isLoadingProfile = true;
+  int _streakCount = 0;
+  bool _isLoadingStreak = true;
+  List<Quest> _quests = [];
+  bool _isLoadingQuests = true;
 
   @override
   void initState() {
@@ -44,8 +44,44 @@ class _HomeScreenState extends State<HomeScreen> {
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
+    _loadProfile();
+    _loadStreak();
+    _loadQuests();
     _checkAndShowOnboarding();
     _checkAndShowVoiceSavedPopup();
+  }
+
+  Future<void> _loadProfile() async {
+    final profileService = ProfileService();
+    final profile = await profileService.fetchProfile();
+    if (mounted) {
+      setState(() {
+        _profileData = profile;
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  Future<void> _loadStreak() async {
+    final profileService = ProfileService();
+    final streak = await profileService.fetchStreak();
+    if (mounted) {
+      setState(() {
+        _streakCount = streak;
+        _isLoadingStreak = false;
+      });
+    }
+  }
+
+  Future<void> _loadQuests() async {
+    final questService = QuestService();
+    final quests = await questService.fetchTodayQuests();
+    if (mounted) {
+      setState(() {
+        _quests = quests;
+        _isLoadingQuests = false;
+      });
+    }
   }
 
   Future<void> _checkAndShowVoiceSavedPopup() async {
@@ -299,19 +335,33 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () {
             context.push(AppRoutespath.profileNotificationsScreen);
           },
-          child: const CircleAvatar(
-            radius: 24,
-            backgroundColor: Color(0xFFD4E3FF),
-            child: Icon(
-              Icons.person_outline,
-              color: Color(0xFF5B7EFF),
-              size: 28,
-            ),
-          ),
+          child: _isLoadingProfile
+              ? const CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Color(0xFFD4E3FF),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5B7EFF)),
+                  ),
+                )
+              : CircleAvatar(
+                  radius: 24,
+                  backgroundColor: const Color(0xFFD4E3FF),
+                  backgroundImage: _profileData?.profileImage.isNotEmpty == true
+                      ? NetworkImage(_profileData!.profileImage)
+                      : null,
+                  child: _profileData?.profileImage.isEmpty ?? true
+                      ? const Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF5B7EFF),
+                          size: 28,
+                        )
+                      : null,
+                ),
         ),
         const SizedBox(width: 12),
         Text(
-          'HI JULIE!',
+          'HI ${(_profileData?.name ?? 'JULIE').toUpperCase()}!',
           style: TextStyle(
             color: const Color(0xFF011F54),
             fontSize: 32,
@@ -338,7 +388,16 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Image.asset(Assets.svgIcons.fire.path, height: 22, width: 22),
               const SizedBox(width: 6),
-              Text('1', style: AppsTextStyles.fullNameAndEmail),
+              _isLoadingStreak
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5B7EFF)),
+                      ),
+                    )
+                  : Text('$_streakCount', style: AppsTextStyles.fullNameAndEmail),
             ],
           ),
         ),
@@ -347,8 +406,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProgressCard() {
-    final completedTasks = _tasks.where((task) => task.isCompleted).length;
-    final totalTasks = _tasks.length;
+    final totalTasks = _quests.length;
+    final completedTasks = _quests.where((quest) => quest.taskDone).length;
     final progress = totalTasks > 0 ? completedTasks / totalTasks : 0.0;
 
     return Container(
@@ -410,11 +469,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: const Color(0xFF4542EB),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Image.asset(
-                  Assets.svgIcons.readyToMakeTodayCount.path,
-                  width: 90.28,
-                  height: 90.37,
-                ),
+                child: _profileData?.avatarLogo.isNotEmpty == true
+                    ? Image.network(
+                        _profileData!.avatarLogo,
+                        width: 90.28,
+                        height: 90.37,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            Assets.svgIcons.readyToMakeTodayCount.path,
+                            width: 90.28,
+                            height: 90.37,
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        Assets.svgIcons.readyToMakeTodayCount.path,
+                        width: 90.28,
+                        height: 90.37,
+                      ),
               ),
             ],
           ),
@@ -670,59 +742,81 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTaskList() {
-    final items = _tasks.asMap().entries.map((entry) {
+    if (_isLoadingQuests) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_quests.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFDF7),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFC3DBFF)),
+        ),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.calendar_today_outlined,
+              size: 48,
+              color: Color(0xFF5B7EFF),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No quests for today',
+              style: GoogleFonts.workSans(
+                color: const Color(0xFF011F54),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap "Add quest" to create your first task',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.workSans(
+                color: const Color(0xFF6B7280),
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final items = _quests.asMap().entries.map((entry) {
       final index = entry.key;
-      final task = entry.value;
+      final quest = entry.value;
       return AnimatedTaskItem(
-        key: ValueKey('${task.title}_$index'),
-        task: task,
+        key: ValueKey('quest_${quest.id}'),
+        task: TaskItem(
+          quest.task,
+          quest.zone,
+          quest.taskDone,
+          questId: quest.id,
+        ),
         onEdit: () {
-          // Navigate to Edit Quest screen
           context.push(
             AppRoutespath.editQuestPage,
             extra: {
-              'taskId': index, // or actual task ID from backend
+              'taskId': quest.id,
               'taskData': {
-                'title': task.title,
-                'time': task.time,
-                'isCompleted': task.isCompleted,
+                'title': quest.task,
+                'time': quest.zone,
+                'isCompleted': quest.taskDone,
               },
             },
           );
         },
-        onDelete: () => _deleteTask(index),
-        onTomorrow: () => _moveToTomorrow(index),
-        onToggle: () {
-          if (mounted) {
-            setState(() {
-              task.isCompleted = !task.isCompleted;
-            });
-            if (task.isCompleted) {
-              _confettiController.play();
-              _showCompletionDialog();
-              final allCompleted = _tasks.every((t) => t.isCompleted);
-              if (allCompleted) {
-                Future.delayed(const Duration(seconds: 2), () {
-                  if (mounted) {
-                    NotificationManager().show(
-                      context,
-                      NotificationData(
-                        type: NotificationType.success,
-                        title: 'Fuzzy\'s proud of you',
-                        subtitle:
-                            'One chat at a time, you\'re getting stronger',
-                        buttonText: 'See progress',
-                        onButtonPressed: () {
-                          debugPrint('See progress pressed');
-                        },
-                      ),
-                    );
-                  }
-                });
-              }
-            }
-          }
-        },
+        onDelete: () => _deleteQuest(index, quest.id),
+        onTomorrow: () => _moveToTomorrow(index, quest.id),
+        onToggle: () => _toggleQuest(index, quest.id),
       );
     }).toList();
 
@@ -753,21 +847,81 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _deleteTask(int index) {
+  Future<void> _toggleQuest(int index, int questId) async {
     if (!mounted) return;
-    final removed = _tasks[index];
-    setState(() => _tasks.removeAt(index));
+    
+    final quest = _quests[index];
+    final newStatus = !quest.taskDone;
+    
+    setState(() {
+      quest.taskDone = newStatus;
+    });
+
+    final questService = QuestService();
+    final success = await questService.updateQuestStatus(questId, newStatus);
+
+    if (!success && mounted) {
+      // Revert on failure
+      setState(() {
+        quest.taskDone = !newStatus;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update quest')),
+      );
+      return;
+    }
+
+    if (newStatus && mounted) {
+      _confettiController.play();
+      _showCompletionDialog();
+      
+      // Reload streak after completing a quest
+      _loadStreak();
+      
+      final allCompleted = _quests.every((q) => q.taskDone);
+      if (allCompleted) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            NotificationManager().show(
+              context,
+              NotificationData(
+                type: NotificationType.success,
+                title: 'Fuzzy\'s proud of you',
+                subtitle: 'One chat at a time, you\'re getting stronger',
+                buttonText: 'See progress',
+                onButtonPressed: () {
+                  debugPrint('See progress pressed');
+                },
+              ),
+            );
+          }
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteQuest(int index, int questId) async {
+    if (!mounted) return;
+    
+    final removed = _quests[index];
+    setState(() => _quests.removeAt(index));
+    
     _showCustomToast(
       context,
       child: DeleteToast(
-        onUndo: () {
+        onUndo: () async {
           if (mounted) {
-            setState(() => _tasks.insert(index, removed));
+            setState(() => _quests.insert(index, removed));
           }
         },
       ),
     );
-    Future.delayed(const Duration(seconds: 3), () {
+
+    // Delete from API after a delay (allowing undo)
+    Future.delayed(const Duration(seconds: 3), () async {
+      final questService = QuestService();
+      await questService.deleteQuest(questId);
+      
       if (mounted) {
         NotificationManager().show(
           context,
@@ -785,10 +939,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _moveToTomorrow(int index) {
+  Future<void> _moveToTomorrow(int index, int questId) async {
     if (!mounted) return;
-    setState(() => _tasks.removeAt(index));
+    setState(() => _quests.removeAt(index));
     _showCustomToast(context, child: const TomorrowCard());
+    
+    // TODO: Implement API call to move quest to tomorrow
+    // This would require an update endpoint that changes the select_a_date field
   }
 
   void _showCustomToast(BuildContext context, {required Widget child}) {
@@ -833,6 +990,7 @@ class TaskItem {
   bool isCompleted;
   String? reminder;
   final bool isSpecial;
+  final int? questId;
 
   TaskItem(
     this.title,
@@ -840,6 +998,7 @@ class TaskItem {
     this.isCompleted, {
     this.isSpecial = false,
     this.reminder,
+    this.questId,
   });
 }
 

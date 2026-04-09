@@ -127,8 +127,8 @@ class CreateProfileRequest {
       'name': name,
       'gender': validatedGender,
       if (profileImage != null) 'profile_image': profileImage,
-      // Only include avatar_logo if it's a valid URL
-      if (avatarLogo != null && (avatarLogo!.startsWith('http://') || avatarLogo!.startsWith('https://'))) 
+      // Include avatar_logo regardless of whether it's a URL or local path
+      if (avatarLogo != null && avatarLogo!.isNotEmpty) 
         'avatar_logo': avatarLogo,
       // Send either nowlii_name OR custom_nowlii_name, not both
       if (useNowliiName)
@@ -176,8 +176,8 @@ class UpdateProfileRequest {
     }
     
     if (profileImage != null) data['profile_image'] = profileImage;
-    // Only include avatar_logo if it's a valid URL
-    if (avatarLogo != null && (avatarLogo!.startsWith('http://') || avatarLogo!.startsWith('https://'))) {
+    // Include avatar_logo regardless of whether it's a URL or local path
+    if (avatarLogo != null && avatarLogo!.isNotEmpty) {
       data['avatar_logo'] = avatarLogo;
     }
     

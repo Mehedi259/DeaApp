@@ -206,33 +206,22 @@ class _NameSelectionPageState extends State<NameSelectionPage>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onNameSelected(avatars[_currentAvatarIndex].name);
-      
-      // Save initial avatar logo
+      // Load previously selected avatar logo from onboarding data
       final onboardingData = OnboardingData();
-      onboardingData.setAvatarLogo(avatars[_currentAvatarIndex].assetPath);
-    });
-
-    _startAutoRotation();
-  }
-
-  void _startAutoRotation() async {
-    while (mounted) {
-      await Future.delayed(const Duration(seconds: 3));
-      if (!mounted) break;
+      final savedAvatarLogo = onboardingData.avatarLogo;
       
-      if (!_showTextField) {
-        setState(() {
-          _currentAvatarIndex = (_currentAvatarIndex + 1) % avatars.length;
-        });
-        _bounceController.forward(from: 0);
-        widget.onNameSelected(avatars[_currentAvatarIndex].name);
-        
-        // Save avatar logo during auto-rotation
-        final onboardingData = OnboardingData();
-        onboardingData.setAvatarLogo(avatars[_currentAvatarIndex].assetPath);
+      // Find the index of the saved avatar logo
+      if (savedAvatarLogo != null && savedAvatarLogo.isNotEmpty) {
+        final index = avatars.indexWhere((avatar) => avatar.assetPath == savedAvatarLogo);
+        if (index != -1) {
+          setState(() {
+            _currentAvatarIndex = index;
+          });
+        }
       }
-    }
+      
+      widget.onNameSelected(avatars[_currentAvatarIndex].name);
+    });
   }
 
   void _rotateAvatar() {

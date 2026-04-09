@@ -129,8 +129,8 @@ class OnboardingData extends ChangeNotifier {
       'language': _language ?? 'English',
       'voice': _voice ?? 'Male',
       if (_profileImage != null) 'profile_image': _profileImage,
-      // Don't send avatar_logo if it's a local asset path
-      if (_avatarLogo != null && (_avatarLogo!.startsWith('http://') || _avatarLogo!.startsWith('https://'))) 
+      // Send avatar_logo regardless of whether it's a URL or local path
+      if (_avatarLogo != null && _avatarLogo!.isNotEmpty) 
         'avatar_logo': _avatarLogo,
       // Send either nowlii_name OR custom_nowlii_name, not both
       if (useNowliiName)

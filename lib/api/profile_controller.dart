@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mobile_app_dea/api/profile_model.dart';
 import 'package:mobile_app_dea/api/profile_service.dart';
@@ -21,6 +22,8 @@ class ProfileController extends ChangeNotifier {
     String? customNowliiName,
     required String language,
     required String voice,
+    File? avatarLogoFile,
+    File? profileImageFile,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -38,7 +41,11 @@ class ProfileController extends ChangeNotifier {
         voice: voice,
       );
 
-      final result = await ProfileService.createProfile(request);
+      final result = await ProfileService.createProfile(
+        request,
+        avatarLogoFile: avatarLogoFile,
+        profileImageFile: profileImageFile,
+      );
 
       if (result['success']) {
         _profile = result['profile'];
@@ -97,6 +104,8 @@ class ProfileController extends ChangeNotifier {
     String? customNowliiName,
     String? language,
     String? voice,
+    File? avatarLogoFile,
+    File? profileImageFile,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -114,7 +123,11 @@ class ProfileController extends ChangeNotifier {
         voice: voice,
       );
 
-      final result = await ProfileService.updateProfile(request);
+      final result = await ProfileService.updateProfile(
+        request,
+        avatarLogoFile: avatarLogoFile,
+        profileImageFile: profileImageFile,
+      );
 
       if (result['success']) {
         _profile = result['profile'];

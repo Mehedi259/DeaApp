@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_app_dea/api/onboarding_data.dart';
 import 'package:mobile_app_dea/api/profile_controller.dart';
+import 'package:mobile_app_dea/api/file_helper.dart';
 
 class NoticeLoaderScreen extends StatefulWidget {
   const NoticeLoaderScreen({super.key});
@@ -31,15 +33,30 @@ class _NoticeLoaderScreenState extends State<NoticeLoaderScreen> {
     
     // Create profile with all collected data
     if (onboardingData.isComplete) {
+      // Convert avatar logo asset to file if it's an asset path
+      final avatarLogoPath = onboardingData.avatarLogo;
+      File? avatarLogoFile;
+      
+      if (avatarLogoPath != null && FileHelper.isAssetPath(avatarLogoPath)) {
+        print('📎 Converting avatar asset to file...');
+        avatarLogoFile = await FileHelper.assetToFile(avatarLogoPath);
+        
+        if (avatarLogoFile != null) {
+          print('✅ Avatar logo file ready: ${avatarLogoFile.path}');
+        } else {
+          print('⚠️ Failed to convert avatar, will send without file');
+        }
+      }
+      
       final success = await _profileController.createProfile(
         name: onboardingData.name!,
         gender: onboardingData.gender!,
         language: onboardingData.language!,
         voice: onboardingData.voice!,
         profileImage: onboardingData.profileImage,
-        avatarLogo: onboardingData.avatarLogo,
         nowliiName: onboardingData.nowliiName,
         customNowliiName: onboardingData.customNowliiName,
+        avatarLogoFile: avatarLogoFile,
       );
 
       if (success) {

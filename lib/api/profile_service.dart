@@ -1,14 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:mobile_app_dea/api/api_constant.dart';
 import 'package:mobile_app_dea/api/profile_model.dart';
 import 'package:mobile_app_dea/api/storage.dart';
 
 class ProfileService {
-  // Create Profile (POST)
+  // Create Profile (POST) - Always use multipart/form-data
   static Future<Map<String, dynamic>> createProfile(
-    CreateProfileRequest request,
-  ) async {
+    CreateProfileRequest request, {
+    File? avatarLogoFile,
+    File? profileImageFile,
+  }) async {
     try {
       print('\n========== CREATE PROFILE API CALL ==========');
       
@@ -26,28 +29,62 @@ class ProfileService {
 
       final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.createProfile}');
       print('🌐 URL: $url');
-      print('📤 Request Body: ${jsonEncode(request.toJson())}');
       
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': ApiConstants.contentType,
-          'Accept': ApiConstants.accept,
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(request.toJson()),
-      );
-
+      // Always use MultipartRequest (backend requires multipart/form-data)
+      print('📤 Using MultipartRequest');
+      
+      var multipartRequest = http.MultipartRequest('POST', url);
+      
+      // Add headers
+      multipartRequest.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': ApiConstants.accept,
+      });
+      
+      // Add text fields
+      final jsonData = request.toJson();
+      jsonData.forEach((key, value) {
+        if (value != null) {
+          multipartRequest.fields[key] = value.toString();
+        }
+      });
+      
+      // Add avatar_logo file if provided
+      if (avatarLogoFile != null) {
+        print('📎 Adding avatar_logo file: ${avatarLogoFile.path}');
+        multipartRequest.files.add(
+          await http.MultipartFile.fromPath(
+            'avatar_logo',
+            avatarLogoFile.path,
+          ),
+        );
+      }
+      
+      // Add profile_image file if provided
+      if (profileImageFile != null) {
+        print('📎 Adding profile_image file: ${profileImageFile.path}');
+        multipartRequest.files.add(
+          await http.MultipartFile.fromPath(
+            'profile_image',
+            profileImageFile.path,
+          ),
+        );
+      }
+      
+      print('📤 Request Fields: ${multipartRequest.fields}');
+      print('📤 Request Files: ${multipartRequest.files.map((f) => f.field).toList()}');
+      
+      // Send request
+      final streamedResponse = await multipartRequest.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
       print('📥 Response Status: ${response.statusCode}');
       print('📥 Response Body: ${response.body}');
-
+      
       final responseData = jsonDecode(response.body);
-
+      
       if (response.statusCode == 201) {
-        // Profile created successfully
         final profile = ProfileModel.fromJson(responseData);
-        
-        // Save profile data to local storage
         await SecureStorage.saveProfileData(profile);
         
         print('✅ Profile created successfully!');
@@ -66,7 +103,7 @@ class ProfileService {
         
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Failed to create profile',
+          'message': responseData['message'] ?? responseData['detail'] ?? 'Failed to create profile',
           'errors': responseData,
         };
       }
@@ -153,10 +190,12 @@ class ProfileService {
     }
   }
 
-  // Update Profile (PATCH)
+  // Update Profile (PATCH) - Always use multipart/form-data
   static Future<Map<String, dynamic>> updateProfile(
-    UpdateProfileRequest request,
-  ) async {
+    UpdateProfileRequest request, {
+    File? avatarLogoFile,
+    File? profileImageFile,
+  }) async {
     try {
       print('\n========== UPDATE PROFILE API CALL ==========');
       
@@ -174,28 +213,62 @@ class ProfileService {
 
       final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.updateProfile}');
       print('🌐 URL: $url');
-      print('📤 Request Body: ${jsonEncode(request.toJson())}');
       
-      final response = await http.patch(
-        url,
-        headers: {
-          'Content-Type': ApiConstants.contentType,
-          'Accept': ApiConstants.accept,
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(request.toJson()),
-      );
-
+      // Always use MultipartRequest (backend requires multipart/form-data)
+      print('📤 Using MultipartRequest');
+      
+      var multipartRequest = http.MultipartRequest('PATCH', url);
+      
+      // Add headers
+      multipartRequest.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': ApiConstants.accept,
+      });
+      
+      // Add text fields
+      final jsonData = request.toJson();
+      jsonData.forEach((key, value) {
+        if (value != null) {
+          multipartRequest.fields[key] = value.toString();
+        }
+      });
+      
+      // Add avatar_logo file if provided
+      if (avatarLogoFile != null) {
+        print('📎 Adding avatar_logo file: ${avatarLogoFile.path}');
+        multipartRequest.files.add(
+          await http.MultipartFile.fromPath(
+            'avatar_logo',
+            avatarLogoFile.path,
+          ),
+        );
+      }
+      
+      // Add profile_image file if provided
+      if (profileImageFile != null) {
+        print('📎 Adding profile_image file: ${profileImageFile.path}');
+        multipartRequest.files.add(
+          await http.MultipartFile.fromPath(
+            'profile_image',
+            profileImageFile.path,
+          ),
+        );
+      }
+      
+      print('📤 Request Fields: ${multipartRequest.fields}');
+      print('📤 Request Files: ${multipartRequest.files.map((f) => f.field).toList()}');
+      
+      // Send request
+      final streamedResponse = await multipartRequest.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
       print('📥 Response Status: ${response.statusCode}');
       print('📥 Response Body: ${response.body}');
-
+      
       final responseData = jsonDecode(response.body);
-
+      
       if (response.statusCode == 200) {
-        // Profile updated successfully
         final profile = ProfileModel.fromJson(responseData);
-        
-        // Update profile data in local storage
         await SecureStorage.saveProfileData(profile);
         
         print('✅ Profile updated successfully!');
@@ -214,7 +287,7 @@ class ProfileService {
         
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Failed to update profile',
+          'message': responseData['message'] ?? responseData['detail'] ?? 'Failed to update profile',
           'errors': responseData,
         };
       }
