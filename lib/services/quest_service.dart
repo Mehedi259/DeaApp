@@ -100,6 +100,29 @@ class QuestService {
     return fetchQuestsByDate(DateTime.now());
   }
 
+  Future<List<Quest>> fetchAllQuests() async {
+    try {
+      final token = await _getToken();
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/quests/'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((quest) => Quest.fromJson(quest)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching all quests: $e');
+      return [];
+    }
+  }
+
   Future<bool> updateQuestStatus(int questId, bool taskDone) async {
     try {
       final token = await _getToken();
@@ -136,6 +159,27 @@ class QuestService {
       return response.statusCode == 204 || response.statusCode == 200;
     } catch (e) {
       print('Error deleting quest: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateQuestDate(int questId, String newDate) async {
+    try {
+      final token = await _getToken();
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/quests/$questId/'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'select_a_date': newDate}),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error updating quest date: $e');
       return false;
     }
   }

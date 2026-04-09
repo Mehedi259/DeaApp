@@ -19,6 +19,7 @@ import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_saved_popup.dart
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_app_dea/services/profile_service.dart';
 import 'package:mobile_app_dea/services/quest_service.dart';
+import 'package:intl/intl.dart';
 import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
@@ -37,6 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoadingStreak = true;
   List<Quest> _quests = [];
   bool _isLoadingQuests = true;
+  Map<String, int> _questCountByDate = {}; // Date-wise quest count
+  DateTime _selectedDate = DateTime.now(); // Currently selected date
+  List<DateTime> _availableDates = []; // Dates that have quests
 
   @override
   void initState() {
@@ -47,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadProfile();
     _loadStreak();
     _loadQuests();
+    _loadAllQuestsForDates();
     _checkAndShowOnboarding();
     _checkAndShowVoiceSavedPopup();
   }
@@ -75,11 +80,69 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadQuests() async {
     final questService = QuestService();
-    final quests = await questService.fetchTodayQuests();
+    final quests = await questService.fetchQuestsByDate(_selectedDate);
     if (mounted) {
       setState(() {
         _quests = quests;
         _isLoadingQuests = false;
+      });
+    }
+  }
+
+  Future<void> _loadQuestsForDate(DateTime date) async {
+    if (mounted) {
+      setState(() {
+        _selectedDate = date;
+        _isLoadingQuests = true;
+      });
+    }
+    
+    final questService = QuestService();
+    final quests = await questService.fetchQuestsByDate(date);
+    
+    if (mounted) {
+      setState(() {
+        _quests = quests;
+        _isLoadingQuests = false;
+      });
+    }
+  }
+
+  Future<void> _loadAllQuestsForDates() async {
+    final questService = QuestService();
+    final allQuests = await questService.fetchAllQuests();
+    
+    if (mounted) {
+      // Group quests by date
+      Map<String, int> countByDate = {};
+      Set<DateTime> uniqueDates = {};
+      
+      for (var quest in allQuests) {
+        final dateStr = quest.selectADate;
+        countByDate[dateStr] = (countByDate[dateStr] ?? 0) + 1;
+        
+        // Parse date and add to unique dates
+        try {
+          final date = DateTime.parse(dateStr);
+          uniqueDates.add(DateTime(date.year, date.month, date.day));
+        } catch (e) {
+          print('Error parsing date: $dateStr');
+        }
+      }
+      
+      // Sort dates
+      final sortedDates = uniqueDates.toList()..sort();
+      
+      // Always include today if not already there
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+      if (!sortedDates.contains(todayDate)) {
+        sortedDates.insert(0, todayDate);
+      }
+      
+      setState(() {
+        _questCountByDate = countByDate;
+        _availableDates = sortedDates;
       });
     }
   }
@@ -538,8 +601,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDateSection() {
     final now = DateTime.now();
-    final tomorrow = now.add(const Duration(days: 1));
-    final dayAfterTomorrow = now.add(const Duration(days: 2));
     
     // Get day names
     final List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -548,38 +609,46 @@ class _HomeScreenState extends State<HomeScreen> {
       return dayNames[date.weekday - 1];
     }
     
+    String getDateLabel(DateTime date) {
+      final today = DateTime(now.year, now.month, now.day);
+      final tomorrow = today.add(const Duration(days: 1));
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      
+      if (dateOnly == today) {
+        return 'Today';
+      } else if (dateOnly == tomorrow) {
+        return 'Tomorrow';
+      } else {
+        return getDayName(date);
+      }
+    }
+    
+    // Check if date is selected
+    bool isDateSelected(DateTime date) {
+      return DateFormat('yyyy-MM-dd').format(date) == 
+             DateFormat('yyyy-MM-dd').format(_selectedDate);
+    }
+    
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          // Today
-          _buildDateCard(
-            label: 'Today',
-            day: now.day,
-            isToday: true,
-            hasIndicator: false,
-          ),
-          const SizedBox(width: 12),
-          
-          // Tomorrow
-          _buildDateCard(
-            label: getDayName(tomorrow),
-            day: tomorrow.day,
-            isToday: false,
-            hasIndicator: true,
-            indicatorColor: const Color(0xFFFF8F26),
-          ),
-          const SizedBox(width: 12),
-          
-          // Day after tomorrow
-          _buildDateCard(
-            label: getDayName(dayAfterTomorrow),
-            day: dayAfterTomorrow.day,
-            isToday: false,
-            hasIndicator: true,
-            indicatorColor: const Color(0xFF4542EB),
-          ),
-          const SizedBox(width: 12),
+          // Show all available dates
+          for (int i = 0; i < _availableDates.length; i++) ...[
+            GestureDetector(
+              onTap: () => _loadQuestsForDate(_availableDates[i]),
+              child: _buildDateCard(
+                label: getDateLabel(_availableDates[i]),
+                day: _availableDates[i].day,
+                isToday: isDateSelected(_availableDates[i]),
+                hasIndicator: (_questCountByDate[DateFormat('yyyy-MM-dd').format(_availableDates[i])] ?? 0) > 0,
+                indicatorColor: i == 0 ? const Color(0xFF4542EB) : 
+                               i == 1 ? const Color(0xFFFF8F26) : 
+                               const Color(0xFF4542EB),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
           
           // Plan button
           GestureDetector(
@@ -633,7 +702,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       height: 84,
       width: 78,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
       decoration: BoxDecoration(
         color: isToday ? const Color(0xFFDFEFFF) : const Color(0xFFFFFDF7),
         borderRadius: BorderRadius.circular(18),
@@ -650,31 +719,35 @@ class _HomeScreenState extends State<HomeScreen> {
             label,
             style: GoogleFonts.workSans(
               color: const Color(0xFF011F54),
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               height: 1,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             '$day',
             style: GoogleFonts.workSans(
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: FontWeight.w800,
               height: 1,
               color: const Color(0xFF011F54),
             ),
           ),
           if (hasIndicator) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Container(
-              width: 8,
-              height: 8,
+              width: 6,
+              height: 6,
               decoration: BoxDecoration(
                 color: indicatorColor,
                 shape: BoxShape.circle,
               ),
             ),
+          ] else ...[
+            const SizedBox(height: 8),
           ],
         ],
       ),
@@ -682,6 +755,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTodaysPlanHeader() {
+    final now = DateTime.now();
+    final isToday = DateFormat('yyyy-MM-dd').format(_selectedDate) == 
+                    DateFormat('yyyy-MM-dd').format(now);
+    final isTomorrow = DateFormat('yyyy-MM-dd').format(_selectedDate) == 
+                       DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)));
+    
+    String headerText;
+    if (isToday) {
+      headerText = 'Todays plan';
+    } else if (isTomorrow) {
+      headerText = 'Tomorrows plan';
+    } else {
+      headerText = '${DateFormat('MMM d').format(_selectedDate)}\'s plan';
+    }
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -690,7 +778,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              'Todays plan',
+              headerText,
               textAlign: TextAlign.center,
               style: GoogleFonts.workSans(
                 color: const Color(0xFF011F54),
@@ -752,6 +840,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_quests.isEmpty) {
+      final now = DateTime.now();
+      final isToday = DateFormat('yyyy-MM-dd').format(_selectedDate) == 
+                      DateFormat('yyyy-MM-dd').format(now);
+      
       return Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
@@ -768,7 +860,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No quests for today',
+              isToday ? 'No quests for today' : 'No quests for this date',
               style: GoogleFonts.workSans(
                 color: const Color(0xFF011F54),
                 fontSize: 18,
@@ -906,10 +998,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final removed = _quests[index];
     setState(() => _quests.removeAt(index));
     
+    bool undoPressed = false;
+    
     _showCustomToast(
       context,
       child: DeleteToast(
         onUndo: () async {
+          undoPressed = true;
           if (mounted) {
             setState(() => _quests.insert(index, removed));
           }
@@ -918,9 +1013,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     // Delete from API after a delay (allowing undo)
-    Future.delayed(const Duration(seconds: 3), () async {
+    await Future.delayed(const Duration(seconds: 3));
+    
+    // Only delete if undo was not pressed
+    if (!undoPressed && mounted) {
       final questService = QuestService();
-      await questService.deleteQuest(questId);
+      final success = await questService.deleteQuest(questId);
+      
+      if (!success && mounted) {
+        // If delete failed, add the quest back
+        setState(() => _quests.insert(index, removed));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete quest'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      // Reload date counts after successful delete
+      _loadAllQuestsForDates();
       
       if (mounted) {
         NotificationManager().show(
@@ -931,21 +1044,42 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: 'I\'m here when you\'re ready',
             buttonText: 'Add another quest',
             onButtonPressed: () {
-              debugPrint('Add another quest');
+              context.push(AppRoutespath.createQuestPage);
             },
           ),
         );
       }
-    });
+    }
   }
 
   Future<void> _moveToTomorrow(int index, int questId) async {
     if (!mounted) return;
+    
+    final removed = _quests[index];
     setState(() => _quests.removeAt(index));
     _showCustomToast(context, child: const TomorrowCard());
     
-    // TODO: Implement API call to move quest to tomorrow
-    // This would require an update endpoint that changes the select_a_date field
+    // Calculate tomorrow's date
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final tomorrowDate = DateFormat('yyyy-MM-dd').format(tomorrow);
+    
+    // Update quest date in API
+    final questService = QuestService();
+    final success = await questService.updateQuestDate(questId, tomorrowDate);
+    
+    if (!success && mounted) {
+      // If update failed, add the quest back to today
+      setState(() => _quests.insert(index, removed));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to move quest to tomorrow'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else {
+      // Reload date counts after successful move
+      _loadAllQuestsForDates();
+    }
   }
 
   void _showCustomToast(BuildContext context, {required Widget child}) {
