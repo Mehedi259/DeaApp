@@ -5,8 +5,14 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 class SelectZoneCard extends StatefulWidget {
   final double scale;
   final Function(String?)? onZoneSelected;
+  final String? initialZone;
 
-  const SelectZoneCard({super.key, this.scale = 1.0, this.onZoneSelected});
+  const SelectZoneCard({
+    super.key, 
+    this.scale = 1.0, 
+    this.onZoneSelected,
+    this.initialZone,
+  });
 
   @override
   State<SelectZoneCard> createState() => _SelectZoneCardState();
@@ -22,6 +28,13 @@ class _SelectZoneCardState extends State<SelectZoneCard> {
     'Stretch zone',
     'Power move',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedZone = widget.initialZone;
+    showDesignScreen = selectedZone == 'Soft steps';
+  }
 
   @override
   Widget build(BuildContext context) {

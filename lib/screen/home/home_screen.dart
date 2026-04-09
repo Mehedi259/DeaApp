@@ -900,8 +900,17 @@ class _HomeScreenState extends State<HomeScreen> {
               'taskId': quest.id,
               'taskData': {
                 'title': quest.task,
-                'time': quest.zone,
-                'isCompleted': quest.taskDone,
+                'zone': quest.zone,
+                'selectADate': quest.selectADate,
+                'enableCall': quest.enableCall,
+                'repeatQuest': quest.repeatQuest,
+                'setAlarm': quest.setAlarm,
+                'taskDone': quest.taskDone,
+                'subtasks': quest.subtasks.map((s) => {
+                  'id': s.id,
+                  'title': s.title,
+                  'task_done': s.taskDone,
+                }).toList(),
               },
             },
           );
@@ -1059,16 +1068,20 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _quests.removeAt(index));
     _showCustomToast(context, child: const TomorrowCard());
     
-    // Calculate tomorrow's date
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
-    final tomorrowDate = DateFormat('yyyy-MM-dd').format(tomorrow);
+    // Parse current date and add 1 day
+    final currentDate = DateTime.parse(removed.selectADate);
+    final nextDate = currentDate.add(const Duration(days: 1));
+    final nextDateStr = DateFormat('yyyy-MM-dd').format(nextDate);
     
-    // Update quest date in API
+    // Update quest date in API using PATCH
     final questService = QuestService();
-    final success = await questService.updateQuestDate(questId, tomorrowDate);
+    final updatedQuest = await questService.updateQuest(
+      questId: questId,
+      selectADate: nextDateStr,
+    );
     
-    if (!success && mounted) {
-      // If update failed, add the quest back to today
+    if (updatedQuest == null && mounted) {
+      // If update failed, add the quest back
       setState(() => _quests.insert(index, removed));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

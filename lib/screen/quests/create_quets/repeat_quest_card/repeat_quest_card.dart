@@ -4,8 +4,14 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 class RepeatQuestCard extends StatefulWidget {
   final double scale;
   final Function(bool)? onRepeatChanged;
+  final bool? initialValue;
 
-  const RepeatQuestCard({super.key, this.scale = 1.0, this.onRepeatChanged});
+  const RepeatQuestCard({
+    super.key, 
+    this.scale = 1.0, 
+    this.onRepeatChanged,
+    this.initialValue,
+  });
 
   @override
   State<RepeatQuestCard> createState() => _RepeatQuestCardState();
@@ -13,6 +19,12 @@ class RepeatQuestCard extends StatefulWidget {
 
 class _RepeatQuestCardState extends State<RepeatQuestCard> {
   bool isCallEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    isCallEnabled = widget.initialValue ?? true;
+  }
 
   @override
   Widget build(BuildContext context) {

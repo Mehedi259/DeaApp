@@ -227,4 +227,49 @@ class QuestService {
       return null;
     }
   }
+
+  Future<Quest?> updateQuest({
+    required int questId,
+    String? task,
+    String? zone,
+    String? selectADate,
+    bool? enableCall,
+    bool? repeatQuest,
+    bool? setAlarm,
+    bool? taskDone,
+    List<Map<String, dynamic>>? subtasks,
+  }) async {
+    try {
+      final token = await _getToken();
+
+      final body = <String, dynamic>{};
+      if (task != null) body['task'] = task;
+      if (zone != null) body['zone'] = zone;
+      if (selectADate != null) body['select_a_date'] = selectADate;
+      if (enableCall != null) body['enable_call'] = enableCall;
+      if (repeatQuest != null) body['repeat_quest'] = repeatQuest;
+      if (setAlarm != null) body['set_alarm'] = setAlarm;
+      if (taskDone != null) body['task_done'] = taskDone;
+      if (subtasks != null) body['subtasks'] = subtasks;
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/quests/$questId/'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return Quest.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('Error updating quest: $e');
+      return null;
+    }
+  }
 }

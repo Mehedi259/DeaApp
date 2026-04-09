@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_app_dea/custom_code/bottom_nav.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/_buildInputCard/input_widget_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/buildAddSubtasksButton/build_add_subtask_button.dart';
@@ -9,6 +10,8 @@ import 'package:mobile_app_dea/screen/quests/create_quets/repeat_quest_card/repe
 import 'package:mobile_app_dea/screen/quests/create_quets/select_zone_card/select_zone_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/time_picker_card/time_picker_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/when_card/when_card.dart';
+import 'package:mobile_app_dea/services/quest_service.dart';
+import 'package:intl/intl.dart';
 
 class EditQuestPage extends StatefulWidget {
   final Map<String, dynamic>? taskData;
@@ -28,18 +31,113 @@ class _EditQuestPageState extends State<EditQuestPage> {
   bool showSubtaskGenerator = false;
   bool showDesignScreen = false;
   bool showDateSelectionScreen = false;
+  
+  // Form state
+  final TextEditingController _taskController = TextEditingController();
   String? selectedZone;
-  bool isCallEnabled = true;
-
-  String selectedDateOption = 'Today';
+  DateTime selectedDate = DateTime.now();
+  bool enableCall = true;
+  bool repeatQuest = true;
+  List<String> subtasks = [];
+  bool _isUpdating = false;
 
   @override
   void initState() {
     super.initState();
     // Pre-fill data if available
     if (widget.taskData != null) {
-      // Initialize with existing task data
-      // You can pass this data to child widgets via controllers or state management
+      _taskController.text = widget.taskData?['title'] ?? '';
+      selectedZone = widget.taskData?['zone'];
+      enableCall = widget.taskData?['enableCall'] ?? true;
+      repeatQuest = widget.taskData?['repeatQuest'] ?? true;
+      
+      // Parse date if available
+      if (widget.taskData?['selectADate'] != null) {
+        try {
+          selectedDate = DateTime.parse(widget.taskData!['selectADate']);
+        } catch (e) {
+          selectedDate = DateTime.now();
+        }
+      }
+      
+      // Load subtasks if available
+      if (widget.taskData?['subtasks'] != null) {
+        final List<dynamic> subtasksList = widget.taskData!['subtasks'];
+        subtasks = subtasksList.map((s) => s['title'].toString()).toList();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _taskController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleUpdateQuest() async {
+    // Validation
+    if (_taskController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a quest title')),
+      );
+      return;
+    }
+
+    if (selectedZone == null || selectedZone!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a zone')),
+      );
+      return;
+    }
+
+    if (widget.taskId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Quest ID is missing')),
+      );
+      return;
+    }
+
+    setState(() => _isUpdating = true);
+
+    final questService = QuestService();
+    
+    // Prepare subtasks
+    List<Map<String, dynamic>>? subtasksList;
+    if (subtasks.isNotEmpty) {
+      subtasksList = subtasks.map((title) => {
+        'title': title,
+        'task_done': false,
+      }).toList();
+    }
+
+    final updatedQuest = await questService.updateQuest(
+      questId: widget.taskId!,
+      task: _taskController.text.trim(),
+      zone: selectedZone!,
+      selectADate: DateFormat('yyyy-MM-dd').format(selectedDate),
+      enableCall: enableCall,
+      repeatQuest: repeatQuest,
+      setAlarm: true,
+      subtasks: subtasksList,
+    );
+
+    setState(() => _isUpdating = false);
+
+    if (updatedQuest != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Quest updated successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.pop(); // Go back to home screen
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to update quest. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -65,23 +163,44 @@ class _EditQuestPageState extends State<EditQuestPage> {
                   SizedBox(height: 10 * baseScale),
                   EditTitleWidget(),
                   SizedBox(height: 14 * baseScale),
-                  InputCardWidget(
-                    initialValue: widget.taskData?['title'],
+                  InputCardWidget(controller: _taskController),
+                  SizedBox(height: 12 * baseScale),
+                  AddSubtasksButton(
+                    onSubtasksChanged: (List<String> newSubtasks) {
+                      setState(() => subtasks = newSubtasks);
+                    },
                   ),
                   SizedBox(height: 12 * baseScale),
-                  AddSubtasksButton(),
+                  SelectZoneCard(
+                    initialZone: selectedZone,
+                    onZoneSelected: (String? zone) {
+                      setState(() => selectedZone = zone);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
-                  SelectZoneCard(),
-                  SizedBox(height: 12 * baseScale),
-                  WhenCard(),
+                  WhenCard(
+                    onDateSelected: (String option, DateTime date) {
+                      setState(() => selectedDate = date);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
                   TimePickerCard(
                     initialTime: widget.taskData?['time'],
                   ),
                   SizedBox(height: 12 * baseScale),
-                  EnableCallCard(),
+                  EnableCallCard(
+                    initialValue: enableCall,
+                    onCallEnabledChanged: (bool value) {
+                      setState(() => enableCall = value);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
-                  RepeatQuestCard(),
+                  RepeatQuestCard(
+                    initialValue: repeatQuest,
+                    onRepeatChanged: (bool value) {
+                      setState(() => repeatQuest = value);
+                    },
+                  ),
                   SizedBox(
                     height: 130 * baseScale,
                   ), // Extra space for fixed button
@@ -155,16 +274,27 @@ class _EditQuestPageState extends State<EditQuestPage> {
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 alignment: Alignment.center,
-                                child: Text(
-                                  'Update Quest',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.workSans(
-                                    color: const Color(0xFF011F54),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                    height: 0.80,
-                                  ),
-                                ),
+                                child: _isUpdating
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            Color(0xFF011F54),
+                                          ),
+                                        ),
+                                      )
+                                    : Text(
+                                        'Update Quest',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.workSans(
+                                          color: const Color(0xFF011F54),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w900,
+                                          height: 0.80,
+                                        ),
+                                      ),
                               ),
                             ),
                           ],
@@ -214,7 +344,6 @@ class _EditQuestPageState extends State<EditQuestPage> {
                         child: DateSelectionScreen(
                           onDateSelected: (day, weekday) {
                             setState(() {
-                              selectedDateOption = '$weekday, Jan $day';
                               showDateSelectionScreen = false;
                             });
                           },
@@ -239,17 +368,5 @@ class _EditQuestPageState extends State<EditQuestPage> {
         },
       ),
     );
-  }
-
-  void _handleUpdateQuest() {
-    // TODO: Implement PATCH API call to update quest
-    // Use widget.taskId to identify which quest to update
-    // Collect data from all form fields
-    // Call API service
-    
-    debugPrint('Updating quest with ID: ${widget.taskId}');
-    
-    // After successful update, navigate back
-    Navigator.of(context).pop();
   }
 }

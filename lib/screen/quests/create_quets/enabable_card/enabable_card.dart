@@ -4,8 +4,14 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 class EnableCallCard extends StatefulWidget {
   final double scale;
   final Function(bool)? onCallEnabledChanged;
+  final bool? initialValue;
 
-  const EnableCallCard({super.key, this.scale = 1.0, this.onCallEnabledChanged});
+  const EnableCallCard({
+    super.key, 
+    this.scale = 1.0, 
+    this.onCallEnabledChanged,
+    this.initialValue,
+  });
 
   @override
   State<EnableCallCard> createState() => _EnableCallCardState();
@@ -13,6 +19,12 @@ class EnableCallCard extends StatefulWidget {
 
 class _EnableCallCardState extends State<EnableCallCard> {
   bool isCallEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    isCallEnabled = widget.initialValue ?? true;
+  }
 
   @override
   Widget build(BuildContext context) {
