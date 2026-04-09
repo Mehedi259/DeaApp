@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_app_dea/custom_code/bottom_nav.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/_buildInputCard/input_widget_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/buildAddSubtasksButton/build_add_subtask_button.dart';
-
 import 'package:mobile_app_dea/screen/quests/create_quets/buildTitle/title_widget.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/enabable_card/enabable_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/repeat_quest_card/repeat_quest_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/select_zone_card/select_zone_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/time_picker_card/time_picker_card.dart';
 import 'package:mobile_app_dea/screen/quests/create_quets/when_card/when_card.dart';
+import 'package:mobile_app_dea/services/quest_service.dart';
+import 'package:intl/intl.dart';
 
 class CreateQuestPage extends StatefulWidget {
   const CreateQuestPage({super.key});
@@ -22,11 +24,61 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
   bool showSubtaskGenerator = false;
   bool showDesignScreen = false;
   bool showDateSelectionScreen = false;
-  String? selectedZone;
-  bool isCallEnabled = true;
+  
+  // Form state
+  final TextEditingController _taskController = TextEditingController();
+  bool _isCreating = false;
 
-  String selectedDateOption = 'Today';
-  // int _currentIndex = 0;
+  @override
+  void dispose() {
+    _taskController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createQuest() async {
+    // Validation
+    if (_taskController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a quest title')),
+      );
+      return;
+    }
+
+    setState(() => _isCreating = true);
+
+    final questService = QuestService();
+    
+    // For now, using default values since widgets manage their own state
+    // In a production app, you'd want to lift state up or use a state management solution
+    final quest = await questService.createQuest(
+      task: _taskController.text.trim(),
+      zone: 'Soft steps', // Default zone
+      selectADate: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      enableCall: true,
+      repeatQuest: true,
+      setAlarm: true,
+      subtasks: null,
+    );
+
+    setState(() => _isCreating = false);
+
+    if (quest != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Quest created successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.pop(); // Go back to home screen
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to create quest. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +102,7 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                   SizedBox(height: 10 * baseScale),
                   TitleWidget(),
                   SizedBox(height: 14 * baseScale),
-                  InputCardWidget(),
+                  InputCardWidget(controller: _taskController),
                   SizedBox(height: 12 * baseScale),
                   AddSubtasksButton(),
                   SizedBox(height: 12 * baseScale),
@@ -58,7 +110,6 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                   SizedBox(height: 12 * baseScale),
                   WhenCard(),
                   SizedBox(height: 12 * baseScale),
-                  // _buildTimeCard(baseScale),
                   TimePickerCard(),
                   SizedBox(height: 12 * baseScale),
                   EnableCallCard(),
@@ -135,16 +186,30 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               alignment: Alignment.center,
-                              child: Text(
-                                'Create Quest',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.workSans(
-                                  color: const Color(0xFF011F54),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  height: 0.80,
-                                ),
-                              ),
+                              child: _isCreating
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Color(0xFF011F54),
+                                        ),
+                                      ),
+                                    )
+                                  : GestureDetector(
+                                      onTap: _createQuest,
+                                      child: Text(
+                                        'Create Quest',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.workSans(
+                                          color: const Color(0xFF011F54),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w900,
+                                          height: 0.80,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ],
                         ),
@@ -193,7 +258,6 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                         child: DateSelectionScreen(
                           onDateSelected: (day, weekday) {
                             setState(() {
-                              selectedDateOption = '$weekday, Jan $day';
                               showDateSelectionScreen = false;
                             });
                           },

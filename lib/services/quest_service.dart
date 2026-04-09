@@ -139,4 +139,48 @@ class QuestService {
       return false;
     }
   }
+
+  Future<Quest?> createQuest({
+    required String task,
+    required String zone,
+    required String selectADate,
+    required bool enableCall,
+    required bool repeatQuest,
+    required bool setAlarm,
+    List<Map<String, dynamic>>? subtasks,
+  }) async {
+    try {
+      final token = await _getToken();
+
+      final body = {
+        'task': task,
+        'zone': zone,
+        'select_a_date': selectADate,
+        'enable_call': enableCall,
+        'repeat_quest': repeatQuest,
+        'set_alarm': setAlarm,
+        'task_done': false,
+        if (subtasks != null && subtasks.isNotEmpty) 'subtasks': subtasks,
+      };
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/quests/'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return Quest.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('Error creating quest: $e');
+      return null;
+    }
+  }
 }
