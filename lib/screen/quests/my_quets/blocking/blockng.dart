@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:mobile_app_dea/services/quest_service.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 
 class Blockng extends StatefulWidget {
@@ -11,246 +15,180 @@ class Blockng extends StatefulWidget {
 }
 
 class _BlockngState extends State<Blockng> {
-  bool showQuests = false;
-  List<Map<String, dynamic>> quests = [
-    {
-      "emoji": "🧹",
-      "title": "Clean house",
-      "levelText": "Soft steps",
-      "levelColor": const Color(0xFFA0E871),
-      "time": "22:00",
-      "duration": "10 mins",
-    },
-    {
-      "emoji": "📘",
-      "title": "Do homework",
-      "levelText": "Elevated",
-      "levelColor": const Color(0xFFF7A94B),
-      "time": "22:00",
-      "duration": "10 mins",
-    },
-    {
-      "emoji": "🍽️",
-      "title": "Do dishes",
-      "levelText": "Stretch zone",
-      "levelColor": const Color(0xFF6AA7FF),
-      "time": "22:00",
-      "duration": "10 mins",
-    },
-    {
-      "emoji": "🏋️",
-      "title": "Workout",
-      "levelText": "Power move",
-      "levelColor": const Color(0xFFFF5A5A),
-      "time": "22:00",
-      "duration": "10 mins",
-    },
-  ];
-  String selected = "Last 30 days";
+  List<Quest> quests = [];
+  bool _isLoading = true;
 
-  final List<String> options = [
-    "All time",
-    "Today",
-    "Last 7 days",
-    "Last 30 days",
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadBacklogQuests();
+  }
+
+  Future<void> _loadBacklogQuests() async {
+    final questService = QuestService();
+    final today = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(today);
+    
+    final allQuests = await questService.fetchAllQuests();
+    
+    // Filter quests before today that are not completed
+    final backlogQuests = allQuests.where((quest) {
+      final questDate = DateTime.parse(quest.selectADate);
+      final todayDate = DateTime.parse(todayStr);
+      return questDate.isBefore(todayDate) && quest.taskDone == false;
+    }).toList();
+    
+    // Sort by date (oldest first)
+    backlogQuests.sort((a, b) => a.selectADate.compareTo(b.selectADate));
+    
+    if (mounted) {
+      setState(() {
+        quests = backlogQuests;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (showQuests) {
-      return _todayQuests();
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ===== TOP ICON =====
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Image.asset(
-                  "assets/svg_images/Button Calendar.png",
-                  height: 62,
-                  width: 62,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // ===== BIG TITLE =====
-              Text(
-                "No quests",
-                textAlign: TextAlign.center,
-                style: AppsTextStyles.workSansExtraBold20Center,
-              ),
-
-              const SizedBox(height: 12),
-
-              // ===== SUBTEXT =====
-              Text(
-                'Look at you — on top of everything!\nIf you ever miss a quest, it\'ll show up here.',
-                textAlign: TextAlign.center,
-                style: AppsTextStyles.workSansRegularAdd16,
-              ),
-
-              const SizedBox(height: 24),
-
-              // ===== CREATE QUEST BUTTON =====
-              SizedBox(
-                width: 210,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      showQuests = true;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4C46F5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.add, color: Colors.white, size: 24),
-                      const SizedBox(width: 6),
-                      Text(
-                        "Create quest",
-                        style: AppsTextStyles.workSansBlack18Center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _todayQuests() {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Dropdown Filter
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Container(
-                  decoration: const BoxDecoration(),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      dropdownColor: Colors.white,
-                      value: selected,
-                      icon: const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.black,
-                      ),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
-                      items: options.map((value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selected = value!;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                child: Row(
-                  children: [
-                    Image.asset(Assets.svgIcons.x.path, height: 20, width: 20),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Clear all',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.workSans(
-                        color: const Color(0xFF4542EB),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        height: 0.80,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          // Quest List
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+    if (quests.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: SingleChildScrollView(
             child: Column(
-              children: quests.map((quest) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: QuestCard(
-                    emoji: quest["emoji"],
-                    title: quest["title"],
-                    levelText: quest["levelText"],
-                    levelColor: quest["levelColor"],
-                    time: quest["time"],
-                    duration: quest["duration"],
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                );
-              }).toList(),
+                  child: Image.asset(
+                    "assets/svg_images/Button Calendar.png",
+                    height: 62,
+                    width: 62,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "No backlog quests",
+                  textAlign: TextAlign.center,
+                  style: AppsTextStyles.workSansExtraBold20Center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Look at you — on top of everything!\nIf you ever miss a quest, it\'ll show up here.',
+                  textAlign: TextAlign.center,
+                  style: AppsTextStyles.workSansRegularAdd16,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: 210,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.push(AppRoutespath.createQuestPage);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4C46F5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add, color: Colors.white, size: 24),
+                        const SizedBox(width: 6),
+                        Text(
+                          "Create quest",
+                          style: AppsTextStyles.workSansBlack18Center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          children: quests.map((quest) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: BacklogQuestCard(
+                quest: quest,
+                onMarkDone: () async {
+                  final questService = QuestService();
+                  await questService.updateQuestStatus(quest.id, true);
+                  _loadBacklogQuests();
+                },
+                onSkip: () async {
+                  final questService = QuestService();
+                  await questService.deleteQuest(quest.id);
+                  _loadBacklogQuests();
+                },
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
 }
 
-class QuestCard extends StatelessWidget {
-  final String emoji;
-  final String title;
-  final String levelText;
-  final Color levelColor;
-  final String time;
-  final String duration;
+class BacklogQuestCard extends StatelessWidget {
+  final Quest quest;
+  final VoidCallback onMarkDone;
+  final VoidCallback onSkip;
 
-  const QuestCard({
+  const BacklogQuestCard({
     super.key,
-    required this.emoji,
-    required this.title,
-    required this.levelText,
-    required this.levelColor,
-    required this.time,
-    required this.duration,
+    required this.quest,
+    required this.onMarkDone,
+    required this.onSkip,
   });
+
+  Color _getLevelColor(String zone) {
+    switch (zone) {
+      case 'Soft steps':
+        return const Color(0xFFA0E871);
+      case 'Elevated':
+        return const Color(0xFFF7A94B);
+      case 'Stretch zone':
+        return const Color(0xFF6AA7FF);
+      case 'Power move':
+        return const Color(0xFFFF5A5A);
+      default:
+        return const Color(0xFFA0E871);
+    }
+  }
 
   Color _getTextColor(Color backgroundColor) {
     final luminance = backgroundColor.computeLuminance();
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
+  String _getDateLabel() {
+    final questDate = DateTime.parse(quest.selectADate);
+    return DateFormat('MMM d, yyyy').format(questDate);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final levelColor = _getLevelColor(quest.zone);
+    
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -262,7 +200,6 @@ class QuestCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // --- Top Row: Missed + Refresh Icon ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -283,56 +220,20 @@ class QuestCard extends StatelessWidget {
                   ),
                 ],
               ),
-              GestureDetector(
-                onTap: () {},
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF7E7D9),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.asset(
-                    Assets.images.refresh.path,
-                    height: 24,
-                    width: 24,
-                  ),
-                ),
-              ),
             ],
           ),
-
           const SizedBox(height: 14),
-
-          // --- Title + Icon ---
-          Row(
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
-              Text(title, style: AppsTextStyles.regularResponsive(context)),
-            ],
+          Text(
+            quest.task,
+            style: AppsTextStyles.regularResponsive(context),
           ),
-
           const SizedBox(height: 12),
-
-          // --- Date + Time ---
           Row(
             children: [
               Image.asset(Assets.images.today.path, height: 20, width: 20),
               const SizedBox(width: 10),
               Text(
-                "Today",
-                style: GoogleFonts.workSans(
-                  color: const Color(0xFF011F54),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(width: 20),
-              Image.asset(Assets.images.clock1.path, height: 20, width: 20),
-              const SizedBox(width: 10),
-              Text(
-                time,
+                _getDateLabel(),
                 style: GoogleFonts.workSans(
                   color: const Color(0xFF011F54),
                   fontSize: 16,
@@ -343,12 +244,9 @@ class QuestCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-
-          // --- Tags ---
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Level Tag
               Container(
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -360,7 +258,7 @@ class QuestCard extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  levelText,
+                  quest.zone,
                   style: GoogleFonts.workSans(
                     color: _getTextColor(levelColor),
                     fontSize: 18,
@@ -370,10 +268,7 @@ class QuestCard extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(width: 8),
-
-              // Duration Tag
               Container(
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -385,7 +280,7 @@ class QuestCard extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  duration,
+                  "10 mins",
                   style: GoogleFonts.workSans(
                     color: const Color(0xFF011F54),
                     fontSize: 18,
@@ -397,15 +292,12 @@ class QuestCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
-          // --- Bottom Buttons ---
           Row(
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: onMarkDone,
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -430,7 +322,7 @@ class QuestCard extends StatelessWidget {
               const SizedBox(width: 14),
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: onSkip,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
