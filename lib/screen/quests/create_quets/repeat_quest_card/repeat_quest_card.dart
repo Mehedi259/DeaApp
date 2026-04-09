@@ -3,8 +3,9 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 
 class RepeatQuestCard extends StatefulWidget {
   final double scale;
+  final Function(bool)? onRepeatChanged;
 
-  const RepeatQuestCard({super.key, this.scale = 1.0});
+  const RepeatQuestCard({super.key, this.scale = 1.0, this.onRepeatChanged});
 
   @override
   State<RepeatQuestCard> createState() => _RepeatQuestCardState();
@@ -36,6 +37,7 @@ class _RepeatQuestCardState extends State<RepeatQuestCard> {
                   setState(() {
                     isCallEnabled = newValue;
                   });
+                  widget.onRepeatChanged?.call(newValue);
                 },
                 activeThumbColor: Colors.white,
                 activeTrackColor: const Color(0xFF4542EB),

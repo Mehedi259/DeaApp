@@ -5,8 +5,9 @@ import 'package:mobile_app_dea/themes/create_qutes.dart'
 
 class WhenCard extends StatefulWidget {
   final double scale;
+  final Function(String, DateTime)? onDateSelected;
 
-  const WhenCard({super.key, this.scale = 1.0});
+  const WhenCard({super.key, this.scale = 1.0, this.onDateSelected});
 
   @override
   State<WhenCard> createState() => _WhenCardState();
@@ -14,6 +15,13 @@ class WhenCard extends StatefulWidget {
 
 class _WhenCardState extends State<WhenCard> {
   String selectedDateOption = '';
+
+  void _updateDate(String option, DateTime date) {
+    setState(() {
+      selectedDateOption = option;
+    });
+    widget.onDateSelected?.call(option, date);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,9 +69,13 @@ class _WhenCardState extends State<WhenCard> {
   Widget _dateOption(String label, bool selected, double s) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedDateOption = label;
-        });
+        DateTime date;
+        if (label == 'Today') {
+          date = DateTime.now();
+        } else {
+          date = DateTime.now().add(const Duration(days: 1));
+        }
+        _updateDate(label, date);
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 8 * s),
@@ -117,9 +129,22 @@ class _WhenCardState extends State<WhenCard> {
           backgroundColor: Colors.transparent,
           child: DateSelectionScreen(
             onDateSelected: (day, weekday) {
-              setState(() {
-                selectedDateOption = '$day Jan, $weekday';
-              });
+              // Get the actual date from the dialog
+              final now = DateTime.now();
+              final selectedDay = int.parse(day);
+              
+              // Find the matching date within next 7 days
+              DateTime? matchedDate;
+              for (int i = 0; i < 7; i++) {
+                final date = now.add(Duration(days: i));
+                if (date.day == selectedDay) {
+                  matchedDate = date;
+                  break;
+                }
+              }
+              
+              final date = matchedDate ?? now;
+              _updateDate('$day ${_getMonthName(date.month)}, $weekday', date);
               Navigator.of(context).pop();
             },
             onClose: () {
@@ -129,6 +154,14 @@ class _WhenCardState extends State<WhenCard> {
         );
       },
     );
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months[month - 1];
   }
 }
 
@@ -147,17 +180,53 @@ class DateSelectionScreen extends StatefulWidget {
 }
 
 class _DateSelectionScreenState extends State<DateSelectionScreen> {
-  int selectedIndex = 2;
+  int selectedIndex = 0;
+  late List<Map<String, dynamic>> dates;
+  late String currentMonthYear;
 
-  final dates = [
-    {"day": "06", "weekday": "Monday"},
-    {"day": "07", "weekday": "Tuesday"},
-    {"day": "08", "weekday": "Wednesday"},
-    {"day": "09", "weekday": "Thursday"},
-    {"day": "10", "weekday": "Friday"},
-    {"day": "11", "weekday": "Saturday"},
-    {"day": "12", "weekday": "Sunday"},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _generateDates();
+  }
+
+  void _generateDates() {
+    final now = DateTime.now();
+    dates = [];
+    
+    for (int i = 0; i < 7; i++) {
+      final date = now.add(Duration(days: i));
+      dates.add({
+        "day": date.day.toString().padLeft(2, '0'),
+        "weekday": _getWeekdayName(date.weekday),
+        "fullDate": date,
+      });
+    }
+    
+    // Get current month and year
+    currentMonthYear = _getMonthName(now.month) + ' ${now.year}';
+  }
+
+  String _getWeekdayName(int weekday) {
+    const weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    return weekdays[weekday - 1];
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +274,7 @@ class _DateSelectionScreenState extends State<DateSelectionScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        "January 2026",
+                        currentMonthYear,
                         style: AppTextStylesQutes.workSansSemiBosld18,
                       ),
                     ),
@@ -270,9 +339,10 @@ class _DateSelectionScreenState extends State<DateSelectionScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    final selectedDate = dates[selectedIndex];
                     widget.onDateSelected(
-                      dates[selectedIndex]["day"]!,
-                      dates[selectedIndex]["weekday"]!,
+                      selectedDate["day"]!,
+                      selectedDate["weekday"]!,
                     );
                   },
                   style: ElevatedButton.styleFrom(

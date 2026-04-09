@@ -5,8 +5,9 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 
 class AddSubtasksButton extends StatefulWidget {
   final double scale;
+  final Function(List<String>)? onSubtasksChanged;
 
-  const AddSubtasksButton({super.key, this.scale = 1.0});
+  const AddSubtasksButton({super.key, this.scale = 1.0, this.onSubtasksChanged});
 
   @override
   State<AddSubtasksButton> createState() => _AddSubtasksButtonState();
@@ -26,6 +27,10 @@ class _AddSubtasksButtonState extends State<AddSubtasksButton> {
   // Chosen/selected subtasks
   final List<String> chosenSubtasks = [];
 
+  void _notifyParent() {
+    widget.onSubtasksChanged?.call(chosenSubtasks);
+  }
+
   void _onGenerateSubtasks() {
     setState(() {
       showGeneratedSubtasks = true;
@@ -40,12 +45,14 @@ class _AddSubtasksButtonState extends State<AddSubtasksButton> {
         chosenSubtasks.add(subtask);
       }
     });
+    _notifyParent();
   }
 
   void _onDeselectAll() {
     setState(() {
       chosenSubtasks.clear();
     });
+    _notifyParent();
   }
 
   void _onRefreshGenerate() {

@@ -27,6 +27,11 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
   
   // Form state
   final TextEditingController _taskController = TextEditingController();
+  String? selectedZone;
+  DateTime selectedDate = DateTime.now();
+  bool enableCall = true;
+  bool repeatQuest = true;
+  List<String> subtasks = [];
   bool _isCreating = false;
 
   @override
@@ -44,20 +49,34 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
       return;
     }
 
+    if (selectedZone == null || selectedZone!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a zone')),
+      );
+      return;
+    }
+
     setState(() => _isCreating = true);
 
     final questService = QuestService();
     
-    // For now, using default values since widgets manage their own state
-    // In a production app, you'd want to lift state up or use a state management solution
+    // Prepare subtasks
+    List<Map<String, dynamic>>? subtasksList;
+    if (subtasks.isNotEmpty) {
+      subtasksList = subtasks.map((title) => {
+        'title': title,
+        'task_done': false,
+      }).toList();
+    }
+
     final quest = await questService.createQuest(
       task: _taskController.text.trim(),
-      zone: 'Soft steps', // Default zone
-      selectADate: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      enableCall: true,
-      repeatQuest: true,
+      zone: selectedZone!,
+      selectADate: DateFormat('yyyy-MM-dd').format(selectedDate),
+      enableCall: enableCall,
+      repeatQuest: repeatQuest,
       setAlarm: true,
-      subtasks: null,
+      subtasks: subtasksList,
     );
 
     setState(() => _isCreating = false);
@@ -104,17 +123,37 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                   SizedBox(height: 14 * baseScale),
                   InputCardWidget(controller: _taskController),
                   SizedBox(height: 12 * baseScale),
-                  AddSubtasksButton(),
+                  AddSubtasksButton(
+                    onSubtasksChanged: (List<String> newSubtasks) {
+                      setState(() => subtasks = newSubtasks);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
-                  SelectZoneCard(),
+                  SelectZoneCard(
+                    onZoneSelected: (String? zone) {
+                      setState(() => selectedZone = zone);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
-                  WhenCard(),
+                  WhenCard(
+                    onDateSelected: (String option, DateTime date) {
+                      setState(() => selectedDate = date);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
                   TimePickerCard(),
                   SizedBox(height: 12 * baseScale),
-                  EnableCallCard(),
+                  EnableCallCard(
+                    onCallEnabledChanged: (bool value) {
+                      setState(() => enableCall = value);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
-                  RepeatQuestCard(),
+                  RepeatQuestCard(
+                    onRepeatChanged: (bool value) {
+                      setState(() => repeatQuest = value);
+                    },
+                  ),
                   SizedBox(
                     height: 130 * baseScale,
                   ), // Extra space for fixed button

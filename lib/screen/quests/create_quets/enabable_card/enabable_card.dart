@@ -3,8 +3,9 @@ import 'package:mobile_app_dea/themes/create_qutes.dart';
 
 class EnableCallCard extends StatefulWidget {
   final double scale;
+  final Function(bool)? onCallEnabledChanged;
 
-  const EnableCallCard({super.key, this.scale = 1.0});
+  const EnableCallCard({super.key, this.scale = 1.0, this.onCallEnabledChanged});
 
   @override
   State<EnableCallCard> createState() => _EnableCallCardState();
@@ -36,6 +37,7 @@ class _EnableCallCardState extends State<EnableCallCard> {
                   setState(() {
                     isCallEnabled = newValue;
                   });
+                  widget.onCallEnabledChanged?.call(newValue);
                 },
                 activeThumbColor: Colors.white,
                 activeTrackColor: const Color(0xFF4542EB),
