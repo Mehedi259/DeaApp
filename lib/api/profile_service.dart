@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_app_dea/api/api_constant.dart';
 import 'package:mobile_app_dea/api/profile_model.dart';
 import 'package:mobile_app_dea/api/storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ProfileService {
   // Create Profile (POST) - Always use multipart/form-data
@@ -11,6 +13,8 @@ class ProfileService {
     CreateProfileRequest request, {
     File? avatarLogoFile,
     File? profileImageFile,
+    XFile? avatarLogoXFile,
+    XFile? profileImageXFile,
   }) async {
     try {
       print('\n========== CREATE PROFILE API CALL ==========');
@@ -50,8 +54,18 @@ class ProfileService {
       });
       
       // Add avatar_logo file if provided
-      if (avatarLogoFile != null) {
-        print('📎 Adding avatar_logo file: ${avatarLogoFile.path}');
+      if (kIsWeb && avatarLogoXFile != null) {
+        print('📎 Adding avatar_logo file (Web): ${avatarLogoXFile.name}');
+        final bytes = await avatarLogoXFile.readAsBytes();
+        multipartRequest.files.add(
+          http.MultipartFile.fromBytes(
+            'avatar_logo',
+            bytes,
+            filename: avatarLogoXFile.name,
+          ),
+        );
+      } else if (!kIsWeb && avatarLogoFile != null) {
+        print('📎 Adding avatar_logo file (Mobile): ${avatarLogoFile.path}');
         multipartRequest.files.add(
           await http.MultipartFile.fromPath(
             'avatar_logo',
@@ -61,8 +75,18 @@ class ProfileService {
       }
       
       // Add profile_image file if provided
-      if (profileImageFile != null) {
-        print('📎 Adding profile_image file: ${profileImageFile.path}');
+      if (kIsWeb && profileImageXFile != null) {
+        print('📎 Adding profile_image file (Web): ${profileImageXFile.name}');
+        final bytes = await profileImageXFile.readAsBytes();
+        multipartRequest.files.add(
+          http.MultipartFile.fromBytes(
+            'profile_image',
+            bytes,
+            filename: profileImageXFile.name,
+          ),
+        );
+      } else if (!kIsWeb && profileImageFile != null) {
+        print('📎 Adding profile_image file (Mobile): ${profileImageFile.path}');
         multipartRequest.files.add(
           await http.MultipartFile.fromPath(
             'profile_image',
@@ -195,6 +219,8 @@ class ProfileService {
     UpdateProfileRequest request, {
     File? avatarLogoFile,
     File? profileImageFile,
+    XFile? avatarLogoXFile,
+    XFile? profileImageXFile,
   }) async {
     try {
       print('\n========== UPDATE PROFILE API CALL ==========');
@@ -234,8 +260,18 @@ class ProfileService {
       });
       
       // Add avatar_logo file if provided
-      if (avatarLogoFile != null) {
-        print('📎 Adding avatar_logo file: ${avatarLogoFile.path}');
+      if (kIsWeb && avatarLogoXFile != null) {
+        print('📎 Adding avatar_logo file (Web): ${avatarLogoXFile.name}');
+        final bytes = await avatarLogoXFile.readAsBytes();
+        multipartRequest.files.add(
+          http.MultipartFile.fromBytes(
+            'avatar_logo',
+            bytes,
+            filename: avatarLogoXFile.name,
+          ),
+        );
+      } else if (!kIsWeb && avatarLogoFile != null) {
+        print('📎 Adding avatar_logo file (Mobile): ${avatarLogoFile.path}');
         multipartRequest.files.add(
           await http.MultipartFile.fromPath(
             'avatar_logo',
@@ -245,8 +281,18 @@ class ProfileService {
       }
       
       // Add profile_image file if provided
-      if (profileImageFile != null) {
-        print('📎 Adding profile_image file: ${profileImageFile.path}');
+      if (kIsWeb && profileImageXFile != null) {
+        print('📎 Adding profile_image file (Web): ${profileImageXFile.name}');
+        final bytes = await profileImageXFile.readAsBytes();
+        multipartRequest.files.add(
+          http.MultipartFile.fromBytes(
+            'profile_image',
+            bytes,
+            filename: profileImageXFile.name,
+          ),
+        );
+      } else if (!kIsWeb && profileImageFile != null) {
+        print('📎 Adding profile_image file (Mobile): ${profileImageFile.path}');
         multipartRequest.files.add(
           await http.MultipartFile.fromPath(
             'profile_image',

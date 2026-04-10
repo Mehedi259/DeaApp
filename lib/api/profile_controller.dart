@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_app_dea/api/profile_model.dart';
 import 'package:mobile_app_dea/api/profile_service.dart';
 
@@ -24,6 +25,8 @@ class ProfileController extends ChangeNotifier {
     required String voice,
     File? avatarLogoFile,
     File? profileImageFile,
+    XFile? avatarLogoXFile,
+    XFile? profileImageXFile,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -45,6 +48,8 @@ class ProfileController extends ChangeNotifier {
         request,
         avatarLogoFile: avatarLogoFile,
         profileImageFile: profileImageFile,
+        avatarLogoXFile: avatarLogoXFile,
+        profileImageXFile: profileImageXFile,
       );
 
       if (result['success']) {
@@ -106,6 +111,8 @@ class ProfileController extends ChangeNotifier {
     String? voice,
     File? avatarLogoFile,
     File? profileImageFile,
+    XFile? avatarLogoXFile,
+    XFile? profileImageXFile,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -127,6 +134,8 @@ class ProfileController extends ChangeNotifier {
         request,
         avatarLogoFile: avatarLogoFile,
         profileImageFile: profileImageFile,
+        avatarLogoXFile: avatarLogoXFile,
+        profileImageXFile: profileImageXFile,
       );
 
       if (result['success']) {

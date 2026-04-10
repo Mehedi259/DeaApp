@@ -4,6 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:mobile_app_dea/api/profile_controller.dart';
+import 'package:mobile_app_dea/api/profile_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -13,10 +18,233 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _usernameController = TextEditingController(
-    text: 'Julie',
-  );
-  String _selectedGender = 'Women';
+  final TextEditingController _usernameController = TextEditingController();
+  final ProfileController _profileController = ProfileController();
+  final ImagePicker _imagePicker = ImagePicker();
+  
+  String _selectedGender = "I'm a woman";
+  bool _isLoading = false;
+  ProfileModel? _currentProfile;
+  File? _selectedProfileImage;
+  XFile? _selectedImageFile; // For web compatibility
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _isLoading = true);
+    
+    await _profileController.fetchProfile();
+    
+    if (_profileController.profile != null) {
+      setState(() {
+        _currentProfile = _profileController.profile;
+        _usernameController.text = _currentProfile?.name ?? '';
+        _selectedGender = _currentProfile?.gender ?? "I'm a woman";
+        _isLoading = false;
+      });
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _buildProfileImage() {
+    if (kIsWeb && _selectedImageFile != null) {
+      // Web: Use Image.network with XFile path
+      return Image.network(
+        _selectedImageFile!.path,
+        fit: BoxFit.cover,
+        width: 120,
+        height: 120,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildFallbackImage();
+        },
+      );
+    } else if (!kIsWeb && _selectedProfileImage != null) {
+      // Mobile: Use FileImage
+      return Image.file(
+        _selectedProfileImage!,
+        fit: BoxFit.cover,
+        width: 120,
+        height: 120,
+      );
+    } else if (_currentProfile?.profileImage != null) {
+      // Network image from API
+      return Image.network(
+        _currentProfile!.profileImage!,
+        fit: BoxFit.cover,
+        width: 120,
+        height: 120,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildFallbackImage();
+        },
+      );
+    } else {
+      return _buildFallbackImage();
+    }
+  }
+
+  Widget _buildFallbackImage() {
+    return Image.asset(
+      Assets.svgIcons.editProfilePng_.path,
+      fit: BoxFit.cover,
+      width: 120,
+      height: 120,
+    );
+  }
+
+  Future<void> _pickProfileImage() async {
+    try {
+      ImageSource? source;
+      
+      // On web, directly pick from gallery (no camera option)
+      if (kIsWeb) {
+        source = ImageSource.gallery;
+      } else {
+        // Show bottom sheet to choose camera or gallery on mobile
+        source = await showModalBottomSheet<ImageSource>(
+          context: context,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (context) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Choose Profile Picture',
+                    style: GoogleFonts.workSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF011F54),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ListTile(
+                    leading: const Icon(Icons.camera_alt, color: Color(0xFF4542EB)),
+                    title: Text(
+                      'Camera',
+                      style: GoogleFonts.workSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(context, ImageSource.camera),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.photo_library, color: Color(0xFF4542EB)),
+                    title: Text(
+                      'Gallery',
+                      style: GoogleFonts.workSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(context, ImageSource.gallery),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
+      if (source != null) {
+        final XFile? pickedFile = await _imagePicker.pickImage(
+          source: source,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          imageQuality: 85,
+        );
+
+        if (pickedFile != null) {
+          setState(() {
+            _selectedImageFile = pickedFile;
+            if (!kIsWeb) {
+              _selectedProfileImage = File(pickedFile.path);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      _showErrorDialog('Failed to pick image: ${e.toString()}');
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (_usernameController.text.trim().isEmpty) {
+      _showErrorDialog('Please enter your name');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final success = await _profileController.updateProfile(
+      name: _usernameController.text.trim(),
+      gender: _selectedGender,
+      profileImageFile: !kIsWeb ? _selectedProfileImage : null,
+      profileImageXFile: kIsWeb ? _selectedImageFile : null,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      _showSuccessDialog('Profile updated successfully!');
+    } else {
+      _showErrorDialog(_profileController.errorMessage ?? 'Failed to update profile');
+    }
+  }
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -28,7 +256,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColorsApps.iceBlue,
-      body: SafeArea(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -59,33 +289,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Center(
                   child: Stack(
                     children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 4),
-                          image: DecorationImage(
-                            image: AssetImage(
-                              Assets.svgIcons.editProfilePng_.path,
-                            ),
-                            fit: BoxFit.cover,
+                      GestureDetector(
+                        onTap: _pickProfileImage,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                          ),
+                          child: ClipOval(
+                            child: _buildProfileImage(),
                           ),
                         ),
                       ),
                       Positioned(
-                        right: 20,
-                        bottom: 90,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Image.asset(
-                            Assets.svgIcons.plush.path,
-                            height: 20,
-                            width: 20,
+                        right: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onTap: _pickProfileImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF4542EB),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -112,11 +352,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Center(
-                          child: Image.asset(
-                            Assets.svgIcons.readyToMakeTodayCount.path,
-                            height: 60,
-                            width: 60,
-                          ),
+                          child: _currentProfile?.avatarLogo != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: Image.network(
+                                    _currentProfile!.avatarLogo!,
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                        Assets.svgIcons.readyToMakeTodayCount.path,
+                                        height: 60,
+                                        width: 60,
+                                      );
+                                    },
+                                  ),
+                                )
+                              : Image.asset(
+                                  Assets.svgIcons.readyToMakeTodayCount.path,
+                                  height: 60,
+                                  width: 60,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -125,6 +382,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
+                              _currentProfile?.customNowliiName ?? 
+                              _currentProfile?.nowliiName ?? 
                               'Fizzy',
                               style: GoogleFonts.workSans(
                                 color: const Color(0xFF011F54),
@@ -249,7 +508,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               color: Color(0xFF4542EB),
                             ),
                             selectedItemBuilder: (BuildContext context) {
-                              return ['Women', 'Men', 'Another gender'].map((
+                              return ["I'm a woman", "I'm a man", 'Another gender'].map((
                                 String value,
                               ) {
                                 return Align(
@@ -269,14 +528,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             },
                             items: [
                               DropdownMenuItem(
-                                value: 'Women',
+                                value: "I'm a woman",
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 12,
                                   ),
                                   child: Text(
-                                    'Women',
+                                    "I'm a woman",
                                     style: GoogleFonts.workSans(
                                       color: const Color(0xFF011F54),
                                       fontSize: 20,
@@ -288,14 +547,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 ),
                               ),
                               DropdownMenuItem(
-                                value: 'Men',
+                                value: "I'm a man",
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 12,
                                   ),
                                   child: Text(
-                                    'Men',
+                                    "I'm a man",
                                     style: GoogleFonts.workSans(
                                       color: const Color(0xFF011F54),
                                       fontSize: 20,
@@ -410,36 +669,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 40),
 
                 // Save Button
-                Container(
-                  width: 335,
-                  height: 80,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 28,
-                  ),
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF4542EB) /* Background-bg-primary */,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
+                GestureDetector(
+                  onTap: _isLoading ? null : _saveProfile,
+                  child: Container(
+                    width: 335,
+                    height: 80,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 28,
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    spacing: 20,
-                    children: [
-                      Text(
-                        'Save',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.workSans(
-                          color: const Color(0xFFFFFDF7),
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          height: 0.80,
-                        ),
+                    decoration: ShapeDecoration(
+                      color: _isLoading 
+                          ? Colors.grey 
+                          : const Color(0xFF4542EB),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 20,
+                      children: [
+                        if (_isLoading)
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        else
+                          Text(
+                            'Save',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.workSans(
+                              color: const Color(0xFFFFFDF7),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              height: 0.80,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ],

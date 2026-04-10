@@ -49,5 +49,11 @@
 	<string>Nowlii needs access to your microphone to listen when you speak. Your voice stays private. Always.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Nowlii uses speech recognition to understand what you say and provide personalized support.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Nowlii needs access to your camera to take profile pictures.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Nowlii needs access to your photo library to select profile pictures.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Nowlii needs access to save photos to your library.</string>
 </dict>
 </plist>

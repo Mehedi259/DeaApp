@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:mobile_app_dea/api/profile_controller.dart';
 
 class EditFrom extends StatefulWidget {
   const EditFrom({super.key});
@@ -10,14 +11,119 @@ class EditFrom extends StatefulWidget {
 }
 
 class _EditFromState extends State<EditFrom> {
+  final ProfileController _profileController = ProfileController();
+  
   int selectedIndex = -1;
   bool showConfirmation = false;
+  bool _isLoading = false;
+
+  // Avatar mapping - index to asset path
+  final Map<int, String> avatarPaths = {
+    0: 'assets/svg_images/A.png',
+    1: 'assets/svg_images/B.png',
+    2: 'assets/svg_images/C.png',
+    3: 'assets/svg_images/D.png',
+    4: 'assets/svg_images/E.png',
+    5: 'assets/svg_images/F.png',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _isLoading = true);
+    await _profileController.fetchProfile();
+    
+    // Check if current avatar matches any of the preset avatars
+    if (_profileController.profile?.avatarLogo != null) {
+      final currentAvatar = _profileController.profile!.avatarLogo!;
+      
+      // Try to match with local avatars
+      for (var entry in avatarPaths.entries) {
+        if (currentAvatar.contains(entry.value.split('/').last.split('.').first)) {
+          setState(() {
+            selectedIndex = entry.key;
+          });
+          break;
+        }
+      }
+    }
+    
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _updateAvatar() async {
+    if (selectedIndex == -1) {
+      _showErrorDialog('Please select an avatar');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      showConfirmation = false;
+    });
+
+    // Get selected avatar path
+    final selectedAvatarPath = avatarPaths[selectedIndex];
+
+    final success = await _profileController.updateProfile(
+      avatarLogo: selectedAvatarPath,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      _showSuccessDialog('Avatar updated successfully!');
+    } else {
+      _showErrorDialog(_profileController.errorMessage ?? 'Failed to update avatar');
+    }
+  }
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8ED),
-      body: Stack(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
         children: [
           SafeArea(
             child: Column(
@@ -356,11 +462,7 @@ class _EditFromState extends State<EditFrom> {
                                             Expanded(
                                               child: GestureDetector(
                                                 onTap: () {
-                                                  // Handle update confirmation
-                                                  // Add your update logic here
-                                                  setState(() {
-                                                    showConfirmation = false;
-                                                  });
+                                                  _updateAvatar();
                                                 },
                                                 child: Container(
                                                   height: 65,

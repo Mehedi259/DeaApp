@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:mobile_app_dea/api/profile_controller.dart';
+import 'package:mobile_app_dea/api/profile_model.dart';
 
 class EditNameScreen extends StatefulWidget {
   const EditNameScreen({super.key});
@@ -14,8 +16,92 @@ class EditNameScreen extends StatefulWidget {
 
 class _EditNameScreenState extends State<EditNameScreen> {
   final PageController _pageController = PageController();
+  final ProfileController _profileController = ProfileController();
 
   String _selectedName = '';
+  bool _isLoading = false;
+  ProfileModel? _currentProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _isLoading = true);
+    
+    await _profileController.fetchProfile();
+    
+    if (_profileController.profile != null) {
+      setState(() {
+        _currentProfile = _profileController.profile;
+        // Load existing custom name or nowlii name
+        _selectedName = _currentProfile?.customNowliiName ?? 
+                       _currentProfile?.nowliiName ?? 
+                       '';
+        _isLoading = false;
+      });
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updateAvatarName() async {
+    if (_selectedName.trim().isEmpty) {
+      _showErrorDialog('Please select or enter a name');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final success = await _profileController.updateProfile(
+      customNowliiName: _selectedName.trim(),
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      _showSuccessDialog('Avatar name updated successfully!');
+    } else {
+      _showErrorDialog(_profileController.errorMessage ?? 'Failed to update avatar name');
+    }
+  }
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -27,7 +113,9 @@ class _EditNameScreenState extends State<EditNameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColorsApps.iceBlue,
-      body: SafeArea(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
         child: Column(
           children: [
             Padding(
@@ -57,6 +145,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
                 children: [
                   NameSelectionPage(
                     selectedName: _selectedName,
+                    currentProfile: _currentProfile,
                     onNameSelected: (name) {
                       setState(() {
                         _selectedName = name;
@@ -67,33 +156,48 @@ class _EditNameScreenState extends State<EditNameScreen> {
               ),
             ),
             SizedBox(height: 20),
-            Container(
-              width: 335,
-              height: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 28),
-              decoration: ShapeDecoration(
-                color: const Color(0xFF4542EB) /* Background-bg-primary */,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 20,
-                children: [
-                  Text(
-                    'Update',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.workSans(
-                      color: const Color(0xFFFFFDF7),
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      height: 0.80,
-                    ),
+            GestureDetector(
+              onTap: _isLoading ? null : _updateAvatarName,
+              child: Container(
+                width: 335,
+                height: 80,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 28),
+                decoration: ShapeDecoration(
+                  color: _isLoading 
+                      ? Colors.grey 
+                      : const Color(0xFF4542EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
                   ),
-                ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  spacing: 20,
+                  children: [
+                    if (_isLoading)
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Update',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.workSans(
+                          color: const Color(0xFFFFFDF7),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          height: 0.80,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 30),
@@ -106,11 +210,13 @@ class _EditNameScreenState extends State<EditNameScreen> {
 
 class NameSelectionPage extends StatefulWidget {
   final String selectedName;
+  final ProfileModel? currentProfile;
   final Function(String) onNameSelected;
 
   const NameSelectionPage({
     super.key,
     required this.selectedName,
+    this.currentProfile,
     required this.onNameSelected,
   });
 
@@ -175,9 +281,36 @@ class _NameSelectionPageState extends State<NameSelectionPage>
       CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
     );
 
-    // ✅ FIXED: Defer setState until after build completes
+    // Load existing avatar name if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onNameSelected(avatars[_currentAvatarIndex].name);
+      if (widget.currentProfile != null) {
+        final existingName = widget.currentProfile!.customNowliiName ?? 
+                            widget.currentProfile!.nowliiName ?? '';
+        
+        if (existingName.isNotEmpty) {
+          // Check if it matches any preset avatar
+          final matchedIndex = avatars.indexWhere(
+            (avatar) => avatar.name.toUpperCase() == existingName.toUpperCase()
+          );
+          
+          if (matchedIndex != -1) {
+            setState(() {
+              _currentAvatarIndex = matchedIndex;
+            });
+          } else {
+            // It's a custom name
+            setState(() {
+              _showTextField = true;
+              _nameController.text = existingName;
+            });
+          }
+          widget.onNameSelected(existingName);
+        } else {
+          widget.onNameSelected(avatars[_currentAvatarIndex].name);
+        }
+      } else {
+        widget.onNameSelected(avatars[_currentAvatarIndex].name);
+      }
     });
   }
 
@@ -254,6 +387,7 @@ class _NameSelectionPageState extends State<NameSelectionPage>
                     assetPath: _showTextField
                         ? avatars[0].assetPath
                         : avatars[_currentAvatarIndex].assetPath,
+                    avatarUrl: widget.currentProfile?.avatarLogo,
                     onEditTap: () {
                       // Add your edit functionality here
                       debugPrint('Edit icon tapped');
@@ -422,23 +556,44 @@ class AvatarData {
 
 class CharacterWidget extends StatelessWidget {
   final String assetPath;
+  final String? avatarUrl;
   final VoidCallback? onEditTap;
 
-  const CharacterWidget({super.key, required this.assetPath, this.onEditTap});
+  const CharacterWidget({
+    super.key, 
+    required this.assetPath, 
+    this.avatarUrl,
+    this.onEditTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Main image
+        // Main image - show network image if available, otherwise local asset
         ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          child: Image.asset(
-            assetPath,
-            width: 260,
-            height: 210,
-            fit: BoxFit.cover,
-          ),
+          child: avatarUrl != null && avatarUrl!.isNotEmpty
+              ? Image.network(
+                  avatarUrl!,
+                  width: 260,
+                  height: 210,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      assetPath,
+                      width: 260,
+                      height: 210,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+              : Image.asset(
+                  assetPath,
+                  width: 260,
+                  height: 210,
+                  fit: BoxFit.cover,
+                ),
         ),
 
         // Edit icon on the right side (top-right)
