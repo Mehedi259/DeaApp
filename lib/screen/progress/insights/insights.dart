@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:mobile_app_dea/services/insights_service.dart';
 
 enum DayStatus { skipped, consistent, streak, empty }
 
@@ -18,6 +19,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
   final List<String> tabs = ['All', 'Recent sessions', 'AI insights'];
   String selectedWeek = 'This week';
   String selectedMonth = 'This month';
+  
+  final InsightsService _insightsService = InsightsService();
+  InsightsData? _insightsData;
+  bool _isLoading = true;
 
   // Emoji overlays for specific calendar days (0-indexed)
   final Map<int, String> dayEmojis = {
@@ -26,46 +31,66 @@ class _InsightsScreenState extends State<InsightsScreen> {
     14: '😊', // Mon Week 3
     17: '😡', // Thu Week 3
   };
-  final List<DayStatus> dayStatuses = [
-    DayStatus.empty,
-    DayStatus.empty,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.skipped,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.skipped,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.skipped,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.skipped,
-    DayStatus.skipped,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.skipped,
-    DayStatus.skipped,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.consistent,
-    DayStatus.streak,
-    DayStatus.empty,
-    DayStatus.empty,
-  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInsights();
+  }
+
+  Future<void> _loadInsights() async {
+    setState(() => _isLoading = true);
+    final data = await _insightsService.fetchInsights();
+    setState(() {
+      _insightsData = data;
+      _isLoading = false;
+    });
+  }
+
+  List<DayStatus> _getCalendarStatuses() {
+    if (_insightsData == null) return [];
+    
+    return _insightsData!.monthly.calendar.map((day) {
+      switch (day.status) {
+        case 'consistent':
+          return DayStatus.consistent;
+        case 'skipped':
+          return DayStatus.skipped;
+        case 'streak':
+          return DayStatus.streak;
+        default:
+          return DayStatus.empty;
+      }
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFFFFEF8),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_insightsData == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFFFFEF8),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Failed to load insights'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadInsights,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFFFFEF8),
       body: SafeArea(
@@ -277,6 +302,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   Widget _buildAIInsights() {
     const koro = Color(0xFF5B6FFF);
+    final monthly = _insightsData!.monthly;
 
     return Container(
       width: double.infinity,
@@ -336,11 +362,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   style: TextStyle(fontSize: 14, color: Color(0xFF1A1A3E)),
                 ),
                 const SizedBox(height: 16),
-                _buildQuestItem('Clean house'),
-                const SizedBox(height: 12),
-                _buildQuestItem('Walk a dog'),
-                const SizedBox(height: 12),
-                _buildQuestItem('Sleep'),
+                ...monthly.mostCompletedQuests.take(3).map((quest) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildQuestItem(quest.task),
+                  );
+                }).toList(),
               ],
             ),
           ),
@@ -381,24 +408,20 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Sunday',
+                              'Day',
                               style: GoogleFonts.workSans(
-                                color: const Color(
-                                  0xFFFFFDF7,
-                                ), // Text-text-light
+                                color: const Color(0xFFFFFDF7),
                                 fontSize: 18,
                                 fontWeight: FontWeight.w400,
                                 height: 1.20,
                                 letterSpacing: -1,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Sunday',
+                              monthly.mostProductiveDay,
                               style: GoogleFonts.workSans(
-                                color: const Color(
-                                  0xFFFFFDF7,
-                                ), // Text-text-light
+                                color: const Color(0xFFFFFDF7),
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800,
                                 height: 1.20,
@@ -430,13 +453,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                                 letterSpacing: -0.50,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               '10:00',
                               style: GoogleFonts.workSans(
-                                color: const Color(
-                                  0xFF4542EB,
-                                ), // Text-text-primary
+                                color: const Color(0xFF4542EB),
                                 fontSize: 32,
                                 fontWeight: FontWeight.w800,
                                 height: 1.20,
@@ -501,6 +522,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildPreferredQuestTypes() {
+    final preferredTypes = _insightsData!.monthly.preferredQuestTypes;
+    final softStepsPct = preferredTypes.softStepsPct.toStringAsFixed(1);
+    final powerMovesPct = preferredTypes.powerMovesPct.toStringAsFixed(1);
+    
+    // Calculate width factor for gradient (0.0 to 1.0)
+    final softStepsWidthFactor = preferredTypes.softStepsPct / 100;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -532,11 +560,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
             ),
           ),
           const SizedBox(height: 8),
-
           SizedBox(
             width: 295,
             child: Text(
-              'You complete more Soft Moves than Power Moves (72% vs 28%).',
+              preferredTypes.summary,
               style: GoogleFonts.workSans(
                 color: const Color(0xFF4C586E),
                 fontSize: 16,
@@ -551,9 +578,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             width: double.infinity,
             height: 97,
             decoration: ShapeDecoration(
-              color: const Color(
-                0xFFFAE3CE,
-              ) /* Background-bg-secondary-level-2 */,
+              color: const Color(0xFFFAE3CE),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -564,18 +589,18 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   left: 0,
                   top: 0,
                   child: Container(
-                    width: 245,
+                    width: MediaQuery.of(context).size.width * 0.8 * softStepsWidthFactor,
                     height: 97,
                     decoration: ShapeDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         begin: Alignment(0.89, 0.00),
                         end: Alignment(0.00, 0.00),
                         colors: [
-                          const Color(0xFFFF8F26),
-                          const Color(0x00FF8F26),
+                          Color(0xFFFF8F26),
+                          Color(0x00FF8F26),
                         ],
                       ),
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
                           bottomLeft: Radius.circular(20),
@@ -595,50 +620,24 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 16,
                       children: [
-                        SizedBox(
-                          width: 95,
-                          child: SizedBox(
-                            width: 95,
-                            child: Text(
-                              'Soft moves',
-                              style: GoogleFonts.workSans(
-                                color: const Color(0xFF011F54), // Text color
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                                height: 1.4,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
+                        Text(
+                          'Soft moves',
+                          style: GoogleFonts.workSans(
+                            color: const Color(0xFF011F54),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            height: 1.4,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.only(
-                            top: 4,
-                            right: 12,
-                            bottom: 4,
-                          ),
-                          decoration: ShapeDecoration(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            spacing: 8,
-                            children: [
-                              Text(
-                                '78%',
-                                style: GoogleFonts.workSans(
-                                  color: const Color(0xFF011F54), // Text color
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w800, // Extra Bold
-                                  height: 1.2,
-                                  letterSpacing: -1,
-                                ),
-                              ),
-                            ],
+                        Text(
+                          '$softStepsPct%',
+                          style: GoogleFonts.workSans(
+                            color: const Color(0xFF011F54),
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
+                            letterSpacing: -1,
                           ),
                         ),
                       ],
@@ -646,7 +645,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ),
                 ),
                 Positioned(
-                  left: 163,
+                  right: 20,
                   top: 10,
                   child: SizedBox(
                     width: 112,
@@ -656,28 +655,22 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 24,
                       children: [
-                        SizedBox(
-                          width: 112,
-                          child: SizedBox(
-                            width: 95,
-                            child: Text(
-                              'Power moves',
-                              style: GoogleFonts.workSans(
-                                color: const Color(0xFF011F54), // Text color
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                                height: 1.4,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
+                        Text(
+                          'Power moves',
+                          style: GoogleFonts.workSans(
+                            color: const Color(0xFF011F54),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            height: 1.4,
+                            letterSpacing: -0.5,
                           ),
                         ),
                         Text(
-                          '22%',
+                          '$powerMovesPct%',
                           style: GoogleFonts.workSans(
-                            color: const Color(0xFF011F54), // Text color
+                            color: const Color(0xFF011F54),
                             fontSize: 32,
-                            fontWeight: FontWeight.w800, // Extra Bold
+                            fontWeight: FontWeight.w800,
                             height: 1.2,
                             letterSpacing: -1,
                           ),
@@ -695,6 +688,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildWeeklyReflection() {
+    final weekly = _insightsData!.weekly;
+    final completionRate = weekly.totalQuests > 0
+        ? weekly.questsCompleted / weekly.totalQuests
+        : 0.0;
+    
     return Container(
       decoration: BoxDecoration(color: AppColorsApps.lightBlueBackground),
       child: Padding(
@@ -794,7 +792,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               ),
                             ),
                             Text(
-                              '7/10',
+                              '${weekly.questsCompleted}/${weekly.totalQuests}',
                               textAlign: TextAlign.center,
                               style: GoogleFonts.workSans(
                                 color: const Color(
@@ -816,7 +814,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: FractionallySizedBox(
-                          widthFactor: 0.7,
+                          widthFactor: completionRate,
                           child: Container(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
@@ -1371,6 +1369,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildCalendarGrid() {
+    final calendarStatuses = _getCalendarStatuses();
+    
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -1382,14 +1382,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
       itemCount: 35,
       itemBuilder: (context, index) {
         final emoji = dayEmojis[index];
-        if (index >= dayStatuses.length) {
+        if (index >= calendarStatuses.length) {
           return _buildDayCircle(
             DayStatus.empty,
-            index - dayStatuses.length + 1,
+            index - calendarStatuses.length + 1,
             emoji: emoji,
           );
         }
-        return _buildDayCircle(dayStatuses[index], index + 1, emoji: emoji);
+        return _buildDayCircle(calendarStatuses[index], index + 1, emoji: emoji);
       },
     );
   }
@@ -1504,6 +1504,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildMilestonesAndAchievements() {
+    final milestones = _insightsData!.monthly.milestones;
+    
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(15.0),
@@ -1566,7 +1568,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '100',
+                              '${milestones.questsCompletedThisMonth}',
                               style: GoogleFonts.workSans(
                                 color: const Color(
                                   0xFF4542EB,
@@ -1617,7 +1619,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '100',
+                              '${milestones.longestStreakDays}',
                               style: GoogleFonts.workSans(
                                 color: const Color(
                                   0xFFFF8F26,

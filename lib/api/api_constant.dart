@@ -2,6 +2,7 @@ class ApiConstants {
   static const String baseUrl = 'http://127.0.0.1:8000';
   static const String apiPrefix = '/api/auth';
   static const String profilePrefix = '/api/profiles';
+  static const String insightsPrefix = '/api';
   
   // Auth endpoints
   static const String register = '$apiPrefix/register/';
@@ -15,6 +16,9 @@ class ApiConstants {
   static const String createProfile = '$profilePrefix/';
   static const String getProfile = '$profilePrefix/'; // GET with auth
   static const String updateProfile = '$profilePrefix/'; // PATCH with auth
+  
+  // Insights endpoints
+  static const String getInsights = '$insightsPrefix/insights/';
   
   // Headers
   static const String contentType = 'application/json';

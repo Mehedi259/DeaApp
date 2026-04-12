@@ -61,13 +61,13 @@ class LoginResponse {
 class UserData {
   final int userId;
   final String email;
-  final String username;
+  final String? username;
   final bool isSuperuser;
 
   UserData({
     required this.userId,
     required this.email,
-    required this.username,
+    this.username,
     required this.isSuperuser,
   });
 
@@ -75,7 +75,7 @@ class UserData {
         userId: json['user_id'],
         email: json['email'],
         username: json['username'],
-        isSuperuser: json['is_superuser'],
+        isSuperuser: json['is_superuser'] ?? false,
       );
 }
 

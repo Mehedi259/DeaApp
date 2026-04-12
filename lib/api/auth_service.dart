@@ -38,7 +38,7 @@ class AuthService {
       await _storage.saveUserData(
         loginResponse.user.userId,
         loginResponse.user.email,
-        loginResponse.user.username,
+        loginResponse.user.username ?? '',
       );
     }
 
