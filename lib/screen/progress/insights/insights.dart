@@ -4,6 +4,7 @@ import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
 import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
 import 'package:mobile_app_dea/services/insights_service.dart';
+import 'package:mobile_app_dea/models/insights_models.dart';
 
 enum DayStatus { skipped, consistent, streak, empty }
 
@@ -21,7 +22,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   String selectedMonth = 'This month';
   
   final InsightsService _insightsService = InsightsService();
-  InsightsData? _insightsData;
+  InsightsResponse? _insightsData;
   bool _isLoading = true;
 
   // Emoji overlays for specific calendar days (0-indexed)
@@ -40,7 +41,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   Future<void> _loadInsights() async {
     setState(() => _isLoading = true);
-    final data = await _insightsService.fetchInsights();
+    final data = await _insightsService.getInsights();
     setState(() {
       _insightsData = data;
       _isLoading = false;

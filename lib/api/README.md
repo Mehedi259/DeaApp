@@ -162,7 +162,7 @@ if (profileController.profile != null) {
 
 Update the base URL in `api_constant.dart`:
 ```dart
-static const String baseUrl = 'http://127.0.0.1:8000';
+static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev';
 ```
 
 For production, change to your production API URL.

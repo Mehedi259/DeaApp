@@ -64,7 +64,7 @@ class Quest {
 }
 
 class QuestService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev/api';
 
   Future<String> _getToken() async {
     final prefs = await SharedPreferences.getInstance();

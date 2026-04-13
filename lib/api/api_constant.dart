@@ -1,8 +1,15 @@
 class ApiConstants {
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  // Main Backend API URL
+  static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev';
+  
+  // AI Backend API URL (separate server)
+  static const String aiBaseUrl = 'https://apricot-rhyme-humming.ngrok-free.dev';
+  
   static const String apiPrefix = '/api/auth';
   static const String profilePrefix = '/api/profiles';
   static const String insightsPrefix = '/api';
+  static const String aiCallPrefix = '/api/v1';
+  static const String questsPrefix = '/api/quests';
   
   // Auth endpoints
   static const String register = '$apiPrefix/register/';
@@ -19,6 +26,13 @@ class ApiConstants {
   
   // Insights endpoints
   static const String getInsights = '$insightsPrefix/insights/';
+  
+  // Quests endpoints
+  static const String getStreak = '$questsPrefix/streak/';
+  
+  // AI Call endpoints (use aiBaseUrl)
+  static const String createSession = '$aiCallPrefix/session/new';
+  static const String chatStream = '$aiCallPrefix/chat-stream';
   
   // Headers
   static const String contentType = 'application/json';

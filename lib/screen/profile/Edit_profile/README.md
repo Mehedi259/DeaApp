@@ -114,8 +114,8 @@ Image.network(
 
 ```json
 {
-  "profile_image": "http://127.0.0.1:8000/media/profiles/profile_images/ujkh_Fq5owwE.jpeg",
-  "avatar_logo": "http://127.0.0.1:8000/media/profiles/avatar_logos/three_VXAQgZ3.png",
+  "profile_image": "https://partnerless-rochel-however.ngrok-free.dev/media/profiles/profile_images/ujkh_Fq5owwE.jpeg",
+  "avatar_logo": "https://partnerless-rochel-however.ngrok-free.dev/media/profiles/avatar_logos/three_VXAQgZ3.png",
   "name": "Mehedi",
   "gender": "I'm a man",
   "nowlii_name": "MELON",
@@ -134,7 +134,7 @@ Image.network(
 
 ### API Endpoint
 ```
-PATCH http://127.0.0.1:8000/api/profiles/
+PATCH https://partnerless-rochel-however.ngrok-free.dev/api/profiles/
 ```
 
 ### Headers

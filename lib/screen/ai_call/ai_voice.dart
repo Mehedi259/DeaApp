@@ -4,6 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
 import 'package:mobile_app_dea/core/gen/assets.gen.dart';
 import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:mobile_app_dea/services/ai_call_service.dart';
+import 'package:mobile_app_dea/models/ai_call_models.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:mobile_app_dea/services/web_speech_service.dart';
+import 'package:mobile_app_dea/services/audio_stream_service.dart';
 
 class AiVoice extends StatefulWidget {
   const AiVoice({super.key});
@@ -29,6 +36,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   bool _showMuteWarning = false;
   bool _showWrapUpDialog = false;
   bool _questCompleted = false;
+  bool _isHandlingAiResponse = false;
   
   // Typing animation
   bool _showTypingAnimation = false;
@@ -36,11 +44,36 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   Timer? _typingTimer;
   int _typingIndex = 0;
   final String _typingMessage = "You're doing great – keep it going";
+  
+  // AI Call integration
+  final AiCallService _aiCallService = AiCallService();
+  AiSession? _currentSession;
+  String _aiResponse = '';
+  EmotionData? _currentEmotion;
+  bool _isListening = false;
+  
+  // Speech recognition and TTS
+  late stt.SpeechToText _speech;
+  late FlutterTts _flutterTts;
+  bool _speechEnabled = false;
+  
+  // TTS Queue Processing
+  final List<String> _ttsQueue = [];
+  bool _isSpeaking = false;
+  
+  // Live audio streaming
+  final AudioStreamService _audioStreamService = AudioStreamService();
+  StreamSubscription<String>? _audioStreamSubscription;
+  String _liveTranscription = '';
+  
+  // Manual input for testing (especially on web)
+  final TextEditingController _testInputController = TextEditingController();
+  bool _showTestInput = false;
 
   @override
   void initState() {
     super.initState();
-    _totalDuration = const Duration(minutes: 10);
+    _totalDuration = const Duration(minutes: 5);
     _elapsedTime = Duration.zero;
     
     // Progress animation
@@ -55,7 +88,407 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
     
+    // Initialize speech and TTS
+    _initializeSpeech();
+    _initializeTts();
+    _initializeAudioStreaming();
+    
+    // Create AI session
+    _createAiSession();
+    
     _startCall();
+  }
+  
+  Future<void> _initializeAudioStreaming() async {
+    if (!kIsWeb) {
+      final initialized = await _audioStreamService.initialize();
+      if (initialized) {
+        print('✅ Live audio streaming ready');
+      }
+    }
+  }
+  
+  Future<void> _initializeSpeech() async {
+    _speech = stt.SpeechToText();
+    _speechEnabled = await _speech.initialize(
+      onError: (error) => print('Speech error: $error'),
+      onStatus: (status) => print('Speech status: $status'),
+    );
+  }
+  
+  Future<void> _initializeTts() async {
+    _flutterTts = FlutterTts();
+    try {
+      await _flutterTts.setLanguage('en-US');
+      await _flutterTts.setSpeechRate(0.5);
+      await _flutterTts.setVolume(1.0);
+      await _flutterTts.setPitch(1.0);
+      await _flutterTts.awaitSpeakCompletion(true);
+      
+      // Set completion handler to know when TTS finishes
+      _flutterTts.setCompletionHandler(() {
+        print('🔊 TTS completed');
+        // TTS queue will handle the next item or resume listening
+      });
+      
+      _flutterTts.setErrorHandler((msg) {
+        print('❌ TTS error: $msg');
+      });
+    } catch (e) {
+      print('TTS initialization error (may not be supported on web): $e');
+    }
+  }
+  
+  void _speakText(String text) {
+    if (_isMuted || text.trim().isEmpty) return;
+    _ttsQueue.add(text.trim());
+    if (!_isSpeaking) {
+      _processTtsQueue();
+    }
+  }
+
+  Future<void> _processTtsQueue() async {
+    if (_ttsQueue.isEmpty) {
+      _isSpeaking = false;
+      print('🔇 TTS queue empty, all speech completed');
+      // If AI stream finished and we are done speaking, auto-resume listening after a small delay
+      if (!_isHandlingAiResponse && !_isMuted && _currentSession != null && !_isPaused && mounted) {
+        // Add a small delay to avoid picking up TTS tail or system sounds
+        await Future.delayed(Duration(milliseconds: 500));
+        if (!_isHandlingAiResponse && !_isMuted && _currentSession != null && !_isPaused && mounted) {
+          print('✅ Ready to listen again');
+          _startListening();
+        }
+      }
+      return;
+    }
+    
+    _isSpeaking = true;
+    final text = _ttsQueue.removeAt(0);
+    
+    try {
+      if (kIsWeb) {
+        print('🔊 [Web] Speaking: $text');
+        await Future.delayed(Duration(milliseconds: text.length * 50));
+      } else {
+        print('🔊 Speaking: "$text"');
+        await _flutterTts.speak(text);
+        print('✅ Finished speaking: "$text"');
+      }
+    } catch (e) {
+      print('TTS Error: $e');
+    } finally {
+      // Process next item
+      if (mounted) {
+        _processTtsQueue();
+      }
+    }
+  }
+  
+  Future<void> _createAiSession() async {
+    try {
+      final session = await _aiCallService.createSession(
+        userName: 'User', // You can get this from user profile
+        systemName: 'Aria',
+        language: 'en',
+      );
+      
+      if (session != null) {
+        if (mounted) {
+            setState(() {
+            _currentSession = session;
+            });
+        }
+        print('✅ Session created: ${session.sessionId}');
+        // Optional: you can manually test by calling _sendMessageToAi("Hello, are you there?");
+      } else {
+        print('⚠️ Failed to create session - API may be unavailable');
+        // Continue without session for UI testing
+      }
+    } catch (e) {
+      print('❌ Error creating session: $e');
+      // Continue without session for UI testing
+    }
+  }
+  
+  Future<void> _startListening() async {
+    if (_isMuted) return;
+    
+    // Don't start listening if TTS is still speaking
+    if (_isSpeaking) {
+      print('⏸️ TTS is speaking, waiting to start listening...');
+      return;
+    }
+    
+    print('🎤 Starting microphone input...');
+    
+    setState(() {
+      _isListening = true;
+      _liveTranscription = '';
+    });
+    
+    if (kIsWeb) {
+      print('🌐 Using Web Speech API');
+    } else {
+      // Use speech_to_text for mobile
+      print('🎤 Starting speech recognition...');
+      
+      bool available = await _speech.initialize(
+        onError: (error) {
+          print('❌ Speech error: $error');
+          if (mounted) {
+            setState(() {
+              _isListening = false;
+            });
+          }
+        },
+        onStatus: (status) {
+          print('📊 Speech status: $status');
+          if (status == 'done' || status == 'notListening') {
+            print('🔍 Checking transcription: "$_liveTranscription"');
+            // Auto-send when speech ends
+            if (_liveTranscription.trim().isNotEmpty && !_isHandlingAiResponse) {
+              final textToSend = _liveTranscription.trim();
+              print('📤 Sending to AI: "$textToSend"');
+              setState(() {
+                _liveTranscription = '';
+                _isListening = false;
+              });
+              _sendMessageToAi(textToSend);
+            } else {
+              print('⚠️ Not sending - transcription empty or AI busy');
+              if (mounted) {
+                setState(() {
+                  _isListening = false;
+                });
+              }
+            }
+          }
+        },
+      );
+      
+      if (available) {
+        _speech.listen(
+          onResult: (result) {
+            final recognizedText = result.recognizedWords.trim();
+            print('📝 Live transcription: "$recognizedText" (final: ${result.finalResult})');
+            setState(() {
+              _liveTranscription = recognizedText;
+            });
+            
+            // If this is a final result and we have text, send it immediately
+            if (result.finalResult && recognizedText.isNotEmpty && !_isHandlingAiResponse) {
+              print('✅ Final result detected, sending immediately');
+              final textToSend = recognizedText;
+              setState(() {
+                _liveTranscription = '';
+                _isListening = false;
+              });
+              _speech.stop();
+              _sendMessageToAi(textToSend);
+            }
+          },
+          listenFor: Duration(seconds: 30),
+          pauseFor: Duration(seconds: 3),
+          partialResults: true,
+          cancelOnError: true,
+          listenMode: stt.ListenMode.confirmation,
+        );
+      } else {
+        print('⚠️ Speech recognition not available');
+        setState(() {
+          _isListening = false;
+        });
+      }
+    }
+  }
+  
+  Future<void> _stopListening() async {
+    print('🛑 Stopping microphone input...');
+    
+    setState(() {
+      _isListening = false;
+    });
+    
+    if (kIsWeb) {
+      print('🌐 Web listening stopped');
+    } else {
+      try {
+        await _speech.stop();
+      } catch (e) {
+        print('Error stopping speech: $e');
+      }
+      
+      // Send final transcription if available
+      if (_liveTranscription.isNotEmpty && !_isHandlingAiResponse) {
+        print('📤 Sending final transcription: $_liveTranscription');
+        final textToSend = _liveTranscription;
+        _liveTranscription = '';
+        _sendMessageToAi(textToSend);
+      }
+    }
+  }
+  
+  void _toggleListening() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
+  }
+  
+  Future<void> _handleWebVoiceInput() async {
+    if (!kIsWeb) return;
+    
+    print('🎤 Starting web voice input...');
+    setState(() {
+      _isListening = true;
+    });
+    
+    // Show a dialog for web voice input
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.mic, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Listening...'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Speak now...'),
+            SizedBox(height: 8),
+            Text(
+              'Click "Stop" when done',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _isListening = false;
+              });
+            },
+            child: Text('Stop'),
+          ),
+        ],
+      ),
+    );
+    
+    // Simulate voice input for now (you can implement actual Web Speech API)
+    await Future.delayed(Duration(seconds: 3));
+    
+    if (mounted) {
+      Navigator.pop(context);
+      setState(() {
+        _isListening = false;
+      });
+      
+      // For demo, show input dialog
+      _showTestInput = true;
+      setState(() {});
+    }
+  }
+  
+  Future<void> _sendMessageToAi(String message) async {
+    if (message.isEmpty || _isHandlingAiResponse) return;
+    
+    _isHandlingAiResponse = true;
+    
+    // Stop listening immediately to avoid feedback
+    await _stopListening();
+    
+    // Stop any ongoing TTS
+    try {
+      if (!kIsWeb) {
+        await _flutterTts.stop();
+      }
+    } catch (e) {
+      print('Error stopping TTS: $e');
+    }
+    
+    // Clear TTS queue
+    _ttsQueue.clear();
+    _isSpeaking = false;
+    
+    // Check if session exists
+    if (_currentSession == null) {
+      print('⚠️ No active session - attempting to create one...');
+      await _createAiSession();
+      if (_currentSession == null) {
+        print('❌ Cannot send message without session');
+        if (mounted) {
+            setState(() {
+            _aiResponse = 'API connection unavailable. Please check your network and API server.';
+            _isHandlingAiResponse = false;
+            });
+        }
+        return;
+      }
+    }
+    
+    if (mounted) {
+        setState(() {
+        _aiResponse = '';
+        });
+    }
+    
+    try {
+      String currentSentence = '';
+      
+      await for (var event in _aiCallService.chatStream(
+        message: message,
+        sessionId: _currentSession!.sessionId,
+      )) {
+        if (event.type == StreamEventType.emotion) {
+          if (mounted) {
+              setState(() {
+                _currentEmotion = event.data as EmotionData;
+              });
+          }
+          print('😊 Emotion detected: ${_currentEmotion!.emotionKey} (${_currentEmotion!.score})');
+        } else if (event.type == StreamEventType.word) {
+          if (mounted) {
+              setState(() {
+                _aiResponse += '${event.data} ';
+              });
+          }
+          
+          currentSentence += '${event.data} ';
+          // Add to TTS queue if the word ends a sentence
+          if (event.data.toString().contains(RegExp(r'[.!?]'))) {
+             _speakText(currentSentence);
+             currentSentence = '';
+          }
+        } else if (event.type == StreamEventType.done) {
+          if (currentSentence.trim().isNotEmpty) {
+             _speakText(currentSentence);
+          }
+          final doneData = event.data as DoneEventData;
+          print('✅ Response complete: ${doneData.words} words');
+        }
+      }
+    } catch (e) {
+      print('❌ Error sending message: $e');
+      if (mounted) {
+          setState(() {
+            _aiResponse = 'Error communicating with AI. Please try again.';
+          });
+      }
+    } finally {
+        _isHandlingAiResponse = false;
+        print('🏁 AI response handling complete. TTS speaking: $_isSpeaking');
+        // TTS queue will handle resuming listening when done
+    }
   }
 
   void _startCall() {
@@ -116,6 +549,19 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       _isMuted = !_isMuted;
       if (_isMuted) {
         _showMuteWarning = true;
+        _stopListening();
+        
+        // Stop TTS and clear queue
+        _ttsQueue.clear();
+        _isSpeaking = false;
+        try {
+          if (!kIsWeb) {
+            _flutterTts.stop();
+          }
+        } catch (e) {
+          print('TTS stop error: $e');
+        }
+        
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {
             setState(() {
@@ -123,13 +569,18 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
             });
           }
         });
+      } else {
+        // Only start listening if not currently handling AI response
+        if (!_isHandlingAiResponse && !kIsWeb) {
+          _startListening();
+        }
       }
     });
   }
 
   void _addTenMinutes() {
     setState(() {
-      _totalDuration = Duration(minutes: _totalDuration.inMinutes + 10);
+      _totalDuration = Duration(minutes: _totalDuration.inMinutes + 5);
       _showTimeWarning = false;
     });
     
@@ -159,7 +610,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 16),
               Text(
-                '10 more minutes added',
+                '5 more minutes added',
                 style: TextStyle(
                   color: const Color(0xFF011F54),
                   fontSize: 20,
@@ -169,7 +620,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 8),
               Text(
-                'You can now talk to me 10 more minutes!',
+                'You can now talk to me 5 more minutes!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: const Color(0xFF595754),
@@ -228,6 +679,15 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
     _typingTimer?.cancel();
     _progressController.dispose();
     _pulseController.dispose();
+    _testInputController.dispose();
+    _audioStreamSubscription?.cancel();
+    _audioStreamService.dispose();
+    try {
+      _speech.stop();
+      _flutterTts.stop();
+    } catch (e) {
+      print('Dispose error: $e');
+    }
     super.dispose();
   }
 
@@ -247,6 +707,54 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
     if (_showTimeWarning) return const Color(0xFFFF8F26);
     return const Color(0xFF4542EB);
   }
+  
+  IconData _getEmotionIcon(String emotionKey) {
+    switch (emotionKey.toLowerCase()) {
+      case 'happy':
+      case 'joy':
+        return Icons.sentiment_very_satisfied;
+      case 'sad':
+      case 'sadness':
+        return Icons.sentiment_dissatisfied;
+      case 'angry':
+      case 'anger':
+        return Icons.sentiment_very_dissatisfied;
+      case 'fear':
+      case 'scared':
+        return Icons.warning;
+      case 'surprise':
+        return Icons.sentiment_neutral;
+      case 'calm':
+      case 'neutral':
+        return Icons.sentiment_satisfied;
+      default:
+        return Icons.sentiment_neutral;
+    }
+  }
+  
+  Color _getEmotionColor(String emotionKey) {
+    switch (emotionKey.toLowerCase()) {
+      case 'happy':
+      case 'joy':
+        return Colors.green;
+      case 'sad':
+      case 'sadness':
+        return Colors.blue;
+      case 'angry':
+      case 'anger':
+        return Colors.red;
+      case 'fear':
+      case 'scared':
+        return Colors.orange;
+      case 'surprise':
+        return Colors.purple;
+      case 'calm':
+      case 'neutral':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,32 +770,200 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
         child: SafeArea(
           child: Stack(
             children: [
-              Column(
-                children: [
-                  const SizedBox(height: 40),
-
-                  // Title Section
-                  Text(
-                    _questCompleted ? 'Answer emails ✉️ ✓' : 'Answer emails 📧',
-                    style: AppsTextStyles.black24Uppercase,
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _questCompleted
-                        ? 'Take a deep breath - you did great.\nI\'ll be here when you\'re ready for the next one.'
-                        : _showTypingAnimation
-                            ? _typedText
-                            : _totalDuration.inMinutes > 10
-                                ? 'New energy, new ${_totalDuration.inMinutes} minutes!'
-                                : 'You\'re doing great — keep it going',
-                    style: AppsTextStyles.regular16l,
-                    textAlign: TextAlign.center,
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 40),
+
+                        // Title Section
+                        Text(
+                          _questCompleted ? 'Answer emails ✉️ ✓' : 'Answer emails 📧',
+                          style: AppsTextStyles.black24Uppercase,
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            _questCompleted
+                                ? 'Take a deep breath - you did great.\nI\'ll be here when you\'re ready for the next one.'
+                                : _showTypingAnimation
+                                    ? _typedText
+                                    : _totalDuration.inMinutes > 5
+                                        ? 'New energy, new ${_totalDuration.inMinutes} minutes!'
+                                        : 'You\'re doing great — keep it going',
+                            style: AppsTextStyles.regular16l,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        // Avatar with progress
+                        _buildAvatarWithProgress(size),
+                        
+                        // Emotion and AI Response Display
+                        if (_currentEmotion != null || _aiResponse.isNotEmpty || _liveTranscription.isNotEmpty)
+                          Flexible(
+                            child: SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                // Live transcription (what you're saying)
+                                if (_liveTranscription.isNotEmpty && _isListening)
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: Colors.blue, width: 2),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                    children: [
+                                      Icon(Icons.mic, color: Colors.blue, size: 16),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'You:',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: 12,
+                                          fontFamily: 'Work Sans',
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    _liveTranscription,
+                                    style: TextStyle(
+                                      color: const Color(0xFF011F54),
+                                      fontSize: 14,
+                                      fontFamily: 'Work Sans',
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (_liveTranscription.isNotEmpty && _isListening)
+                            const SizedBox(height: 8),
+                          if (_currentEmotion != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _getEmotionIcon(_currentEmotion!.emotionKey),
+                                    color: _getEmotionColor(_currentEmotion!.emotionKey),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${_currentEmotion!.name} (${(_currentEmotion!.score * 100).toInt()}%)',
+                                    style: TextStyle(
+                                      color: const Color(0xFF011F54),
+                                      fontSize: 14,
+                                      fontFamily: 'Work Sans',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (_aiResponse.isNotEmpty)
+                            const SizedBox(height: 8),
+                          if (_aiResponse.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.smart_toy, color: const Color(0xFF4542EB), size: 16),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'AI:',
+                                        style: TextStyle(
+                                          color: const Color(0xFF4542EB),
+                                          fontSize: 12,
+                                          fontFamily: 'Work Sans',
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    _aiResponse,
+                                    style: TextStyle(
+                                      color: const Color(0xFF011F54),
+                                      fontSize: 14,
+                                      fontFamily: 'Work Sans',
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (_isListening && _liveTranscription.isEmpty)
+                            const SizedBox(height: 8),
+                          if (_isListening && _liveTranscription.isEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.red, width: 2),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Listening...',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 14,
+                                      fontFamily: 'Work Sans',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-
-                  const Spacer(),
-
-                  // Avatar with progress
-                  _buildAvatarWithProgress(size),
+                ),
                   
                   const Spacer(),
 
@@ -387,17 +1063,32 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
                           Row(
                             children: [
                               GestureDetector(
-                                onTap: _toggleMute,
+                                onTap: () {
+                                  if (!_isMuted) {
+                                    _toggleListening();
+                                  }
+                                },
                                 child: Container(
                                   width: 64,
                                   height: 64,
                                   decoration: BoxDecoration(
-                                    color: _isMuted ? const Color(0xFFFFE5E5) : const Color(0xFFC3DBFF),
+                                    color: _isListening 
+                                        ? Colors.red.withOpacity(0.2)
+                                        : _isMuted 
+                                            ? const Color(0xFFFFE5E5) 
+                                            : const Color(0xFFC3DBFF),
                                     shape: BoxShape.circle,
+                                    border: _isListening 
+                                        ? Border.all(color: Colors.red, width: 3)
+                                        : null,
                                   ),
                                   child: Icon(
                                     _isMuted ? Icons.mic_off : Icons.mic,
-                                    color: _isMuted ? Colors.red : const Color(0xFF4542EB),
+                                    color: _isListening 
+                                        ? Colors.red 
+                                        : _isMuted 
+                                            ? Colors.red 
+                                            : const Color(0xFF4542EB),
                                     size: 28,
                                   ),
                                 ),
@@ -405,18 +1096,24 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
                               const SizedBox(width: 8),
                               GestureDetector(
                                 onTap: () {
-                                  // Volume control - TODO: Implement volume functionality
+                                  setState(() {
+                                    _showTestInput = !_showTestInput;
+                                  });
                                 },
                                 child: Container(
                                   width: 64,
                                   height: 64,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFC3DBFF),
+                                    color: _showTestInput 
+                                        ? const Color(0xFF4542EB) 
+                                        : const Color(0xFFC3DBFF),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
-                                    Icons.volume_up,
-                                    color: const Color(0xFF4542EB),
+                                    Icons.keyboard,
+                                    color: _showTestInput 
+                                        ? Colors.white 
+                                        : const Color(0xFF4542EB),
                                     size: 28,
                                   ),
                                 ),
@@ -453,7 +1150,10 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
                       ),
                     ),
                   const SizedBox(height: 40),
-                ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
               
               // Time warning popup
@@ -467,6 +1167,10 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
               // Wrap up dialog
               if (_showWrapUpDialog)
                 _buildWrapUpDialog(),
+              
+              // Test input dialog (for web testing)
+              if (_showTestInput)
+                _buildTestInputDialog(),
             ],
           ),
         ),
@@ -604,7 +1308,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 16),
             Text(
-              'You can add 10 more minutes to your call!',
+              'You can add 5 more minutes to your call!',
               style: TextStyle(
                 color: const Color(0xFF595754),
                 fontSize: 14,
@@ -629,7 +1333,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
                   Icon(Icons.add, size: 18, color: const Color(0xFF011F54)),
                   const SizedBox(width: 8),
                   Text(
-                    'Add 10 minutes',
+                    'Add 5 minutes',
                     style: TextStyle(
                       color: const Color(0xFF011F54),
                       fontSize: 18,
@@ -761,6 +1465,143 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildTestInputDialog() {
+    return Positioned(
+      bottom: 100,
+      left: 20,
+      right: 20,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Test Input',
+                  style: TextStyle(
+                    color: const Color(0xFF011F54),
+                    fontSize: 18,
+                    fontFamily: 'Work Sans',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _showTestInput = false;
+                    });
+                  },
+                  icon: Icon(Icons.close, color: const Color(0xFF011F54)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _testInputController,
+              decoration: InputDecoration(
+                hintText: 'Type your message here...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.all(12),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                final message = _testInputController.text.trim();
+                if (message.isNotEmpty) {
+                  _sendMessageToAi(message);
+                  _testInputController.clear();
+                  setState(() {
+                    _showTestInput = false;
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4542EB),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: Text(
+                'Send to AI',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontFamily: 'Work Sans',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (_currentSession != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  '✅ Session: ${_currentSession!.sessionId.substring(0, 8)}...',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 12,
+                    fontFamily: 'Work Sans',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            if (_currentSession == null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  '⚠️ No active session',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: 12,
+                    fontFamily: 'Work Sans',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () {
+                _testInputController.text = 'Hello, how are you?';
+              },
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: const Color(0xFF4542EB)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              child: Text(
+                'Quick Test: "Hello"',
+                style: TextStyle(
+                  color: const Color(0xFF4542EB),
+                  fontSize: 14,
+                  fontFamily: 'Work Sans',
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
