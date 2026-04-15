@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:go_router/go_router.dart';
-// import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+// import 'package:nowlii/core/gen/assets.gen.dart';
 
 // class EnergyCheckInScreen extends StatefulWidget {
 //   const EnergyCheckInScreen({super.key});
@@ -268,7 +268,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
 class EnergyCheckInScreen extends StatefulWidget {
   const EnergyCheckInScreen({super.key});

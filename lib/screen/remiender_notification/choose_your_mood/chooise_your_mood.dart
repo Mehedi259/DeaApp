@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/screen/remiender_notification/choose_your_mood/loader.dart';
+import 'package:nowlii/screen/remiender_notification/choose_your_mood/loader.dart';
 
 class AppColors {
   static const Color navy = Color(0xFF0B2246);

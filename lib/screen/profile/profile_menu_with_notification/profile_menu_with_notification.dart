@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/themes/create_qutes.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
-import 'package:mobile_app_dea/services/profile_service.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/themes/create_qutes.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/services/profile_service.dart';
 
 class ProfileNotificationsScreen extends StatefulWidget {
   const ProfileNotificationsScreen({super.key});
@@ -253,7 +253,7 @@ class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen>
             children: [
               _buildActionButton(
                 'Edit Profile',
-                Assets.svgIcons.editProfilePng__.path,
+                Assets.svgIcons.editProfilePng.path,
                 () {
                   context.push('/editProfileScreen');
                 },

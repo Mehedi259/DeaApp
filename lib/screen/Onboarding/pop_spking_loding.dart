@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class PopSpkingLoding extends StatefulWidget {
   const PopSpkingLoding({super.key});
@@ -92,8 +92,8 @@ class _LoadingContentState extends State<LoadingContent> {
 /*
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class PopSpkingLoding extends StatefulWidget {
   const PopSpkingLoding({super.key});
@@ -264,8 +264,8 @@ class _LoadingContentState extends State<LoadingContent>
 /*
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class PopSpkingLoding extends StatefulWidget {
   const PopSpkingLoding({super.key});

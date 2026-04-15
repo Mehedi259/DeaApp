@@ -1,8 +1,8 @@
 // import 'package:flutter/material.dart';
-// import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-// import 'package:mobile_app_dea/screen/remiender_notification/choose_your_mood/loader.dart';
-// import 'package:mobile_app_dea/themes/text_styles.dart';
-// import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+// import 'package:nowlii/core/gen/assets.gen.dart';
+// import 'package:nowlii/screen/remiender_notification/choose_your_mood/loader.dart';
+// import 'package:nowlii/themes/text_styles.dart';
+// import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 // class RestrictedTopicsPopup extends StatefulWidget {
 //   const RestrictedTopicsPopup({Key? key}) : super(key: key);
@@ -216,9 +216,9 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 class RestrictedTopicsPopup extends StatefulWidget {
   const RestrictedTopicsPopup({super.key});

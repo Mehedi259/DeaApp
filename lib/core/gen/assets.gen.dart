@@ -546,12 +546,8 @@ class $AssetsSvgIconsGen {
   AssetGenImage get editProfilePng =>
       const AssetGenImage('assets/svg_icons/Edit profile.png');
 
-  /// File path: assets/svg_icons/EditProfile.png
-  AssetGenImage get editProfilePng_ =>
-      const AssetGenImage('assets/svg_icons/EditProfile.png');
-
   /// File path: assets/svg_icons/editProfile.png
-  AssetGenImage get editProfilePng__ =>
+  AssetGenImage get editProfilePng_ =>
       const AssetGenImage('assets/svg_icons/editProfile.png');
 
   /// File path: assets/svg_icons/EditIcon.png
@@ -610,13 +606,6 @@ class $AssetsSvgIconsGen {
   /// File path: assets/svg_icons/MondayBack.png
   AssetGenImage get mondayBack =>
       const AssetGenImage('assets/svg_icons/MondayBack.png');
-
-  /// File path: assets/svg_icons/Moon.png
-  AssetGenImage get moonPng => const AssetGenImage('assets/svg_icons/Moon.png');
-
-  /// File path: assets/svg_icons/moon.png
-  AssetGenImage get moonPng_ =>
-      const AssetGenImage('assets/svg_icons/moon.png');
 
   /// File path: assets/svg_icons/Moon4.png
   AssetGenImage get moon4 => const AssetGenImage('assets/svg_icons/Moon4.png');
@@ -881,6 +870,9 @@ class $AssetsSvgIconsGen {
   AssetGenImage get messages =>
       const AssetGenImage('assets/svg_icons/messages.png');
 
+  /// File path: assets/svg_icons/moon.png
+  AssetGenImage get moon => const AssetGenImage('assets/svg_icons/moon.png');
+
   /// File path: assets/svg_icons/never_back.png
   AssetGenImage get neverBack =>
       const AssetGenImage('assets/svg_icons/never_back.png');
@@ -1018,7 +1010,6 @@ class $AssetsSvgIconsGen {
     editProfilIcon,
     editProfilePng,
     editProfilePng_,
-    editProfilePng__,
     editIcon,
     fireTab,
     fire,
@@ -1034,8 +1025,6 @@ class $AssetsSvgIconsGen {
     loveProfile,
     magicWand,
     mondayBack,
-    moonPng,
-    moonPng_,
     moon4,
     notifications,
     nowliJuli,
@@ -1104,6 +1093,7 @@ class $AssetsSvgIconsGen {
     joyfull,
     mean,
     messages,
+    moon,
     neverBack,
     nowliHowToUse,
     nowlnLogo,
@@ -1166,6 +1156,9 @@ class $AssetsSvgImagesGen {
   AssetGenImage get defaultToast =>
       const AssetGenImage('assets/svg_images/Default-Toast.png');
 
+  /// File path: assets/svg_images/E (1).png
+  AssetGenImage get e1 => const AssetGenImage('assets/svg_images/E (1).png');
+
   /// File path: assets/svg_images/E.png
   AssetGenImage get e => const AssetGenImage('assets/svg_images/E.png');
 
@@ -1208,6 +1201,10 @@ class $AssetsSvgImagesGen {
   AssetGenImage get successToast =>
       const AssetGenImage('assets/svg_images/Success-Toast.png');
 
+  /// File path: assets/svg_images/Thu Week 1.png
+  AssetGenImage get thuWeek1 =>
+      const AssetGenImage('assets/svg_images/Thu Week 1.png');
+
   /// File path: assets/svg_images/Toast.png
   AssetGenImage get toast => const AssetGenImage('assets/svg_images/Toast.png');
 
@@ -1222,11 +1219,13 @@ class $AssetsSvgImagesGen {
   AssetGenImage get vector =>
       const AssetGenImage('assets/svg_images/Vector.png');
 
+  /// File path: assets/svg_images/Wed Week 2.png
+  AssetGenImage get wedWeek2 =>
+      const AssetGenImage('assets/svg_images/Wed Week 2.png');
+
   /// File path: assets/svg_images/XCircle.png
   AssetGenImage get xCircle =>
       const AssetGenImage('assets/svg_images/XCircle.png');
-
-
 
   /// File path: assets/svg_images/callStarted.png
   AssetGenImage get callStarted =>
@@ -1308,6 +1307,7 @@ class $AssetsSvgImagesGen {
     c,
     d,
     defaultToast,
+    e1,
     e,
     edit,
     errorToast,
@@ -1319,10 +1319,12 @@ class $AssetsSvgImagesGen {
     subscriptionPopupPng,
     subscriptionPopupSvg,
     successToast,
+    thuWeek1,
     toast,
     tomowr,
     trash,
     vector,
+    wedWeek2,
     xCircle,
     callStarted,
     deaMagi,

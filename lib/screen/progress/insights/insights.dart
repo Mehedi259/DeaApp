@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
-import 'package:mobile_app_dea/services/insights_service.dart';
-import 'package:mobile_app_dea/models/insights_models.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/services/insights_service.dart';
+import 'package:nowlii/models/insights_models.dart';
 
 enum DayStatus { skipped, consistent, streak, empty }
 

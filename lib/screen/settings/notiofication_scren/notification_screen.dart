@@ -1,5 +1,5 @@
 // import 'package:flutter/material.dart';
-// import 'package:mobile_app_dea/themes/text_styles.dart';
+// import 'package:nowlii/themes/text_styles.dart';
 
 // class NotificationsScreen extends StatefulWidget {
 //   const NotificationsScreen({Key? key}) : super(key: key);
@@ -157,8 +157,8 @@
 //   }
 // }
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});

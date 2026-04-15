@@ -3,13 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/themes/create_qutes.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/services/insights_service.dart';
-import 'package:mobile_app_dea/services/streak_service.dart';
-import 'package:mobile_app_dea/models/insights_models.dart';
-import 'package:mobile_app_dea/models/streak_model.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/themes/create_qutes.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/services/insights_service.dart';
+import 'package:nowlii/services/streak_service.dart';
+import 'package:nowlii/models/insights_models.dart';
+import 'package:nowlii/models/streak_model.dart';
 
 class MyProgress extends StatefulWidget {
   const MyProgress({super.key});

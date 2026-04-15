@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/widget/animated_onboarding_topbar.dart';
 
 class NowliHowToUse extends StatelessWidget {
   const NowliHowToUse({super.key});

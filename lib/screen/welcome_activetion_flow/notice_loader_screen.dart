@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mobile_app_dea/api/onboarding_data.dart';
-import 'package:mobile_app_dea/api/profile_controller.dart';
-import 'package:mobile_app_dea/api/file_helper.dart';
+import 'package:nowlii/api/onboarding_data.dart';
+import 'package:nowlii/api/profile_controller.dart';
+import 'package:nowlii/api/file_helper.dart';
 
 class NoticeLoaderScreen extends StatefulWidget {
   const NoticeLoaderScreen({super.key});

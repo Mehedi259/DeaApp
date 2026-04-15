@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
-import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
-import 'package:mobile_app_dea/api/auth_controller.dart';
+import 'package:nowlii/core/gen/assets.gen.dart' show Assets;
+import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
+import 'package:nowlii/api/auth_controller.dart';
 
 class ResetPasswordOtpScreen extends StatefulWidget {
   final String email;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:mobile_app_dea/custom_code/bottom_nav.dart';
-import 'package:mobile_app_dea/screen/progress/insights/insights.dart';
-import 'package:mobile_app_dea/screen/progress/my_progress/my_progress.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/custom_code/bottom_nav.dart';
+import 'package:nowlii/screen/progress/insights/insights.dart';
+import 'package:nowlii/screen/progress/my_progress/my_progress.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class Progress extends StatefulWidget {
   const Progress({super.key});

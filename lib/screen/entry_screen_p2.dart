@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
@@ -144,160 +143,200 @@ class _EntryScreenState extends State<EntryScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image with fade
+          // Gradient Background
           Positioned(
-            top: 0,
             left: 0,
-            right: 0,
-            child: FadeTransition(
-              opacity: _imageOpacity,
-              child: Image.asset(
-                Assets.svgImages.enttryTwoScrenn.path,
-                width: double.infinity,
-                fit: BoxFit.cover,
+            top: 0,
+            child: Container(
+              width: w,
+              height: h * 0.777, // 631/812
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment(1.00, 0.10),
+                  end: Alignment(-0.00, 0.11),
+                  colors: [Color(0xFF6991B2), Color(0xFF80A1B9)],
+                ),
               ),
             ),
           ),
 
+          // Background Image with fade
+          Positioned(
+            left: 0,
+            top: h * 0.071, // 58/812
+            child: FadeTransition(
+              opacity: _imageOpacity,
+              child: Container(
+                width: w,
+                height: h * 0.649, // 527.57/812
+                decoration: ShapeDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(Assets.svgImages.enttryTwoScrenn.path),
+                    fit: BoxFit.cover,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.25),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+
+
           // Bottom rounded container with slide and fade
           Positioned(
-            top: h * 0.50,
             left: 0,
-            right: 0,
-            bottom: 0,
+            top: h * 0.503, // 409/812
             child: SlideTransition(
               position: _containerSlide,
               child: FadeTransition(
                 opacity: _containerOpacity,
                 child: Container(
-                  decoration: const BoxDecoration(
+                  width: w,
+                  padding: EdgeInsets.only(
+                    top: h * 0.049, // 40/812
+                    left: w * 0.053, // 20/375
+                    right: w * 0.053,
+                    bottom: h * 0.041, // 34/812
+                  ),
+                  decoration: const ShapeDecoration(
                     color: Color(0xFF4542EB),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(25),
-                      topRight: Radius.circular(25),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
+                      ),
                     ),
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: w * 0.06,
-                      vertical: h * 0.03,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: h * 0.02),
-
-                        /// Heading with slide and fade
-                        SlideTransition(
-                          position: _headingSlide,
-                          child: FadeTransition(
-                            opacity: _headingOpacity,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Heading with slide and fade
+                      SlideTransition(
+                        position: _headingSlide,
+                        child: FadeTransition(
+                          opacity: _headingOpacity,
+                          child: SizedBox(
+                            width: w * 0.893, // 335/375
                             child: Text(
-                              'LET\'S GET\nTHINGS DONE.',
+                              'LET\'S GET THINGS DONE.',
                               style: TextStyle(
                                 color: const Color(0xFFFFFDF7),
-                                fontSize: w * 0.13,
+                                fontSize: w * 0.138, // 52/375
                                 fontFamily: 'Wosker',
                                 fontWeight: FontWeight.w400,
-                                height: 0.85,
+                                height: 0.80,
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: h * 0.01),
+                      ),
+                      SizedBox(height: h * 0.019), // 16/812
 
-                        /// Subtitle with slide and fade
-                        SlideTransition(
-                          position: _subtitleSlide,
-                          child: FadeTransition(
-                            opacity: _subtitleOpacity,
+                      // Subtitle with slide and fade
+                      SlideTransition(
+                        position: _subtitleSlide,
+                        child: FadeTransition(
+                          opacity: _subtitleOpacity,
+                          child: SizedBox(
+                            width: w * 0.837, // 314/375
                             child: Text(
-                              "Your daily push to start - with real \n voice support.",
-                              style: AppsTextStyles.workSansBodyEntryScreen
-                                  .copyWith(
-                                fontSize: w * 0.0410,
+                              'Your daily push to start - with real voice support.',
+                              style: GoogleFonts.workSans(
+                                color: const Color(0xFFC8CBD2),
+                                fontSize: w * 0.048, // 18/375
+                                fontWeight: FontWeight.w400,
+                                height: 1.40,
+                                letterSpacing: -0.72,
                               ),
                             ),
                           ),
                         ),
+                      ),
+                      SizedBox(height: h * 0.029), // 24/812
 
-                        const Spacer(),
-
-                        /// Get Started Button with scale and fade
-                        ScaleTransition(
-                          scale: _button1Scale,
-                          child: FadeTransition(
-                            opacity: _button1Opacity,
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: h * 0.10,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFF8A00),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
+                      // Get Started Button with scale and fade
+                      ScaleTransition(
+                        scale: _button1Scale,
+                        child: FadeTransition(
+                          opacity: _button1Opacity,
+                          child: Container(
+                            width: double.infinity,
+                            height: h * 0.098, // 80/812
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF8F26),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
-                                onPressed: () {
-                                  context.push("/readyToStartScreen");
-                                },
-                                child: Text(
-                                  'Get Started',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.workSans(
-                                    color: const Color(0xFF011F54),
-                                    fontSize: w * 0.059,
-                                    fontWeight: FontWeight.w900,
-                                    height: 1.0,
-                                  ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: w * 0.106, // 40/375
+                                  vertical: h * 0.034, // 28/812
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: h * 0.015),
-
-                        /// Have an Account Button with scale and fade
-                        ScaleTransition(
-                          scale: _button2Scale,
-                          child: FadeTransition(
-                            opacity: _button2Opacity,
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: h * 0.10,
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                    color: Colors.white,
-                                    width: w * 0.007,
-                                  ),
-                                  backgroundColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  context.push("/signInScreen");
-                                },
-                                child: Text(
-                                  'Have an account?',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.workSans(
-                                    color: const Color(0xFFFFFDF7),
-                                    fontSize: w * 0.059,
-                                    fontWeight: FontWeight.w900,
-                                    height: 1.0,
-                                  ),
+                              onPressed: () {
+                                context.push("/readyToStartScreen");
+                              },
+                              child: Text(
+                                'Get Started',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.workSans(
+                                  color: const Color(0xFF011F54),
+                                  fontSize: w * 0.064, // 24/375
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.80,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: h * 0.02),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: h * 0.009), // 8/812
+
+                      // Have an Account Button with scale and fade
+                      ScaleTransition(
+                        scale: _button2Scale,
+                        child: FadeTransition(
+                          opacity: _button2Opacity,
+                          child: Container(
+                            width: double.infinity,
+                            height: h * 0.098, // 80/812
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  width: 2,
+                                  color: Color(0xFFFFFDF7),
+                                ),
+                                backgroundColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: w * 0.106,
+                                  vertical: h * 0.034,
+                                ),
+                              ),
+                              onPressed: () {
+                                context.push("/signInScreen");
+                              },
+                              child: Text(
+                                'Have an account?',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.workSans(
+                                  color: const Color(0xFFFFFDF7),
+                                  fontSize: w * 0.064, // 24/375
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.80,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

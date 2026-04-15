@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import '../api/api_constant.dart';
 
 class Subtask {
   final int id;
@@ -64,7 +65,7 @@ class Quest {
 }
 
 class QuestService {
-  static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev/api';
+  static String get baseUrl => '${ApiConstants.baseUrl}/api';
 
   Future<String> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -82,6 +83,7 @@ class QuestService {
         headers: {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
         },
       );
 
@@ -109,6 +111,7 @@ class QuestService {
         headers: {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
         },
       );
 
@@ -133,6 +136,7 @@ class QuestService {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: json.encode({'task_done': taskDone}),
       );
@@ -153,6 +157,7 @@ class QuestService {
         headers: {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
         },
       );
 
@@ -173,6 +178,7 @@ class QuestService {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: json.encode({'select_a_date': newDate}),
       );
@@ -213,6 +219,7 @@ class QuestService {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: json.encode(body),
       );
@@ -258,6 +265,7 @@ class QuestService {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: json.encode(body),
       );

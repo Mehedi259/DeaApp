@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});

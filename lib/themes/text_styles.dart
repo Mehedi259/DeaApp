@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 class AppsTextStyles {
   static TextStyle workSansBodyEntryScreen = GoogleFonts.workSans(

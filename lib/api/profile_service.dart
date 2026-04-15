@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_app_dea/api/api_constant.dart';
-import 'package:mobile_app_dea/api/profile_model.dart';
-import 'package:mobile_app_dea/api/storage.dart';
+import 'package:nowlii/api/api_constant.dart';
+import 'package:nowlii/api/profile_model.dart';
+import 'package:nowlii/api/storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ProfileService {
@@ -43,6 +43,7 @@ class ProfileService {
       multipartRequest.headers.addAll({
         'Authorization': 'Bearer $token',
         'Accept': ApiConstants.accept,
+        'ngrok-skip-browser-warning': 'true',
       });
       
       // Add text fields
@@ -168,6 +169,7 @@ class ProfileService {
           'Content-Type': ApiConstants.contentType,
           'Accept': ApiConstants.accept,
           'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
         },
       );
 
@@ -249,6 +251,7 @@ class ProfileService {
       multipartRequest.headers.addAll({
         'Authorization': 'Bearer $token',
         'Accept': ApiConstants.accept,
+        'ngrok-skip-browser-warning': 'true',
       });
       
       // Add text fields

@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/custom_code/bottom_nav.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/custom_code/bottom_nav.dart';
 
-import 'package:mobile_app_dea/screen/home/swipe_on_quest/delete_toast.dart';
-import 'package:mobile_app_dea/screen/home/swipe_on_quest/tomorow_card.dart';
-import 'package:mobile_app_dea/screen/remiender_notification/ai_call_remiender/default-yellow/default_yellow.dart';
-import 'package:mobile_app_dea/screen/remiender_notification/ai_call_remiender/error_tueast/error_tueast.dart';
-import 'package:mobile_app_dea/screen/remiender_notification/ai_call_remiender/quest_suggestion_purple/quest_suggestion_purple.dart';
-import 'package:mobile_app_dea/screen/remiender_notification/ai_call_remiender/success_tueast/success_tueast.dart';
-import 'package:mobile_app_dea/themes/create_qutes.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/screen/home/swipe_on_quest/delete_toast.dart';
+import 'package:nowlii/screen/home/swipe_on_quest/tomorow_card.dart';
+import 'package:nowlii/screen/remiender_notification/ai_call_remiender/default-yellow/default_yellow.dart';
+import 'package:nowlii/screen/remiender_notification/ai_call_remiender/error_tueast/error_tueast.dart';
+import 'package:nowlii/screen/remiender_notification/ai_call_remiender/quest_suggestion_purple/quest_suggestion_purple.dart';
+import 'package:nowlii/screen/remiender_notification/ai_call_remiender/success_tueast/success_tueast.dart';
+import 'package:nowlii/themes/create_qutes.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 class AiCallRemiender extends StatefulWidget {
   const AiCallRemiender({super.key});

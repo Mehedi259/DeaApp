@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
-import 'package:mobile_app_dea/screen/home/swaipe_to_talk/screen_flow_controller.dart';
+import 'package:nowlii/screen/home/swaipe_to_talk/screen_flow_controller.dart';
 
 class PoupError extends StatefulWidget {
   const PoupError({super.key});

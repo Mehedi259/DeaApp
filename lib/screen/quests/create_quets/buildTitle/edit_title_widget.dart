@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/themes/create_qutes.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/themes/create_qutes.dart';
 
 class EditTitleWidget extends StatelessWidget {
   final double scale;

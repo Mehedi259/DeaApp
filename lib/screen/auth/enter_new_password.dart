@@ -1,8 +1,8 @@
 // import 'package:flutter/material.dart';
 // import 'package:google_fonts/google_fonts.dart';
-// import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
-// import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
-// import 'package:mobile_app_dea/screen/auth/password_updated_popup_screen.dart'
+// import 'package:nowlii/core/gen/assets.gen.dart' show Assets;
+// import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
+// import 'package:nowlii/screen/auth/password_updated_popup_screen.dart'
 //     show PasswordUpdatedPopupScreen;
 
 // class EnterNewPassword extends StatefulWidget {
@@ -461,11 +461,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
-import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
-import 'package:mobile_app_dea/screen/auth/password_updated_popup_screen.dart'
+import 'package:nowlii/core/gen/assets.gen.dart' show Assets;
+import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
+import 'package:nowlii/screen/auth/password_updated_popup_screen.dart'
     show PasswordUpdatedPopupScreen;
-import 'package:mobile_app_dea/api/auth_controller.dart';
+import 'package:nowlii/api/auth_controller.dart';
 
 class EnterNewPassword extends StatefulWidget {
   final String? email;

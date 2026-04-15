@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/api/profile_controller.dart';
-import 'package:mobile_app_dea/api/profile_model.dart';
+import 'package:nowlii/api/profile_controller.dart';
+import 'package:nowlii/api/profile_model.dart';
 
 class ProfileTestScreen extends StatefulWidget {
   const ProfileTestScreen({super.key});

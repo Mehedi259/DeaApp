@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:mobile_app_dea/api/api_constant.dart';
-import 'package:mobile_app_dea/models/ai_call_models.dart';
+import 'package:nowlii/api/api_constant.dart';
+import 'package:nowlii/models/ai_call_models.dart';
 
 class AiCallService {
   // Create a new session

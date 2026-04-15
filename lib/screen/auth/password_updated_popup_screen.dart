@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
+import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
 
 class PasswordUpdatedPopupScreen extends StatelessWidget {
   const PasswordUpdatedPopupScreen({super.key});

@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:google_fonts/google_fonts.dart';
-// import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-// import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+// import 'package:nowlii/core/gen/assets.gen.dart';
+// import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 // class ShuffleScreen extends StatelessWidget {
 //   const ShuffleScreen({super.key});
@@ -555,8 +555,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 class ShuffleScreen extends StatelessWidget {
   const ShuffleScreen({super.key});
@@ -581,7 +581,7 @@ class ShuffleScreen extends StatelessWidget {
                     softSteps: 'Soft steps',
                     hardSteps: '10 mins',
                     imagePath: Assets.svgIcons.moon4.path,
-                    emoji: Assets.svgIcons.moonPng_.path,
+                    emoji: Assets.svgIcons.moon.path,
                     hardStepsColor: const Color(0xFF89B6F8),
                     softStepsColor: AppColorsApps.freshGreen,
                   ),

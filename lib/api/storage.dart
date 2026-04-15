@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mobile_app_dea/api/profile_model.dart';
+import 'package:nowlii/api/profile_model.dart';
 
 class StorageService {
   static const String _accessTokenKey = 'access_token';

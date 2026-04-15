@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/screen/home/swaipe_to_talk/screen_flow_controller.dart';
-import 'package:mobile_app_dea/screen/home/swaipe_to_talk/voice_cheack/voice_check_controller.dart';
+import 'package:nowlii/screen/home/swaipe_to_talk/screen_flow_controller.dart';
+import 'package:nowlii/screen/home/swaipe_to_talk/voice_cheack/voice_check_controller.dart';
 
 /// Main Voice Check Popup Widget
 class PoupYourShareYou extends StatefulWidget {

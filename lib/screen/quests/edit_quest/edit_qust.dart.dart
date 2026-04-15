@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/screen/quests/create_quets/_buildInputCard/input_widget_card.dart';
-import 'package:mobile_app_dea/screen/quests/create_quets/buildAddSubtasksButton/build_add_subtask_button.dart';
-import 'package:mobile_app_dea/screen/quests/create_quets/buildTitle/title_widget.dart';
-import 'package:mobile_app_dea/screen/quests/create_quets/select_zone_card/select_zone_card.dart';
-import 'package:mobile_app_dea/screen/quests/create_quets/when_card/when_card.dart';
-import 'package:mobile_app_dea/screen/quests/edit_quest/enabable_card_edit/enabable_card_edit.dart';
-import 'package:mobile_app_dea/screen/quests/edit_quest/repeat_quest_repit_edit_card_/repeat_quest_card_edit_card.dart';
-import 'package:mobile_app_dea/themes/create_qutes.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/screen/quests/create_quets/_buildInputCard/input_widget_card.dart';
+import 'package:nowlii/screen/quests/create_quets/buildAddSubtasksButton/build_add_subtask_button.dart';
+import 'package:nowlii/screen/quests/create_quets/buildTitle/title_widget.dart';
+import 'package:nowlii/screen/quests/create_quets/select_zone_card/select_zone_card.dart';
+import 'package:nowlii/screen/quests/create_quets/when_card/when_card.dart';
+import 'package:nowlii/screen/quests/edit_quest/enabable_card_edit/enabable_card_edit.dart';
+import 'package:nowlii/screen/quests/edit_quest/repeat_quest_repit_edit_card_/repeat_quest_card_edit_card.dart';
+import 'package:nowlii/themes/create_qutes.dart';
 
 class EditQuestPage extends StatefulWidget {
   const EditQuestPage({super.key});

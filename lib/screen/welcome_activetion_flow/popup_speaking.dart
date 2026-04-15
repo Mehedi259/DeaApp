@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/api/onboarding_data.dart';
+import 'package:nowlii/api/onboarding_data.dart';
 
 class PopupSpeaking extends StatefulWidget {
   const PopupSpeaking({super.key});

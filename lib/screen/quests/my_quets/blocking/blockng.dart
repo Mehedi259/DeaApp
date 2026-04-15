@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/services/quest_service.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/services/quest_service.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class Blockng extends StatefulWidget {
   const Blockng({super.key});

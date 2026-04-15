@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
 
 /// Enum representing each screen in the flow
 enum FlowScreen {

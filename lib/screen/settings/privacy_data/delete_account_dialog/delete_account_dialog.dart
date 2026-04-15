@@ -1,7 +1,7 @@
 // Delete Account Confirmation Dialog
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class DeleteAccountDialog extends StatelessWidget {
   const DeleteAccountDialog({super.key});

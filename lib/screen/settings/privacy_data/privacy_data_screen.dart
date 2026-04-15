@@ -1,9 +1,9 @@
 // AppsTextStyles.textDefaultStyle
 
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/screen/settings/privacy_data/delete_account_dialog/delete_account_dialog.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/screen/settings/privacy_data/delete_account_dialog/delete_account_dialog.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class PrivacyDataScreen extends StatelessWidget {
   const PrivacyDataScreen({super.key});

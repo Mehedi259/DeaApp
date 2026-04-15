@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/themes/create_qutes.dart';
+import 'package:nowlii/themes/create_qutes.dart';
 
 class TimePickerCard extends StatefulWidget {
   final double scale;

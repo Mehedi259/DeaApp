@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/custom_code/bottom_nav.dart';
-import 'package:mobile_app_dea/screen/quests/my_quets/blocking/blockng.dart';
-import 'package:mobile_app_dea/screen/quests/my_quets/completed/completed.dart';
-import 'package:mobile_app_dea/screen/quests/my_quets/scheduled/scheduled.dart';
-import 'package:mobile_app_dea/screen/quests/my_quets/today/today.dart';
-import 'package:mobile_app_dea/screen/quests/suggested/soft_steps/soft_steps.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/custom_code/bottom_nav.dart';
+import 'package:nowlii/screen/quests/my_quets/blocking/blockng.dart';
+import 'package:nowlii/screen/quests/my_quets/completed/completed.dart';
+import 'package:nowlii/screen/quests/my_quets/scheduled/scheduled.dart';
+import 'package:nowlii/screen/quests/my_quets/today/today.dart';
+import 'package:nowlii/screen/quests/suggested/soft_steps/soft_steps.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class QuestHomePage extends StatefulWidget {
   const QuestHomePage({super.key});

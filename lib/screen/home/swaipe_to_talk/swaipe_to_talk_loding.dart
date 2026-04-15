@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/screen/home/swaipe_to_talk/screen_flow_controller.dart';
+import 'package:nowlii/screen/home/swaipe_to_talk/screen_flow_controller.dart';
 
 class SwipeToTalkLoading extends StatefulWidget {
   const SwipeToTalkLoading({super.key});

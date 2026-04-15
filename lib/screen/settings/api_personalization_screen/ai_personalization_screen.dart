@@ -1,9 +1,9 @@
 // import 'package:flutter/material.dart';
-// import 'package:mobile_app_dea/screen/settings/api_personalization_screen/clear_memory_popup/clear_memory_popup.dart';
-// import 'package:mobile_app_dea/screen/settings/api_personalization_screen/restricted_topiccs_popup/restricted_topiccs_popup.dart';
-// import 'package:mobile_app_dea/screen/settings/api_personalization_screen/voice_selector_popup/voice_selector_popup.dart';
-// import 'package:mobile_app_dea/themes/text_styles.dart';
-// import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+// import 'package:nowlii/screen/settings/api_personalization_screen/clear_memory_popup/clear_memory_popup.dart';
+// import 'package:nowlii/screen/settings/api_personalization_screen/restricted_topiccs_popup/restricted_topiccs_popup.dart';
+// import 'package:nowlii/screen/settings/api_personalization_screen/voice_selector_popup/voice_selector_popup.dart';
+// import 'package:nowlii/themes/text_styles.dart';
+// import 'package:nowlii/core/gen/assets.gen.dart';
 
 // class AIPersonalizationScreen extends StatefulWidget {
 //   const AIPersonalizationScreen({Key? key}) : super(key: key);
@@ -245,11 +245,11 @@
 //   }
 // }
 import 'package:flutter/material.dart';
-import 'package:mobile_app_dea/screen/settings/api_personalization_screen/clear_memory_popup/clear_memory_popup.dart';
-import 'package:mobile_app_dea/screen/settings/api_personalization_screen/restricted_topiccs_popup/restricted_topiccs_popup.dart';
-import 'package:mobile_app_dea/screen/settings/api_personalization_screen/voice_selector_popup/voice_selector_popup.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:nowlii/screen/settings/api_personalization_screen/clear_memory_popup/clear_memory_popup.dart';
+import 'package:nowlii/screen/settings/api_personalization_screen/restricted_topiccs_popup/restricted_topiccs_popup.dart';
+import 'package:nowlii/screen/settings/api_personalization_screen/voice_selector_popup/voice_selector_popup.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
 class AIPersonalizationScreen extends StatefulWidget {
   const AIPersonalizationScreen({super.key});

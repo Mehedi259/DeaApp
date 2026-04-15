@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/screen/settings/api_personalization_screen/ai_personalization_screen.dart';
-import 'package:mobile_app_dea/screen/settings/language/languegs_selector_screen.dart';
-import 'package:mobile_app_dea/screen/settings/notiofication_scren/notification_screen.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/screen/settings/api_personalization_screen/ai_personalization_screen.dart';
+import 'package:nowlii/screen/settings/language/languegs_selector_screen.dart';
+import 'package:nowlii/screen/settings/notiofication_scren/notification_screen.dart';
 
-import 'package:mobile_app_dea/screen/settings/privacy_data/privacy_data_screen.dart';
-import 'package:mobile_app_dea/screen/settings/rate_nowli/rate_nowli.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
+import 'package:nowlii/screen/settings/privacy_data/privacy_data_screen.dart';
+import 'package:nowlii/screen/settings/rate_nowli/rate_nowli.dart';
+import 'package:nowlii/themes/text_styles.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

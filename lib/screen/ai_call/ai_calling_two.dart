@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
 
 class AicallingTwo extends StatefulWidget {
   const AicallingTwo({super.key});

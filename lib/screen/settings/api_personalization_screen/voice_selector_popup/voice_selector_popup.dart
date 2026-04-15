@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
 
 class VoiceSelectorPopup extends StatefulWidget {
   const VoiceSelectorPopup({super.key});

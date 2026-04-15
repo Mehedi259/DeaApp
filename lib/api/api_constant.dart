@@ -1,6 +1,6 @@
 class ApiConstants {
   // Main Backend API URL
-  static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev';
+  static const String baseUrl = 'https://eastward-hurricane-squeezing.ngrok-free.dev';
   
   // AI Backend API URL (separate server)
   static const String aiBaseUrl = 'https://apricot-rhyme-humming.ngrok-free.dev';

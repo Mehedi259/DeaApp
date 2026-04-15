@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_app_dea/api/profile_model.dart';
-import 'package:mobile_app_dea/api/profile_service.dart';
+import 'package:nowlii/api/profile_model.dart';
+import 'package:nowlii/api/profile_service.dart';
 
 class ProfileController extends ChangeNotifier {
   ProfileModel? _profile;

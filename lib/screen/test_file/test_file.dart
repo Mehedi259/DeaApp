@@ -3,16 +3,16 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:confetti/confetti.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/custom_code/bottom_nav.dart';
-import 'package:mobile_app_dea/screen/home/contextual_onboarding/popup_screen.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/custom_code/bottom_nav.dart';
+import 'package:nowlii/screen/home/contextual_onboarding/popup_screen.dart';
 
-import 'package:mobile_app_dea/screen/home/swipe_on_quest/delete_toast.dart';
-import 'package:mobile_app_dea/screen/home/swipe_on_quest/tomorow_card.dart';
-import 'package:mobile_app_dea/themes/create_qutes.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/screen/home/swipe_on_quest/delete_toast.dart';
+import 'package:nowlii/screen/home/swipe_on_quest/tomorow_card.dart';
+import 'package:nowlii/themes/create_qutes.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/utlis/color_palette/color_palette.dart';
 import 'dart:math';
 
 // Import the notification system

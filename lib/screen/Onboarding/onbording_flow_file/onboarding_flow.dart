@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/api/onboarding_data.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/screen/Onboarding/ProfileSetup/gender_page.dart';
-import 'package:mobile_app_dea/screen/Onboarding/ProfileSetup/name_page.dart'
+import 'package:nowlii/api/onboarding_data.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/screen/Onboarding/ProfileSetup/gender_page.dart';
+import 'package:nowlii/screen/Onboarding/ProfileSetup/name_page.dart'
     show NamePage;
-import 'package:mobile_app_dea/widget/animated_onboarding_topbar.dart';
+import 'package:nowlii/widget/animated_onboarding_topbar.dart';
 
 class OnboardingFlow extends StatefulWidget {
   final int initialPage;

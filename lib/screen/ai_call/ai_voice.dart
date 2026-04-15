@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_dea/core%20/app_routes/app_routes.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart';
-import 'package:mobile_app_dea/services/ai_call_service.dart';
-import 'package:mobile_app_dea/models/ai_call_models.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/themes/text_styles.dart';
+import 'package:nowlii/services/ai_call_service.dart';
+import 'package:nowlii/models/ai_call_models.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:mobile_app_dea/services/web_speech_service.dart';
-import 'package:mobile_app_dea/services/audio_stream_service.dart';
+import 'package:nowlii/services/web_speech_service.dart';
+import 'package:nowlii/services/audio_stream_service.dart';
 
 class AiVoice extends StatefulWidget {
   const AiVoice({super.key});

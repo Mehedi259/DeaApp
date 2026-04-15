@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart';
-import 'package:mobile_app_dea/api/profile_controller.dart';
+import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/api/profile_controller.dart';
 
 class EditFrom extends StatefulWidget {
   const EditFrom({super.key});

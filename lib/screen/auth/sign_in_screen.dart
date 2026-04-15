@@ -4,10 +4,10 @@ import 'package:flutter_svg/svg.dart' show SvgPicture;
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app_dea/core/gen/assets.gen.dart' show Assets;
-import 'package:mobile_app_dea/screen/auth/sign_in_controller.dart';
-import 'package:mobile_app_dea/themes/text_styles.dart' show AppsTextStyles;
-import 'package:mobile_app_dea/api/auth_controller.dart';
+import 'package:nowlii/core/gen/assets.gen.dart' show Assets;
+import 'package:nowlii/screen/auth/sign_in_controller.dart';
+import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
+import 'package:nowlii/api/auth_controller.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -479,35 +479,38 @@ class _SignInScreenState extends State<SignInScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Forgot password?',
-          style: GoogleFonts.workSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF595754),
-            letterSpacing: -0.50,
+        Flexible(
+          child: Text(
+            'Forgot password?',
+            style: GoogleFonts.workSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF595754),
+              letterSpacing: -0.50,
+            ),
           ),
         ),
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: 'It happens! ',
-                style: GoogleFonts.workSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF595754),
-                  letterSpacing: -0.50,
+        Flexible(
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: 'It happens! ',
+                  style: GoogleFonts.workSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF595754),
+                    letterSpacing: -0.50,
+                  ),
                 ),
-              ),
-              TextSpan(
-                text: 'Reset it here.',
-                style: GoogleFonts.workSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF011F54),
-                  letterSpacing: -0.50,
-                  decoration: TextDecoration.underline,
+                TextSpan(
+                  text: 'Reset it here.',
+                  style: GoogleFonts.workSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF011F54),
+                    letterSpacing: -0.50,
+                    decoration: TextDecoration.underline,
                   decorationColor: const Color(0xFF011F54),
                 ),
                 recognizer: TapGestureRecognizer()
@@ -516,6 +519,7 @@ class _SignInScreenState extends State<SignInScreen>
                   },
               ),
             ],
+          ),
           ),
         ),
       ],

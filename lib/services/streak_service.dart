@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:mobile_app_dea/api/api_constant.dart';
-import 'package:mobile_app_dea/models/streak_model.dart';
+import 'package:nowlii/api/api_constant.dart';
+import 'package:nowlii/models/streak_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StreakService {
@@ -28,6 +28,7 @@ class StreakService {
           'Content-Type': ApiConstants.contentType,
           'Accept': ApiConstants.accept,
           'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
         },
       );
 

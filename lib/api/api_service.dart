@@ -19,6 +19,7 @@ class ApiService {
         headers: {
           'Content-Type': ApiConstants.contentType,
           'accept': ApiConstants.accept,
+          'ngrok-skip-browser-warning': 'true',
         },
         body: jsonEncode(body),
       );
