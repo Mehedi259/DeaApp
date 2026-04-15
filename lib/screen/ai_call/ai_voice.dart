@@ -98,6 +98,13 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
     _createAiSession();
     
     _startCall();
+    
+    // Auto-start listening after a short delay
+    Future.delayed(Duration(milliseconds: 1500), () {
+      if (mounted && !_isMuted) {
+        _startListening();
+      }
+    });
   }
   
   Future<void> _initializeAudioStreaming() async {
@@ -892,59 +899,11 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
                         // Avatar with progress
                         _buildAvatarWithProgress(size),
                         
-                        // Emotion and AI Response Display
-                        if (_currentEmotion != null || _aiResponse.isNotEmpty || _liveTranscription.isNotEmpty)
-                          Flexible(
-                            child: SingleChildScrollView(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                // Live transcription (what you're saying)
-                                if (_liveTranscription.isNotEmpty && _isListening)
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: Colors.blue, width: 2),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                    children: [
-                                      Icon(Icons.mic, color: Colors.blue, size: 16),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'You:',
-                                        style: TextStyle(
-                                          color: Colors.blue,
-                                          fontSize: 12,
-                                          fontFamily: 'Work Sans',
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    _liveTranscription,
-                                    style: TextStyle(
-                                      color: const Color(0xFF011F54),
-                                      fontSize: 14,
-                                      fontFamily: 'Work Sans',
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (_liveTranscription.isNotEmpty && _isListening)
-                            const SizedBox(height: 8),
-                          if (_currentEmotion != null)
-                            Container(
+                        // Emotion Display Only (no text transcription or AI response)
+                        if (_currentEmotion != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.9),
@@ -971,85 +930,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
                                 ],
                               ),
                             ),
-                          if (_aiResponse.isNotEmpty)
-                            const SizedBox(height: 8),
-                          if (_aiResponse.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.smart_toy, color: const Color(0xFF4542EB), size: 16),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'AI:',
-                                        style: TextStyle(
-                                          color: const Color(0xFF4542EB),
-                                          fontSize: 12,
-                                          fontFamily: 'Work Sans',
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    _aiResponse,
-                                    style: TextStyle(
-                                      color: const Color(0xFF011F54),
-                                      fontSize: 14,
-                                      fontFamily: 'Work Sans',
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (_isListening && _liveTranscription.isEmpty)
-                            const SizedBox(height: 8),
-                          if (_isListening && _liveTranscription.isEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.red, width: 2),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Listening...',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 14,
-                                      fontFamily: 'Work Sans',
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                          ),
                   
                   const Spacer(),
 
