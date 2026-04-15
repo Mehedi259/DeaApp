@@ -149,27 +149,20 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       _speechEnabled = await _speech.initialize(
         onError: (error) {
           print('❌ Speech error: $error');
-          // Don't stop listening on no_match error, just continue
-          if (error.errorMsg != 'error_no_match') {
-            if (mounted) {
-              setState(() {
-                _isListening = false;
-              });
-            }
-          } else {
-            print('⚠️ No match error - continuing to listen...');
+          // Stop listening on any error
+          if (mounted) {
+            setState(() {
+              _isListening = false;
+            });
           }
         },
         onStatus: (status) {
           print('📊 Speech status: $status');
+          // Don't auto-restart, let TTS completion handle it
           if (status == 'done' || status == 'notListening') {
-            if (mounted && _isListening) {
-              print('🔄 Speech stopped, restarting...');
-              // Auto-restart listening if we're supposed to be listening
-              Future.delayed(Duration(milliseconds: 500), () {
-                if (mounted && !_isHandlingAiResponse && !_isMuted && !_isPaused) {
-                  _startListening();
-                }
+            if (mounted) {
+              setState(() {
+                _isListening = false;
               });
             }
           }
@@ -291,6 +284,12 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       return;
     }
     
+    // Don't start if already listening
+    if (_isListening) {
+      print('⚠️ Already listening, skipping...');
+      return;
+    }
+    
     print('🎤 Starting microphone input...');
     
     setState(() {
@@ -325,61 +324,30 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
         return;
       }
       
-      bool available = await _speech.initialize(
-        onError: (error) {
-          print('❌ Speech error: $error');
-          // Don't stop on no_match, just continue
-          if (error.errorMsg != 'error_no_match') {
-            if (mounted) {
-              setState(() {
-                _isListening = false;
-              });
-            }
-          }
-        },
-        onStatus: (status) {
-          print('📊 Speech status: $status');
-          if (status == 'done' || status == 'notListening') {
-            print('� Checking transcription: "$_liveTranscription"');
-            // Auto-send when speech ends
-            if (_liveTranscription.trim().isNotEmpty && !_isHandlingAiResponse) {
-              final textToSend = _liveTranscription.trim();
-              print('📤 Sending to AI: "$textToSend"');
-              setState(() {
-                _liveTranscription = '';
-                _isListening = false;
-              });
-              _sendMessageToAi(textToSend);
-            } else {
-              print('⚠️ Not sending - transcription empty or AI busy');
-              if (mounted) {
-                setState(() {
-                  _isListening = false;
-                });
-              }
-            }
-          }
-        },
-      );
-      
-      if (available) {
+      // Don't re-initialize, just start listening directly
+      try {
         print('✅ Starting to listen...');
-        _speech.listen(
+        await _speech.listen(
           onResult: (result) {
             final recognizedText = result.recognizedWords.trim();
             print('📝 Live transcription: "$recognizedText" (final: ${result.finalResult})');
-            setState(() {
-              _liveTranscription = recognizedText;
-            });
+            
+            if (mounted) {
+              setState(() {
+                _liveTranscription = recognizedText;
+              });
+            }
             
             // If this is a final result and we have text, send it immediately
             if (result.finalResult && recognizedText.isNotEmpty && !_isHandlingAiResponse) {
               print('✅ Final result detected, sending immediately');
               final textToSend = recognizedText;
-              setState(() {
-                _liveTranscription = '';
-                _isListening = false;
-              });
+              if (mounted) {
+                setState(() {
+                  _liveTranscription = '';
+                  _isListening = false;
+                });
+              }
               _speech.stop();
               _sendMessageToAi(textToSend);
             }
@@ -391,18 +359,19 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
           listenMode: stt.ListenMode.dictation,
           localeId: 'en_US',
         );
-      } else {
-        print('⚠️ Speech recognition not available');
-        setState(() {
-          _isListening = false;
-        });
-        // Show error to user
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not start voice recognition. Please try again.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+      } catch (e) {
+        print('❌ Error starting speech recognition: $e');
+        if (mounted) {
+          setState(() {
+            _isListening = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not start voice recognition. Please try again.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       }
     }
   }
