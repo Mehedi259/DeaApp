@@ -755,7 +755,12 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
     
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        context.go(AppRoutespath.callSummary);
+        // Pass session ID to call summary screen
+        if (_currentSession != null) {
+          context.go('${AppRoutespath.callSummary}?sessionId=${_currentSession!.sessionId}');
+        } else {
+          context.go(AppRoutespath.callSummary);
+        }
       }
     });
   }
@@ -768,7 +773,15 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
 
   void _onWrapUpYes() {
     _timer?.cancel();
-    _onQuestComplete();
+    
+    // Navigate to call summary with session ID
+    if (mounted) {
+      if (_currentSession != null) {
+        context.go('${AppRoutespath.callSummary}?sessionId=${_currentSession!.sessionId}');
+      } else {
+        context.go(AppRoutespath.callSummary);
+      }
+    }
   }
 
   void _onWrapUpContinue() {

@@ -209,7 +209,10 @@ class AppPages {
       ),
       GoRoute(
         path: AppRoutespath.callSummary,
-        builder: (context, state) => const CallSummaryScreen(),
+        builder: (context, state) {
+          final sessionId = state.uri.queryParameters['sessionId'];
+          return CallSummaryScreen(sessionId: sessionId);
+        },
       ),
       GoRoute(
         path: AppRoutespath.popPoSahre,
