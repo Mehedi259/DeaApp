@@ -11,6 +11,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:nowlii/services/web_speech_service.dart';
 import 'package:nowlii/services/audio_stream_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AiVoice extends StatefulWidget {
   const AiVoice({super.key});
@@ -110,10 +111,80 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   
   Future<void> _initializeSpeech() async {
     _speech = stt.SpeechToText();
-    _speechEnabled = await _speech.initialize(
-      onError: (error) => print('Speech error: $error'),
-      onStatus: (status) => print('Speech status: $status'),
-    );
+    try {
+      // Check microphone permission first
+      if (!kIsWeb) {
+        final micPermission = await Permission.microphone.status;
+        print('🎤 Microphone permission status: $micPermission');
+        
+        if (!micPermission.isGranted) {
+          print('⚠️ Requesting microphone permission...');
+          final result = await Permission.microphone.request();
+          
+          if (!result.isGranted) {
+            print('❌ Microphone permission denied');
+            _speechEnabled = false;
+            
+            // Show error to user
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Microphone permission is required for voice input'),
+                  backgroundColor: Colors.red,
+                  action: SnackBarAction(
+                    label: 'Settings',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      openAppSettings();
+                    },
+                  ),
+                ),
+              );
+            }
+            return;
+          }
+        }
+      }
+      
+      _speechEnabled = await _speech.initialize(
+        onError: (error) {
+          print('❌ Speech error: $error');
+          // Don't stop listening on no_match error, just continue
+          if (error.errorMsg != 'error_no_match') {
+            if (mounted) {
+              setState(() {
+                _isListening = false;
+              });
+            }
+          } else {
+            print('⚠️ No match error - continuing to listen...');
+          }
+        },
+        onStatus: (status) {
+          print('📊 Speech status: $status');
+          if (status == 'done' || status == 'notListening') {
+            if (mounted && _isListening) {
+              print('🔄 Speech stopped, restarting...');
+              // Auto-restart listening if we're supposed to be listening
+              Future.delayed(Duration(milliseconds: 500), () {
+                if (mounted && !_isHandlingAiResponse && !_isMuted && !_isPaused) {
+                  _startListening();
+                }
+              });
+            }
+          }
+        },
+      );
+      
+      if (_speechEnabled) {
+        print('✅ Speech recognition initialized successfully');
+      } else {
+        print('⚠️ Speech recognition not available on this device');
+      }
+    } catch (e) {
+      print('❌ Speech initialization error: $e');
+      _speechEnabled = false;
+    }
   }
   
   Future<void> _initializeTts() async {
@@ -233,19 +304,43 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       // Use speech_to_text for mobile
       print('🎤 Starting speech recognition...');
       
+      // Check if speech recognition is available
+      if (!_speechEnabled) {
+        print('⚠️ Speech recognition not initialized, initializing now...');
+        await _initializeSpeech();
+      }
+      
+      if (!_speechEnabled) {
+        print('❌ Speech recognition not available');
+        setState(() {
+          _isListening = false;
+        });
+        // Show error to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Microphone not available. Please check permissions.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
       bool available = await _speech.initialize(
         onError: (error) {
           print('❌ Speech error: $error');
-          if (mounted) {
-            setState(() {
-              _isListening = false;
-            });
+          // Don't stop on no_match, just continue
+          if (error.errorMsg != 'error_no_match') {
+            if (mounted) {
+              setState(() {
+                _isListening = false;
+              });
+            }
           }
         },
         onStatus: (status) {
           print('📊 Speech status: $status');
           if (status == 'done' || status == 'notListening') {
-            print('🔍 Checking transcription: "$_liveTranscription"');
+            print('� Checking transcription: "$_liveTranscription"');
             // Auto-send when speech ends
             if (_liveTranscription.trim().isNotEmpty && !_isHandlingAiResponse) {
               final textToSend = _liveTranscription.trim();
@@ -268,6 +363,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       );
       
       if (available) {
+        print('✅ Starting to listen...');
         _speech.listen(
           onResult: (result) {
             final recognizedText = result.recognizedWords.trim();
@@ -288,17 +384,25 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
               _sendMessageToAi(textToSend);
             }
           },
-          listenFor: Duration(seconds: 30),
-          pauseFor: Duration(seconds: 3),
+          listenFor: Duration(seconds: 60),
+          pauseFor: Duration(seconds: 5),
           partialResults: true,
-          cancelOnError: true,
-          listenMode: stt.ListenMode.confirmation,
+          cancelOnError: false,
+          listenMode: stt.ListenMode.dictation,
+          localeId: 'en_US',
         );
       } else {
         print('⚠️ Speech recognition not available');
         setState(() {
           _isListening = false;
         });
+        // Show error to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not start voice recognition. Please try again.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
     }
   }
