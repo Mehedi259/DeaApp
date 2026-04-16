@@ -10,9 +10,24 @@ class EmotionShareScreen extends StatefulWidget {
 }
 
 class _EmotionShareScreenState extends State<EmotionShareScreen> {
+  bool _isListening = false;
+
   void _startRecording() {
-    // Navigate to speaking screen
-    context.go(AppRoutespath.emotionSpeakingScreen);
+    setState(() {
+      _isListening = true;
+    });
+    // Show listening animation for a moment before navigating
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        context.go(AppRoutespath.emotionSpeakingScreen);
+      }
+    });
+  }
+
+  void _stopRecording() {
+    setState(() {
+      _isListening = false;
+    });
   }
 
   @override
@@ -107,6 +122,7 @@ class _EmotionShareScreenState extends State<EmotionShareScreen> {
                     child: Center(
                       child: GestureDetector(
                         onLongPressStart: (_) => _startRecording(),
+                        onLongPressEnd: (_) => _stopRecording(),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -142,16 +158,14 @@ class _EmotionShareScreenState extends State<EmotionShareScreen> {
                                 ],
                               ),
                             ),
-                            // Avatar Image
-                            Container(
+                            // Logo Image (changes based on listening state)
+                            Image.asset(
+                              _isListening 
+                                ? 'assets/images/listeningLogo.png'
+                                : 'assets/images/beforeLisentingLogo.png',
                               width: size.width * 0.35,
                               height: size.width * 0.35,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage("https://placehold.co/131x129"),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                              fit: BoxFit.contain,
                             ),
                           ],
                         ),

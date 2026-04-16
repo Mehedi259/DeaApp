@@ -104,7 +104,7 @@ class _PoupErrorState extends State<PoupError> with ScreenFlowMixin {
                           SizedBox(
                             width: 273,
                             child: Text(
-                              'SHARE HOW YOU FEEL',
+                              'SHARE HOW YOU',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: const Color(

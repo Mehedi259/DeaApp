@@ -188,16 +188,12 @@ class _EmotionSpeakingScreenState extends State<EmotionSpeakingScreen>
                                     ],
                                   ),
                                 ),
-                                // Avatar Image
-                                Container(
+                                // Listening Logo Image
+                                Image.asset(
+                                  'assets/images/listeningLogo.png',
                                   width: size.width * 0.35,
                                   height: size.width * 0.35,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage("https://placehold.co/131x129"),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                                  fit: BoxFit.contain,
                                 ),
                               ],
                             );
