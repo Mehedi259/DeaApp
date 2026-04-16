@@ -1,6 +1,6 @@
 class ApiConstants {
   // Main Backend API URL
-  static const String baseUrl = 'https://eastward-hurricane-squeezing.ngrok-free.dev';
+  static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev';
   
   // AI Backend API URL (separate server)
   static const String aiBaseUrl = 'https://apricot-rhyme-humming.ngrok-free.dev';
@@ -21,8 +21,8 @@ class ApiConstants {
   
   // Profile endpoints
   static const String createProfile = '$profilePrefix/';
-  static const String getProfile = '$profilePrefix/'; // GET with auth
-  static const String updateProfile = '$profilePrefix/'; // PATCH with auth
+  static const String getProfile = '$profilePrefix/';
+  static const String updateProfile = '$profilePrefix/';
   
   // Insights endpoints
   static const String getInsights = '$insightsPrefix/insights/';

@@ -1388,6 +1388,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   Widget _buildCalendarGrid() {
     final calendarStatuses = _getCalendarStatuses();
+    final calendarDays = _insightsData?.monthly.calendar ?? [];
     
     return GridView.builder(
       shrinkWrap: true,
@@ -1397,17 +1398,25 @@ class _InsightsScreenState extends State<InsightsScreen> {
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
       ),
-      itemCount: 35,
+      itemCount: calendarDays.length,
       itemBuilder: (context, index) {
-        final emoji = dayEmojis[index];
         if (index >= calendarStatuses.length) {
           return _buildDayCircle(
             DayStatus.empty,
-            index - calendarStatuses.length + 1,
-            emoji: emoji,
+            index + 1,
+            emoji: null,
           );
         }
-        return _buildDayCircle(calendarStatuses[index], index + 1, emoji: emoji);
+        
+        // Extract day number from date (e.g., "2026-04-16" -> 16)
+        final dayNumber = int.tryParse(calendarDays[index].date.split('-').last) ?? (index + 1);
+        final emoji = dayEmojis[index];
+        
+        return _buildDayCircle(
+          calendarStatuses[index],
+          dayNumber,
+          emoji: emoji,
+        );
       },
     );
   }
