@@ -380,6 +380,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min, // Fix overflow
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               _currentProfile?.customNowliiName ?? 
@@ -392,10 +394,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 height: 1.20,
                                 letterSpacing: -0.50,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
-                            SizedBox(
-                              width: 205,
+                            Flexible(
                               child: Text(
                                 'Pick a new form or \ncustomize your current one',
                                 style: GoogleFonts.workSans(
@@ -407,6 +410,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   height: 1.40,
                                   letterSpacing: -0.50,
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

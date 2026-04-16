@@ -308,39 +308,53 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFFF5F7FA),
       body: Stack(
         children: [
-          // ── Main scrollable content ──
-          SingleChildScrollView(
-            controller: _scrollController,
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                    'assets/svg_images/upscalemedia-transformed.png',
+          // ── Main scrollable content with RefreshIndicator ──
+          RefreshIndicator(
+            onRefresh: () async {
+              // Reload all data
+              await Future.wait([
+                _loadProfile(),
+                _loadStreak(),
+                _loadQuests(),
+                _loadAllQuestsForDates(),
+              ]);
+            },
+            color: const Color(0xFF4542EB),
+            backgroundColor: Colors.white,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(), // Enable pull-to-refresh even when content is short
+              child: Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                      'assets/svg_images/upscalemedia-transformed.png',
+                    ),
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
                   ),
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
                 ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(22.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      _buildHeader(),
-                      const SizedBox(height: 24),
-                      _buildProgressCard(),
-                      const SizedBox(height: 24),
-                      _buildDateSection(),
-                      const SizedBox(height: 24),
-                      _buildTodaysPlanHeader(),
-                      const SizedBox(height: 16),
-                      _buildTaskList(),
-                      const SizedBox(height: 24),
-                      _buildSwipeButton(),
-                      const SizedBox(height: 40),
-                    ],
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(22.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildHeader(),
+                        const SizedBox(height: 24),
+                        _buildProgressCard(),
+                        const SizedBox(height: 24),
+                        _buildDateSection(),
+                        const SizedBox(height: 24),
+                        _buildTodaysPlanHeader(),
+                        const SizedBox(height: 16),
+                        _buildTaskList(),
+                        const SizedBox(height: 24),
+                        _buildSwipeButton(),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                   ),
                 ),
               ),

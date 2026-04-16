@@ -51,103 +51,115 @@ class _TodayState extends State<Today> {
     }
 
     if (quests.isEmpty) {
-      return Center(
+      return RefreshIndicator(
+        onRefresh: _loadTodayQuests,
+        color: const Color(0xFF4542EB),
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Image.asset(
-                    "assets/svg_images/Button Calendar.png",
-                    height: 64,
-                    width: 64,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: 222,
-                  child: Text(
-                    'No quests yet, but your journey starts here.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.workSans(
-                      color: const Color(0xFF011F54),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      height: 1.20,
-                      letterSpacing: -0.50,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: 335,
-                  child: Text(
-                    'Add your first quest and take the smallest possible step — we\'re not chasing perfection, just progress.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.workSans(
-                      color: const Color(0xFF4C586E),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      height: 1.40,
-                      letterSpacing: -0.50,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: 230,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.push(AppRoutespath.createQuestPage);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4C46F5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height - 200,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: Image.asset(
+                        "assets/svg_images/Button Calendar.png",
+                        height: 64,
+                        width: 64,
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add, color: Colors.white, size: 24),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Create quest',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.workSans(
-                            color: const Color(0xFFFFFDF7),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            height: 0.80,
-                          ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: 222,
+                      child: Text(
+                        'No quests yet, but your journey starts here.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.workSans(
+                          color: const Color(0xFF011F54),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          height: 1.20,
+                          letterSpacing: -0.50,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: 335,
+                      child: Text(
+                        'Add your first quest and take the smallest possible step — we\'re not chasing perfection, just progress.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.workSans(
+                          color: const Color(0xFF4C586E),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          height: 1.40,
+                          letterSpacing: -0.50,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: 230,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.push(AppRoutespath.createQuestPage);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4C46F5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add, color: Colors.white, size: 24),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Create quest',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.workSans(
+                                color: const Color(0xFFFFFDF7),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                height: 0.80,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: quests.length,
-      itemBuilder: (context, index) {
-        final quest = quests[index];
-        return Slidable(
-          key: ValueKey(quest.id),
-          endActionPane: ActionPane(
+    return RefreshIndicator(
+      onRefresh: _loadTodayQuests,
+      color: const Color(0xFF4542EB),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: quests.length,
+        itemBuilder: (context, index) {
+          final quest = quests[index];
+          return Slidable(
+            key: ValueKey(quest.id),
+            endActionPane: ActionPane(
             motion: const DrawerMotion(),
             extentRatio: 0.20,
             children: [
@@ -200,6 +212,7 @@ class _TodayState extends State<Today> {
           ),
         );
       },
+      ),
     );
   }
 }

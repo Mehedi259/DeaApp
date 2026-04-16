@@ -56,92 +56,105 @@ class _BlockngState extends State<Blockng> {
     }
 
     if (quests.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Image.asset(
-                    "assets/svg_images/Button Calendar.png",
-                    height: 62,
-                    width: 62,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  "No backlog quests",
-                  textAlign: TextAlign.center,
-                  style: AppsTextStyles.workSansExtraBold20Center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Look at you — on top of everything!\nIf you ever miss a quest, it\'ll show up here.',
-                  textAlign: TextAlign.center,
-                  style: AppsTextStyles.workSansRegularAdd16,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: 210,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.push(AppRoutespath.createQuestPage);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4C46F5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+      return RefreshIndicator(
+        onRefresh: _loadBacklogQuests,
+        color: const Color(0xFF4542EB),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height - 200,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: Image.asset(
+                        "assets/svg_images/Button Calendar.png",
+                        height: 62,
+                        width: 62,
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add, color: Colors.white, size: 24),
-                        const SizedBox(width: 6),
-                        Text(
-                          "Create quest",
-                          style: AppsTextStyles.workSansBlack18Center,
+                    const SizedBox(height: 24),
+                    Text(
+                      "No backlog quests",
+                      textAlign: TextAlign.center,
+                      style: AppsTextStyles.workSansExtraBold20Center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Look at you — on top of everything!\nIf you ever miss a quest, it\'ll show up here.',
+                      textAlign: TextAlign.center,
+                      style: AppsTextStyles.workSansRegularAdd16,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: 210,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.push(AppRoutespath.createQuestPage);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4C46F5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add, color: Colors.white, size: 24),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Create quest",
+                              style: AppsTextStyles.workSansBlack18Center,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       );
     }
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: quests.map((quest) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: BacklogQuestCard(
-                quest: quest,
-                onMarkDone: () async {
-                  final questService = QuestService();
-                  await questService.updateQuestStatus(quest.id, true);
-                  _loadBacklogQuests();
-                },
-                onSkip: () async {
-                  final questService = QuestService();
-                  await questService.deleteQuest(quest.id);
-                  _loadBacklogQuests();
-                },
-              ),
-            );
-          }).toList(),
+    return RefreshIndicator(
+      onRefresh: _loadBacklogQuests,
+      color: const Color(0xFF4542EB),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: quests.map((quest) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: BacklogQuestCard(
+                  quest: quest,
+                  onMarkDone: () async {
+                    final questService = QuestService();
+                    await questService.updateQuestStatus(quest.id, true);
+                    _loadBacklogQuests();
+                  },
+                  onSkip: () async {
+                    final questService = QuestService();
+                    await questService.deleteQuest(quest.id);
+                    _loadBacklogQuests();
+                  },
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

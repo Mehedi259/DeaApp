@@ -95,33 +95,38 @@ class _InsightsScreenState extends State<InsightsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFEF8),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(0.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTabNavigation(),
-                const SizedBox(height: 24),
-                if (selectedTabIndex == 0) ...[
-                  _buildRecentSessions(),
+        child: RefreshIndicator(
+          onRefresh: _loadInsights,
+          color: const Color(0xFF4542EB),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(0.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTabNavigation(),
                   const SizedBox(height: 24),
-                  _buildAIInsights(),
-                  _buildWeeklyReflection(),
-                  _buildMonthlyOverview(),
-                  _buildMilestonesAndAchievements(),
-                ] else if (selectedTabIndex == 1) ...[
-                  _buildRecentSessions(),
-                ] else ...[
-                  _buildAIInsights(),
-                  const SizedBox(height: 24),
-                  _buildWeeklyReflection(),
-                  const SizedBox(height: 24),
-                  _buildMonthlyOverview(),
-                  const SizedBox(height: 24),
-                  _buildMilestonesAndAchievements(),
+                  if (selectedTabIndex == 0) ...[
+                    _buildRecentSessions(),
+                    const SizedBox(height: 24),
+                    _buildAIInsights(),
+                    _buildWeeklyReflection(),
+                    _buildMonthlyOverview(),
+                    _buildMilestonesAndAchievements(),
+                  ] else if (selectedTabIndex == 1) ...[
+                    _buildRecentSessions(),
+                  ] else ...[
+                    _buildAIInsights(),
+                    const SizedBox(height: 24),
+                    _buildWeeklyReflection(),
+                    const SizedBox(height: 24),
+                    _buildMonthlyOverview(),
+                    const SizedBox(height: 24),
+                    _buildMilestonesAndAchievements(),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
