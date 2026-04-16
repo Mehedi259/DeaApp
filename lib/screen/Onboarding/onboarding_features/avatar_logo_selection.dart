@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/api/onboarding_data.dart';
+import 'package:nowlii/api/nowlii_options_api.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/themes/text_styles.dart';
 import 'package:nowlii/widget/animated_onboarding_topbar.dart';
@@ -16,16 +17,42 @@ class AvatarLogo extends StatefulWidget {
 
 class _AvatarLogoState extends State<AvatarLogo> {
   int selectedIndex = -1;
+  List<NowliiOption> avatarOptions = [];
+  bool isLoading = true;
   
-  // Avatar image paths mapping
-  final List<String> avatarPaths = [
-    'assets/svg_images/A.png',
-    'assets/svg_images/B.png',
-    'assets/svg_images/C.png',
-    'assets/svg_images/D.png',
-    'assets/svg_images/E.png',
-    'assets/svg_images/F.png',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadAvatarOptions();
+  }
+  
+  Future<void> _loadAvatarOptions() async {
+    try {
+      final options = await NowliiOptionsApi.fetchNowliiOptions();
+      setState(() {
+        avatarOptions = options;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading avatar options: $e');
+      // Fallback to local assets if API fails
+      setState(() {
+        avatarOptions = _getFallbackOptions();
+        isLoading = false;
+      });
+    }
+  }
+  
+  List<NowliiOption> _getFallbackOptions() {
+    return [
+      NowliiOption(id: 1, name: 'milo', avatarLogo: 'assets/svg_images/A.png'),
+      NowliiOption(id: 2, name: 'bloop', avatarLogo: 'assets/svg_images/B.png'),
+      NowliiOption(id: 3, name: 'gumo', avatarLogo: 'assets/svg_images/C.png'),
+      NowliiOption(id: 4, name: 'knotty', avatarLogo: 'assets/svg_images/D.png'),
+      NowliiOption(id: 5, name: 'fizzy', avatarLogo: 'assets/svg_images/E.png'),
+      NowliiOption(id: 6, name: 'zee', avatarLogo: 'assets/svg_images/F.png'),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +63,9 @@ class _AvatarLogoState extends State<AvatarLogo> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8ED),
-      body: SafeArea(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
         child: Column(
           children: [
             // Header with back button, progress bar, and skip
@@ -87,71 +116,52 @@ class _AvatarLogoState extends State<AvatarLogo> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          // Expanded(
-                          //   child: _buildCharacterCard(
-                          //     0,
-                          //     'assets/svg_images/A.png',
-                          //   ),
-                          // ),
-                          Expanded(
-                            child: _buildCharacterCard(
-                              0,
-                              'assets/svg_images/A.png',
+                    if (avatarOptions.length >= 2)
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildCharacterCard(0, avatarOptions[0]),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildCharacterCard(
-                              1,
-                              'assets/svg_images/B.png',
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildCharacterCard(1, avatarOptions[1]),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildCharacterCard(
-                              2,
-                              'assets/svg_images/C.png',
+                    if (avatarOptions.length >= 4) ...[
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildCharacterCard(2, avatarOptions[2]),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildCharacterCard(
-                              3,
-                              'assets/svg_images/D.png',
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildCharacterCard(3, avatarOptions[3]),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildCharacterCard(
-                              4,
-                              'assets/svg_images/E.png',
+                    ],
+                    if (avatarOptions.length >= 6) ...[
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildCharacterCard(4, avatarOptions[4]),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildCharacterCard(
-                              5,
-                              'assets/svg_images/F.png',
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildCharacterCard(5, avatarOptions[5]),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -243,8 +253,9 @@ class _AvatarLogoState extends State<AvatarLogo> {
     );
   }
 
-  Widget _buildCharacterCard(int index, String imagePath) {
+  Widget _buildCharacterCard(int index, NowliiOption option) {
     final isSelected = selectedIndex == index;
+    final isUrl = option.avatarLogo.startsWith('http');
 
     return GestureDetector(
       onTap: () {
@@ -252,12 +263,14 @@ class _AvatarLogoState extends State<AvatarLogo> {
           selectedIndex = index;
         });
         
-        // Save avatar logo to onboarding data
+        // Save avatar logo and name to onboarding data
         final onboardingData = OnboardingData();
-        onboardingData.setAvatarLogo(imagePath);
+        onboardingData.setAvatarLogo(option.avatarLogo);
+        onboardingData.setNowliiName(option.name);
       },
       child: Container(
         decoration: BoxDecoration(
+          color: option.backgroundColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? const Color(0xFF4B7BF5) : Colors.transparent,
@@ -272,10 +285,49 @@ class _AvatarLogoState extends State<AvatarLogo> {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(4.0),
+          padding: const EdgeInsets.all(8.0),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(imagePath, fit: BoxFit.cover),
+            borderRadius: BorderRadius.circular(12),
+            child: isUrl
+                ? Image.network(
+                    option.avatarLogo,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading image from ${option.avatarLogo}: $error');
+                      // Fallback to local asset if network image fails
+                      return Image.asset(
+                        'assets/svg_images/${String.fromCharCode(65 + index)}.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) {
+                          return Container(
+                            color: option.backgroundColor,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 50,
+                              color: Colors.white54,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: option.backgroundColor,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : Image.asset(option.avatarLogo, fit: BoxFit.contain),
           ),
         ),
       ),

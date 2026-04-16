@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/api/onboarding_data.dart';
+import 'package:nowlii/api/nowlii_options_api.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/themes/text_styles.dart';
 import 'package:nowlii/utlis/color_palette/color_palette.dart';
@@ -182,15 +183,8 @@ class _NameSelectionPageState extends State<NameSelectionPage>
   bool _showTextField = false;
   int _currentAvatarIndex = 0;
   bool _showNameDisplay = true;
-
-  final List<AvatarData> avatars = [
-    AvatarData(name: 'KNOTTY', assetPath: 'assets/svg_images/A.png'),
-    AvatarData(name: 'BLOOBY', assetPath: 'assets/svg_images/B.png'),
-    AvatarData(name: 'FIZZY', assetPath: 'assets/svg_images/C.png'),
-    AvatarData(name: 'BOUNCY', assetPath: 'assets/svg_images/D.png'),
-    AvatarData(name: 'ZIPPY', assetPath: 'assets/svg_images/E.png'),
-    AvatarData(name: 'MELON', assetPath: 'assets/svg_images/F.png'),
-  ];
+  List<NowliiOption> avatars = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -205,26 +199,68 @@ class _NameSelectionPageState extends State<NameSelectionPage>
       CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Load previously selected avatar logo from onboarding data
-      final onboardingData = OnboardingData();
-      final savedAvatarLogo = onboardingData.avatarLogo;
+    _loadAvatarOptions();
+  }
+  
+  Future<void> _loadAvatarOptions() async {
+    try {
+      final options = await NowliiOptionsApi.fetchNowliiOptions();
+      setState(() {
+        avatars = options;
+        isLoading = false;
+      });
       
-      // Find the index of the saved avatar logo
-      if (savedAvatarLogo != null && savedAvatarLogo.isNotEmpty) {
-        final index = avatars.indexWhere((avatar) => avatar.assetPath == savedAvatarLogo);
-        if (index != -1) {
-          setState(() {
-            _currentAvatarIndex = index;
-          });
-        }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeSelection();
+      });
+    } catch (e) {
+      print('Error loading avatar options: $e');
+      // Fallback to local assets if API fails
+      setState(() {
+        avatars = _getFallbackOptions();
+        isLoading = false;
+      });
+      
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeSelection();
+      });
+    }
+  }
+  
+  List<NowliiOption> _getFallbackOptions() {
+    return [
+      NowliiOption(id: 1, name: 'milo', avatarLogo: 'assets/svg_images/A.png'),
+      NowliiOption(id: 2, name: 'bloop', avatarLogo: 'assets/svg_images/B.png'),
+      NowliiOption(id: 3, name: 'gumo', avatarLogo: 'assets/svg_images/C.png'),
+      NowliiOption(id: 4, name: 'knotty', avatarLogo: 'assets/svg_images/D.png'),
+      NowliiOption(id: 5, name: 'fizzy', avatarLogo: 'assets/svg_images/E.png'),
+      NowliiOption(id: 6, name: 'zee', avatarLogo: 'assets/svg_images/F.png'),
+    ];
+  }
+  
+  void _initializeSelection() {
+    if (avatars.isEmpty) return;
+    
+    // Load previously selected avatar logo from onboarding data
+    final onboardingData = OnboardingData();
+    final savedAvatarLogo = onboardingData.avatarLogo;
+    
+    // Find the index of the saved avatar logo
+    if (savedAvatarLogo != null && savedAvatarLogo.isNotEmpty) {
+      final index = avatars.indexWhere((avatar) => avatar.avatarLogo == savedAvatarLogo);
+      if (index != -1) {
+        setState(() {
+          _currentAvatarIndex = index;
+        });
       }
-      
-      widget.onNameSelected(avatars[_currentAvatarIndex].name);
-    });
+    }
+    
+    widget.onNameSelected(avatars[_currentAvatarIndex].name);
   }
 
   void _rotateAvatar() {
+    if (avatars.isEmpty) return;
+    
     setState(() {
       _currentAvatarIndex = (_currentAvatarIndex + 1) % avatars.length;
       _showTextField = false;
@@ -233,9 +269,10 @@ class _NameSelectionPageState extends State<NameSelectionPage>
     widget.onNameSelected(avatars[_currentAvatarIndex].name);
     _bounceController.forward(from: 0);
     
-    // Save avatar logo to onboarding data (can override animation screen selection)
+    // Save avatar logo to onboarding data
     final onboardingData = OnboardingData();
-    onboardingData.setAvatarLogo(avatars[_currentAvatarIndex].assetPath);
+    onboardingData.setAvatarLogo(avatars[_currentAvatarIndex].avatarLogo);
+    onboardingData.setNowliiName(avatars[_currentAvatarIndex].name);
   }
 
   void _showCustomNameInput() {
@@ -248,6 +285,10 @@ class _NameSelectionPageState extends State<NameSelectionPage>
     if (value.trim().length >= 2 && value.trim().length <= 12) {
       widget.onNameSelected(value.trim());
       _bounceController.forward(from: 0);
+      
+      // Save custom name to onboarding data
+      final onboardingData = OnboardingData();
+      onboardingData.setCustomNowliiName(value.trim());
     } else if (value.trim().isEmpty) {
       widget.onNameSelected('');
     }
@@ -263,6 +304,14 @@ class _NameSelectionPageState extends State<NameSelectionPage>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (avatars.isEmpty) {
+      return const Center(child: Text('No avatars available'));
+    }
 
     return SizedBox.expand(
       child: Padding(
@@ -307,9 +356,9 @@ class _NameSelectionPageState extends State<NameSelectionPage>
                   ),
                   child: Center(
                     child: CharacterWidget(
-                      assetPath: _showTextField
-                          ? avatars[0].assetPath
-                          : avatars[_currentAvatarIndex].assetPath,
+                      avatarOption: _showTextField
+                          ? avatars[0]
+                          : avatars[_currentAvatarIndex],
                     ),
                   ),
                 ),
@@ -473,15 +522,76 @@ class AvatarData {
 }
 
 class CharacterWidget extends StatelessWidget {
-  final String assetPath;
+  final NowliiOption avatarOption;
 
-  const CharacterWidget({super.key, required this.assetPath});
+  const CharacterWidget({super.key, required this.avatarOption});
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: Image.asset(assetPath, width: 260, height: 210, fit: BoxFit.cover),
+    final isUrl = avatarOption.avatarLogo.startsWith('http');
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: avatarOption.backgroundColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: isUrl
+            ? Image.network(
+                avatarOption.avatarLogo,
+                width: 260,
+                height: 210,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Error loading image from ${avatarOption.avatarLogo}: $error');
+                  // Fallback to local asset if network image fails
+                  return Image.asset(
+                    'assets/svg_images/A.png',
+                    width: 260,
+                    height: 210,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) {
+                      return Container(
+                        width: 260,
+                        height: 210,
+                        color: avatarOption.backgroundColor,
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          size: 50,
+                          color: Colors.white54,
+                        ),
+                      );
+                    },
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    width: 260,
+                    height: 210,
+                    color: avatarOption.backgroundColor,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                  );
+                },
+              )
+            : Image.asset(
+                avatarOption.avatarLogo,
+                width: 260,
+                height: 210,
+                fit: BoxFit.contain,
+              ),
+      ),
     );
   }
 }
