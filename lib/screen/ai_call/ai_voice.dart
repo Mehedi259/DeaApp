@@ -9,7 +9,6 @@ import 'package:nowlii/models/ai_call_models.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nowlii/services/web_speech_service.dart';
 import 'package:nowlii/services/audio_stream_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -25,6 +24,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   late Duration _totalDuration;
   late Duration _elapsedTime;
   Timer? _timer;
+  Timer? _listeningCheckTimer; // New timer to check listening state
   bool _isPaused = false;
   bool _isMuted = false;
   
@@ -105,6 +105,27 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
         _startListening();
       }
     });
+    
+    // Start periodic check to ensure listening is active
+    _startListeningCheck();
+  }
+  
+  void _startListeningCheck() {
+    _listeningCheckTimer?.cancel();
+    _listeningCheckTimer = Timer.periodic(Duration(seconds: 3), (timer) {
+      // Check if we should be listening but aren't
+      if (mounted && 
+          !_isListening && 
+          !_isMuted && 
+          !_isPaused && 
+          !_isHandlingAiResponse && 
+          !_isSpeaking &&
+          _currentSession != null &&
+          !_questCompleted) {
+        print('⚠️ Listening check: Not listening when we should be. Restarting...');
+        _startListening();
+      }
+    });
   }
   
   Future<void> _initializeAudioStreaming() async {
@@ -156,11 +177,29 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       _speechEnabled = await _speech.initialize(
         onError: (error) {
           print('❌ Speech error: $error');
-          // Stop listening on any error
-          if (mounted) {
-            setState(() {
-              _isListening = false;
-            });
+          
+          // Check if it's a "no match" error (user paused speaking)
+          final errorMsg = error.errorMsg?.toLowerCase() ?? '';
+          
+          if (errorMsg.contains('no_match') || errorMsg.contains('no match')) {
+            print('⚠️ No speech detected, will restart listening...');
+            // Don't stop listening, just restart after a short delay
+            if (mounted && !_isMuted && !_isHandlingAiResponse && !_isPaused) {
+              Future.delayed(Duration(milliseconds: 500), () {
+                if (mounted && !_isMuted && !_isHandlingAiResponse && !_isPaused && !_isListening) {
+                  print('🔄 Auto-restarting listening after no_match error');
+                  _startListening();
+                }
+              });
+            }
+          } else {
+            // For other errors, stop listening
+            print('❌ Permanent error, stopping: $errorMsg');
+            if (mounted) {
+              setState(() {
+                _isListening = false;
+              });
+            }
           }
         },
         onStatus: (status) {
@@ -170,6 +209,16 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
             if (mounted) {
               setState(() {
                 _isListening = false;
+              });
+            }
+            
+            // Auto-restart if not handling AI response and not muted
+            if (status == 'notListening' && !_isHandlingAiResponse && !_isMuted && !_isPaused && mounted) {
+              Future.delayed(Duration(milliseconds: 800), () {
+                if (mounted && !_isHandlingAiResponse && !_isMuted && !_isPaused && !_isListening) {
+                  print('🔄 Auto-restarting listening after notListening status');
+                  _startListening();
+                }
               });
             }
           }
@@ -225,8 +274,8 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       // If AI stream finished and we are done speaking, auto-resume listening after a small delay
       if (!_isHandlingAiResponse && !_isMuted && _currentSession != null && !_isPaused && mounted) {
         // Add a small delay to avoid picking up TTS tail or system sounds
-        await Future.delayed(Duration(milliseconds: 500));
-        if (!_isHandlingAiResponse && !_isMuted && _currentSession != null && !_isPaused && mounted) {
+        await Future.delayed(Duration(milliseconds: 1000)); // Increased delay
+        if (!_isHandlingAiResponse && !_isMuted && _currentSession != null && !_isPaused && mounted && !_isListening) {
           print('✅ Ready to listen again');
           _startListening();
         }
@@ -359,10 +408,10 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
               _sendMessageToAi(textToSend);
             }
           },
-          listenFor: Duration(seconds: 60),
-          pauseFor: Duration(seconds: 5),
+          listenFor: Duration(minutes: 10), // Extended to 10 minutes to match call duration
+          pauseFor: Duration(seconds: 30), // Increased pause tolerance to 30 seconds
           partialResults: true,
-          cancelOnError: false,
+          cancelOnError: false, // Don't cancel on errors
           listenMode: stt.ListenMode.dictation,
           localeId: 'en_US',
         );
@@ -621,6 +670,15 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   void _togglePause() {
     setState(() {
       _isPaused = !_isPaused;
+      if (_isPaused) {
+        // Paused - stop listening
+        _stopListening();
+      } else {
+        // Resumed - restart listening if conditions are met
+        if (!_isMuted && !_isHandlingAiResponse && !_isSpeaking) {
+          _startListening();
+        }
+      }
     });
   }
 
@@ -650,6 +708,8 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
           }
         });
       } else {
+        // Unmuted - restart listening check
+        _startListeningCheck();
         // Only start listening if not currently handling AI response
         if (!_isHandlingAiResponse && !kIsWeb) {
           _startListening();
@@ -728,6 +788,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
       _questCompleted = true;
     });
     _timer?.cancel();
+    _listeningCheckTimer?.cancel(); // Stop listening check when quest completes
     
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -749,6 +810,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
 
   void _onWrapUpYes() {
     _timer?.cancel();
+    _listeningCheckTimer?.cancel(); // Stop listening check
     
     // Navigate to call summary with session ID
     if (mounted) {
@@ -770,6 +832,7 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
   void dispose() {
     _timer?.cancel();
     _typingTimer?.cancel();
+    _listeningCheckTimer?.cancel(); // Cancel listening check timer
     _progressController.dispose();
     _pulseController.dispose();
     _testInputController.dispose();
