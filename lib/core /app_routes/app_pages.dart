@@ -34,6 +34,8 @@ import 'package:nowlii/screen/progress/progress.dart';
 import 'package:nowlii/screen/quests/create_quets/create_quets_default.dart';
 import 'package:nowlii/screen/quests/create_quets/edit_quest_page.dart';
 import 'package:nowlii/screen/quests/suggested/suggested_task_overview.dart';
+import 'package:nowlii/screen/quests/suggested/quest_suggestions_list.dart';
+import 'package:nowlii/models/quest_suggestion_model.dart';
 import 'package:nowlii/screen/quests/quests_my_quests_today_emty_state.dart';
 import 'package:nowlii/screen/reday_to_start_screen_p4.dart';
 import 'package:nowlii/screen/settings/contact_support/chat_boot/support_chat_screen.dart';
@@ -159,7 +161,14 @@ class AppPages {
       ),
       GoRoute(
         path: AppRoutespath.suggestedTaskOverview,
-        builder: (context, state) => const SuggestedTaskOverview(),
+        builder: (context, state) {
+          final suggestion = state.extra as QuestSuggestion?;
+          return SuggestedTaskOverview(suggestion: suggestion);
+        },
+      ),
+      GoRoute(
+        path: '/questSuggestionsList',
+        builder: (context, state) => const QuestSuggestionsList(),
       ),
 
       /*  create a quets end here  */

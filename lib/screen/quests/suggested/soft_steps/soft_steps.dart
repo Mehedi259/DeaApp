@@ -160,7 +160,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Container(
-//       height: 295,
+//       constraints: BoxConstraints(minHeight: 295),
 //       padding: const EdgeInsets.all(20),
 //       decoration: BoxDecoration(
 //         image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
@@ -370,7 +370,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Container(
-//       height: 295,
+//       constraints: BoxConstraints(minHeight: 295),
 //       padding: const EdgeInsets.all(20),
 //       decoration: BoxDecoration(
 //         image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
@@ -557,9 +557,120 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/utlis/color_palette/color_palette.dart';
+import 'package:nowlii/models/quest_suggestion_model.dart';
+import 'package:nowlii/services/quest_suggestion_service.dart';
 
-class ShuffleScreen extends StatelessWidget {
+class ShuffleScreen extends StatefulWidget {
   const ShuffleScreen({super.key});
+
+  @override
+  State<ShuffleScreen> createState() => _ShuffleScreenState();
+}
+
+class _ShuffleScreenState extends State<ShuffleScreen> {
+  final QuestSuggestionService _service = QuestSuggestionService();
+  List<QuestSuggestion> _suggestions = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final response = await _service.getQuestSuggestions();
+      if (response != null && mounted) {
+        setState(() {
+          _suggestions = response.weekly.questSuggestions;
+          _isLoading = false;
+        });
+      } else {
+        // Use fallback data if API fails
+        _useFallbackData();
+      }
+    } catch (e) {
+      print('Error loading suggestions: $e');
+      _useFallbackData();
+    }
+  }
+
+  void _useFallbackData() {
+    // Fallback to hardcoded data if API fails
+    setState(() {
+      _suggestions = [
+        QuestSuggestion(
+          task: 'To sleep',
+          description: 'Wind down, unplug, and prep your mind for rest.',
+          zone: 'Soft steps',
+          suggestedTime: '22:00',
+        ),
+        QuestSuggestion(
+          task: 'To wake up',
+          description: 'Rise fresh. Stretch, breathe — just light, breath, and presence.',
+          zone: 'Soft steps',
+          suggestedTime: '07:00',
+        ),
+        QuestSuggestion(
+          task: 'To walk',
+          description: 'Move your body, clear your mind. Even for a little bit counts.',
+          zone: 'Stretch zone',
+          suggestedTime: '18:00',
+        ),
+        QuestSuggestion(
+          task: 'To study',
+          description: 'Focus, learn, retain. Deep in reflection — just progress.',
+          zone: 'Power move',
+          suggestedTime: '14:00',
+        ),
+        QuestSuggestion(
+          task: 'To train',
+          description: 'Sweat, strengthen, boost energy. Show up for yourself.',
+          zone: 'Elevated',
+          suggestedTime: '06:00',
+        ),
+      ];
+      _isLoading = false;
+    });
+  }
+
+  Color _getZoneColor(String zone) {
+    switch (zone.toLowerCase()) {
+      case 'soft steps':
+        return const Color(0xFF89B6F8);
+      case 'stretch zone':
+        return const Color(0xFFFFB46E);
+      case 'power move':
+        return const Color(0xFFA9A8F6);
+      case 'elevated':
+        return const Color(0xFFFFCE73);
+      default:
+        return const Color(0xFFA0E871);
+    }
+  }
+
+  String _getEmojiForTask(String task) {
+    final taskLower = task.toLowerCase();
+    if (taskLower.contains('sleep')) return Assets.svgIcons.moon.path;
+    if (taskLower.contains('wake')) return Assets.svgIcons.sun.path;
+    if (taskLower.contains('walk')) return Assets.svgIcons.toWalkIcon.path;
+    if (taskLower.contains('study') || taskLower.contains('read')) return Assets.svgIcons.book.path;
+    if (taskLower.contains('train') || taskLower.contains('exercise')) return Assets.svgIcons.push.path;
+    return Assets.svgIcons.moon.path; // default
+  }
+
+  String _getBackgroundForTask(String task) {
+    final taskLower = task.toLowerCase();
+    if (taskLower.contains('sleep')) return Assets.svgIcons.moon4.path;
+    if (taskLower.contains('wake')) return Assets.svgIcons.toWakeUp.path;
+    if (taskLower.contains('walk')) return Assets.svgIcons.toWalk.path;
+    if (taskLower.contains('study') || taskLower.contains('read')) return Assets.svgIcons.toStudy.path;
+    if (taskLower.contains('train') || taskLower.contains('exercise')) return Assets.svgIcons.toTrain.path;
+    return Assets.svgIcons.moon4.path; // default
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -569,77 +680,59 @@ class ShuffleScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildHeader(),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  SleepRoutineCard(
-                    title: 'To sleep',
-                    description:
-                        'Wind down, unplug, and prep your mind for rest.',
-                    time: '22:00',
-                    softSteps: 'Soft steps',
-                    hardSteps: '10 mins',
-                    imagePath: Assets.svgIcons.moon4.path,
-                    emoji: Assets.svgIcons.moon.path,
-                    hardStepsColor: const Color(0xFF89B6F8),
-                    softStepsColor: AppColorsApps.freshGreen,
+            if (_isLoading)
+              Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4542EB)),
                   ),
-                  const SizedBox(height: 8),
-                  RoutineCard(
-                    title: 'To wake up',
-                    description:
-                        'Rise fresh. Stretch, breathe — just light, breath, and presence.',
-                    time: '22:00',
-                    softSteps: 'Soft steps',
-                    hardSteps: '10 mins',
-                    imagePath: Assets.svgIcons.toWakeUp.path,
-                    emoji: Assets.svgIcons.sun.path,
-                    hardStepsColor: const Color(0xFFFFB46E),
-                    softStepsColor: AppColorsApps.freshGreen,
-                  ),
-                  const SizedBox(height: 8),
-                  RoutineCard(
-                    title: 'To walk',
-                    description:
-                        'Move your body, clear your mind. Even for a little bit counts.',
-                    time: '22:00',
-                    softSteps: 'Soft steps',
-                    hardSteps: '10 mins',
-                    imagePath: Assets.svgIcons.toWalk.path,
-                    emoji: Assets.svgIcons.toWalkIcon.path,
-                    hardStepsColor: const Color(0xFFA0E871),
-                    softStepsColor: AppColorsApps.freshGreen,
-                  ),
-                  const SizedBox(height: 8),
-                  RoutineCard(
-                    title: 'To study',
-                    description:
-                        'Focus, learn, retain. Deep in reflection — just progress.',
-                    time: '22:00',
-                    softSteps: 'Soft steps',
-                    hardSteps: '10 mins',
-                    imagePath: Assets.svgIcons.toStudy.path,
-                    emoji: Assets.svgIcons.book.path,
-                    hardStepsColor: const Color(0xFFA9A8F6),
-                    softStepsColor: AppColorsApps.freshGreen,
-                  ),
-                  const SizedBox(height: 8),
-                  RoutineCard(
-                    title: 'To train',
-                    description:
-                        'Sweat, strengthen, boost energy. Show up for yourself.',
-                    time: '22:00',
-                    softSteps: 'Soft steps',
-                    hardSteps: '10 mins',
-                    imagePath: Assets.svgIcons.toTrain.path,
-                    emoji: Assets.svgIcons.push.path,
-                    hardStepsColor: const Color(0xFFFFCE73),
-                    softStepsColor: AppColorsApps.freshGreen,
-                  ),
-                ],
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _suggestions.length,
+                  itemBuilder: (context, index) {
+                    final suggestion = _suggestions[index];
+                    final isFirst = index == 0;
+                    
+                    if (isFirst) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: SleepRoutineCard(
+                          title: suggestion.task,
+                          description: suggestion.description,
+                          time: suggestion.suggestedTime,
+                          softSteps: suggestion.zone,
+                          hardSteps: '10 mins',
+                          imagePath: _getBackgroundForTask(suggestion.task),
+                          emoji: _getEmojiForTask(suggestion.task),
+                          hardStepsColor: _getZoneColor(suggestion.zone),
+                          softStepsColor: AppColorsApps.freshGreen,
+                          suggestion: suggestion,
+                        ),
+                      );
+                    }
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: RoutineCard(
+                        title: suggestion.task,
+                        description: suggestion.description,
+                        time: suggestion.suggestedTime,
+                        softSteps: suggestion.zone,
+                        hardSteps: '10 mins',
+                        imagePath: _getBackgroundForTask(suggestion.task),
+                        emoji: _getEmojiForTask(suggestion.task),
+                        hardStepsColor: _getZoneColor(suggestion.zone),
+                        softStepsColor: AppColorsApps.freshGreen,
+                        suggestion: suggestion,
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -693,6 +786,7 @@ class SleepRoutineCard extends StatelessWidget {
   final String emoji;
   final Color hardStepsColor;
   final Color softStepsColor;
+  final QuestSuggestion? suggestion;
 
   const SleepRoutineCard({
     super.key,
@@ -705,12 +799,12 @@ class SleepRoutineCard extends StatelessWidget {
     required this.emoji,
     required this.hardStepsColor,
     required this.softStepsColor,
+    this.suggestion,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 295,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
@@ -718,6 +812,7 @@ class SleepRoutineCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -725,7 +820,7 @@ class SleepRoutineCard extends StatelessWidget {
               Image.asset(emoji, width: 64, height: 64),
               GestureDetector(
                 onTap: () {
-                  context.push('/suggestedTaskOverview');
+                  context.push('/suggestedTaskOverview', extra: suggestion);
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -841,7 +936,7 @@ class SleepRoutineCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const Spacer(),
+          const SizedBox(height: 16),
           Row(
             children: [
               Flexible(
@@ -909,6 +1004,7 @@ class RoutineCard extends StatelessWidget {
   final String emoji;
   final Color hardStepsColor;
   final Color softStepsColor;
+  final QuestSuggestion? suggestion;
 
   const RoutineCard({
     super.key,
@@ -921,12 +1017,12 @@ class RoutineCard extends StatelessWidget {
     required this.emoji,
     required this.hardStepsColor,
     required this.softStepsColor,
+    this.suggestion,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 295,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
@@ -934,6 +1030,7 @@ class RoutineCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -941,7 +1038,7 @@ class RoutineCard extends StatelessWidget {
               Image.asset(emoji, width: 84, height: 84),
               GestureDetector(
                 onTap: () {
-                  context.push('/suggestedTaskOverview');
+                  context.push('/suggestedTaskOverview', extra: suggestion);
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -1050,7 +1147,7 @@ class RoutineCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const Spacer(),
+          const SizedBox(height: 16),
           Row(
             children: [
               Flexible(

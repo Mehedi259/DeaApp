@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/themes/create_qutes.dart';
+import 'package:nowlii/models/quest_suggestion_model.dart';
 
 class SuggestedTaskOverview extends StatefulWidget {
-  const SuggestedTaskOverview({super.key});
+  final QuestSuggestion? suggestion;
+  
+  const SuggestedTaskOverview({super.key, this.suggestion});
 
   @override
   State<SuggestedTaskOverview> createState() => _SuggestedTaskOverviewState();
@@ -15,6 +18,28 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
   bool isCallEnabled = true;
   bool isRepeatQuestEnabled = true;
   bool isSetAlarmEnabled = true;
+  
+  // Default values if no suggestion is provided
+  String get taskTitle => widget.suggestion?.task ?? 'TO SLEEP';
+  String get taskZone => widget.suggestion?.zone ?? 'Soft steps';
+  String get taskTime => widget.suggestion?.suggestedTime ?? '22:00';
+  String get taskDescription => widget.suggestion?.description ?? 
+      "You're having a 10-minute call with your Bestie Fizzy during this task.";
+  
+  Color get zoneColor {
+    switch (taskZone.toLowerCase()) {
+      case 'soft steps':
+        return const Color(0xFFA0E871);
+      case 'stretch zone':
+        return const Color(0xFFFFB84D);
+      case 'power move':
+        return const Color(0xFFFF6B6B);
+      case 'elevated':
+        return const Color(0xFF9B59B6);
+      default:
+        return const Color(0xFFA0E871);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,18 +71,19 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
                     _buildHeader(baseScale),
                     SizedBox(height: 16 * baseScale),
 
-                    // "Soft steps" badge
-                    _buildSoftStepsBadge(baseScale),
+                    // Zone badge (dynamic)
+                    _buildZoneBadge(baseScale),
                     SizedBox(height: 12 * baseScale),
 
-                    // "TO SLEEP" title
+                    // Task title (dynamic)
                     Text(
-                      'TO SLEEP',
+                      taskTitle.toUpperCase(),
                       style: AppTextStylesQutes.alfaSlabOneTitle,
+                      textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 12 * baseScale),
 
-                    // Today + Time row
+                    // Today + Time row (dynamic)
                     _buildDateTimeRow(baseScale),
                     SizedBox(height: 20 * baseScale),
 
@@ -159,17 +185,17 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
     );
   }
 
-  Widget _buildSoftStepsBadge(double s) {
+  Widget _buildZoneBadge(double s) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16 * s, vertical: 6 * s),
       decoration: BoxDecoration(
-        color: const Color(0xFFA0E871),
+        color: zoneColor,
         borderRadius: BorderRadius.circular(20 * s),
       ),
       child: Text(
-        'Soft steps',
+        taskZone,
         style: GoogleFonts.workSans(
-          color: const Color(0xFF011F54), // Text-text-default
+          color: const Color(0xFF011F54),
           fontSize: 18,
           fontWeight: FontWeight.w600,
           height: 1.40,
@@ -213,7 +239,7 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
         ),
         SizedBox(width: 6 * s),
         Text(
-          '22:00',
+          taskTime,
           style: GoogleFonts.workSans(
             fontWeight: FontWeight.w600,
             fontSize: 16 * s,
@@ -374,7 +400,7 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 8 * s),
       child: Text(
-        "You're having a 10-minute call with your Bestie Fizzy during this task.",
+        taskDescription,
         style: GoogleFonts.workSans(
           fontWeight: FontWeight.w400,
           fontSize: 14 * s,

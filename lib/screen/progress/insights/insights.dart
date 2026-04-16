@@ -277,21 +277,34 @@ class _InsightsScreenState extends State<InsightsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(day, style: dayTextStyle),
-                      const SizedBox(height: 2),
-                      Text(
-                        focus,
-                        style: focusTextStyle ?? AppsTextStyles.myWorkSansStyle,
+              Expanded(
+                child: Row(
+                  children: [
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            day,
+                            style: dayTextStyle,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            focus,
+                            style: focusTextStyle ?? AppsTextStyles.myWorkSansStyle,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
               trailing,
             ],
@@ -1044,7 +1057,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       Container(
                         height: 44,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 40,
+                          horizontal: 20,
                           vertical: 14,
                         ),
                         decoration: ShapeDecoration(
