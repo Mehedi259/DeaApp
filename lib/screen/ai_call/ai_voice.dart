@@ -961,39 +961,6 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
 
                         // Avatar with progress
                         _buildAvatarWithProgress(size),
-                        
-                        // Emotion Display Only (no text transcription or AI response)
-                        if (_currentEmotion != null)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getEmotionIcon(_currentEmotion!.emotionKey),
-                                    color: _getEmotionColor(_currentEmotion!.emotionKey),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${_currentEmotion!.name} (${(_currentEmotion!.score * 100).toInt()}%)',
-                                    style: TextStyle(
-                                      color: const Color(0xFF011F54),
-                                      fontSize: 14,
-                                      fontFamily: 'Work Sans',
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                   
                   const Spacer(),
 
