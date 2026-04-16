@@ -575,29 +575,39 @@ class _ShuffleScreenState extends State<ShuffleScreen> {
   @override
   void initState() {
     super.initState();
+    print('\n');
+    print('═══════════════════════════════════════');
+    print('🎯 SHUFFLE SCREEN INITIALIZED');
+    print('═══════════════════════════════════════');
+    print('\n');
     _loadSuggestions();
   }
 
   Future<void> _loadSuggestions() async {
+    print('🔄 Loading quest suggestions...');
     setState(() => _isLoading = true);
     
     try {
+      print('📞 Calling API...');
       final response = await _service.getQuestSuggestions();
+      print('📦 API Response received: ${response != null ? "Success" : "Null"}');
+      
       if (response != null && mounted) {
+        print('✅ Setting ${response.weekly.questSuggestions.length} suggestions');
         setState(() {
           _suggestions = response.weekly.questSuggestions;
           _isLoading = false;
         });
       } else {
+        print('⚠️ Using fallback data');
         // Use fallback data if API fails
         _useFallbackData();
       }
     } catch (e) {
-      print('Error loading suggestions: $e');
+      print('❌ Error in _loadSuggestions: $e');
       _useFallbackData();
     }
   }
-
   void _useFallbackData() {
     // Fallback to hardcoded data if API fails
     setState(() {

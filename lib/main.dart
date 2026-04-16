@@ -1,11 +1,18 @@
-
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/core%20/app_routes/app_pages.dart';
 
 void main() {
+  // Enable debug prints
+  debugPrint('🚀 App starting...');
+  
+  // Ensure all prints are visible
+  if (kDebugMode) {
+    debugPrint('✅ Debug mode enabled');
+  }
+  
   runApp(const MyApp());
 }
 

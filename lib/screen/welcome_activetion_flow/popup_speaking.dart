@@ -320,7 +320,6 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
             SizedBox(height: 32),
             ...[
               {'name': 'English', 'value': 'English'},
-              {'name': 'Deutsch', 'value': 'Deutsch'},
               {'name': 'Español', 'value': 'Español'},
             ].map((lang) => Padding(
               padding: const EdgeInsets.only(bottom: 24),

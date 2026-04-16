@@ -975,13 +975,17 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildProgressItem('Soft steps', 8, 10),
-                      const SizedBox(height: 12),
-                      _buildProgressItem('Stretch Zone', 3, 10),
-                      const SizedBox(height: 12),
-                      _buildProgressItem('Elevated', 5, 10),
-                      const SizedBox(height: 12),
-                      _buildProgressItem('Power move', 1, 10),
+                      // Dynamic zone progress from API
+                      ...(_insightsData?.weekly.zoneProgress ?? []).map((zone) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildProgressItem(
+                            zone.zone,
+                            zone.completed,
+                            zone.assigned,
+                          ),
+                        );
+                      }).toList(),
                     ],
                   ),
                 ),
@@ -1101,7 +1105,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildProgressItem(String title, int completed, int total) {
-    double progress = completed / total;
+    double progress = total > 0 ? completed / total : 0.0;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -1129,7 +1133,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               ),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: progress,
+                widthFactor: progress.clamp(0.0, 1.0),
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(

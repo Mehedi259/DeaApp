@@ -8,7 +8,8 @@ class CallSummaryService {
     try {
       final url = Uri.parse('${ApiConstants.aiBaseUrl}/api/v1/chat/summary');
       
-      print('📊 Fetching call summary from: $url');
+      print('\n========== CALL SUMMARY API ==========');
+      print('🌐 URL: $url');
       print('📤 Session ID: $sessionId');
       
       final response = await http.post(
@@ -29,19 +30,17 @@ class CallSummaryService {
         },
       );
 
-      print('📡 Summary response status: ${response.statusCode}');
+      print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('✅ Summary data received');
-        print('📊 Mood: ${data['mood_detected']}');
-        print('📊 Focus: ${data['focus_topic']}');
-        print('📊 Energy: ${data['energy_shift']}');
-        print('📊 Next: ${data['next_step']}');
+        print('==========================================\n');
         return CallSummaryResponse.fromJson(data);
       } else {
         print('❌ Failed to fetch summary: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        print('==========================================\n');
         return null;
       }
     } catch (e) {
@@ -49,6 +48,7 @@ class CallSummaryService {
       if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
         print('🔌 Network issue: Please check if AI server is running');
       }
+      print('==========================================\n');
       return null;
     }
   }

@@ -90,9 +90,6 @@ class _ProcrastinationScreenState extends State<ProcrastinationScreen> {
                             _buildLanguageOption('English'),
                             const SizedBox(height: 24),
 
-                            // Deutsch
-                            _buildLanguageOption('Deutsch'),
-                            const SizedBox(height: 24),
 
                             // Español
                             _buildLanguageOption('Español'),

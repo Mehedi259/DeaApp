@@ -8,7 +8,7 @@ class LanguageSelector extends StatelessWidget {
   const LanguageSelector({
     super.key,
     required this.currentLanguage,
-    this.languages = const ['English', 'Deutsch', 'Español'],
+    this.languages = const ['English', 'Español'],
   });
 
   @override

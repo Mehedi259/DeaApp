@@ -20,7 +20,9 @@ class StreakService {
 
       final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getStreak}');
       
-      print('🔥 Fetching streak from: $url');
+      print('\n========== STREAK API ==========');
+      print('🌐 URL: $url');
+      print('🔑 Token: ${token.substring(0, 20)}...');
       
       final response = await http.get(
         url,
@@ -32,19 +34,22 @@ class StreakService {
         },
       );
 
-      print('📡 Streak response status: ${response.statusCode}');
+      print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('✅ Streak data received: ${data['streak']}');
+        print('==========================================\n');
         return StreakResponse.fromJson(data);
       } else {
         print('❌ Failed to fetch streak: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        print('==========================================\n');
         return null;
       }
     } catch (e) {
       print('❌ Error fetching streak: $e');
+      print('==========================================\n');
       return null;
     }
   }

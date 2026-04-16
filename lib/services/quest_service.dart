@@ -77,9 +77,15 @@ class QuestService {
     try {
       final token = await _getToken();
       final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+      final url = '$baseUrl/quests/?due_date=$formattedDate';
+
+      print('\n========== FETCH QUESTS BY DATE ==========');
+      print('🌐 URL: $url');
+      print('📅 Date: $formattedDate');
+      print('🔑 Token: ${token.substring(0, 20)}...');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/quests/?due_date=$formattedDate'),
+        Uri.parse(url),
         headers: {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -87,13 +93,18 @@ class QuestService {
         },
       );
 
+      print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
+      print('==========================================\n');
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        print('✅ Parsed ${data.length} quests');
         return data.map((quest) => Quest.fromJson(quest)).toList();
       }
       return [];
     } catch (e) {
-      print('Error fetching quests: $e');
+      print('❌ Error fetching quests: $e');
       return [];
     }
   }

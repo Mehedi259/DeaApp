@@ -180,7 +180,7 @@ class _ProfileTestScreenState extends State<ProfileTestScreen> {
                 labelText: 'Language',
                 border: OutlineInputBorder(),
               ),
-              items: ['English', 'Deutsch', 'Espanol'].map((lang) {
+              items: ['English', 'Espanol'].map((lang) {
                 return DropdownMenuItem(
                   value: lang,
                   child: Text(lang),

@@ -40,7 +40,6 @@ class _PopPoSahreState extends State<PopPoSahre> {
                 const Divider(),
 
                 _languageTile("English"),
-                _languageTile("Deutsch"),
                 _languageTile("Español"),
               ],
             ),
