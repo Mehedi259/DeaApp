@@ -585,8 +585,8 @@ class _AiVoiceState extends State<AiVoice> with TickerProviderStateMixin {
             _startTypingAnimation();
           }
           
-          // Check for 5 minute mark (not 8)
-          if (_elapsedTime.inMinutes == 8 && _elapsedTime.inSeconds % 60 == 0 && !_showTimeWarning) {
+          // Check for warning (1 minute before end)
+          if (_elapsedTime.inSeconds == (_totalDuration.inSeconds - 60) && !_showTimeWarning) {
             _showTimeWarning = true;
           }
           
