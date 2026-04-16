@@ -180,7 +180,7 @@ class _QuestHomePageState extends State<QuestHomePage>
             labelPadding: const EdgeInsets.symmetric(horizontal: 4),
             tabs: List.generate(4, (index) {
               final titles = [
-                'Todays(3)',
+                'Todays',
                 'Scheduled',
                 'Completed',
                 'Backlog',
