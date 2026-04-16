@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
+import 'package:nowlii/core%20/app_routes/app_routes.dart';
+import 'package:nowlii/api/auth_controller.dart';
 import 'package:nowlii/screen/settings/api_personalization_screen/ai_personalization_screen.dart';
 import 'package:nowlii/screen/settings/language/languegs_selector_screen.dart';
 import 'package:nowlii/screen/settings/notiofication_scren/notification_screen.dart';
@@ -311,23 +313,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        height: 44,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            width: 2,
-                            color: const Color(0xFF011F54),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              width: 2,
+                              color: const Color(0xFF011F54),
+                            ),
+                            borderRadius: BorderRadius.circular(999),
                           ),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.workSans(
-                            color: const Color(0xFF011F54),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            height: 0.80,
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.workSans(
+                              color: const Color(0xFF011F54),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              height: 0.80,
+                            ),
                           ),
                         ),
                       ),
@@ -336,20 +343,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(width: 8),
 
                     Expanded(
-                      child: Container(
-                        height: 44,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4542EB),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'Log out',
-                          style: GoogleFonts.workSans(
-                            color: const Color(0xFFFFFDF7),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            height: 0.80,
+                      child: GestureDetector(
+                        onTap: () async {
+                          // Close dialog
+                          Navigator.of(context).pop();
+                          
+                          // Perform logout
+                          final authController = AuthController();
+                          await authController.logout();
+                          
+                          // Navigate to sign in screen
+                          if (context.mounted) {
+                            context.go(AppRoutespath.signInScreen);
+                          }
+                        },
+                        child: Container(
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4542EB),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            'Log out',
+                            style: GoogleFonts.workSans(
+                              color: const Color(0xFFFFFDF7),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              height: 0.80,
+                            ),
                           ),
                         ),
                       ),

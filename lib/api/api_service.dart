@@ -58,9 +58,21 @@ class ApiService {
       print('❌ EXCEPTION: ${e.toString()}');
       print('======================================\n');
       
+      // Make error message more user-friendly
+      String errorMessage = 'Network error occurred';
+      
+      if (e.toString().contains('SocketException') || 
+          e.toString().contains('Broken pipe')) {
+        errorMessage = 'Connection lost. Please check your internet and try again.';
+      } else if (e.toString().contains('TimeoutException')) {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (e.toString().contains('FormatException')) {
+        errorMessage = 'Invalid response from server. Please try again later.';
+      }
+      
       return {
         'success': false,
-        'message': 'Network error: ${e.toString()}',
+        'message': errorMessage,
       };
     }
   }

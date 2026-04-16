@@ -533,10 +533,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             SvgPicture.asset(icon, height: 20, width: 20),
             const SizedBox(width: 12),
-            Text(text, style: AppsTextStyles.googleContinueButton),
+            Flexible(
+              child: Text(
+                text,
+                style: AppsTextStyles.googleContinueButton,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
           ],
         ),
       ),
