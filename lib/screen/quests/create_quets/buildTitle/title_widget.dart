@@ -7,11 +7,14 @@ class TitleWidget extends StatelessWidget {
   final double scale;
   final VoidCallback? onBackPressed;
   final VoidCallback? onMicPressed;
+  final bool isListening; // Add listening state
+  
   const TitleWidget({
     super.key,
     this.scale = 1.0,
     this.onBackPressed,
     this.onMicPressed,
+    this.isListening = false, // Default to false
   });
 
   @override
@@ -76,21 +79,30 @@ class TitleWidget extends StatelessWidget {
                 width: 44 * scale,
                 height: 44 * scale,
                 decoration: BoxDecoration(
+                  color: isListening ? const Color(0xFFFF4444) : Colors.transparent,
                   borderRadius: BorderRadius.circular(10 * scale),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 6 * scale,
+                      color: isListening 
+                          ? const Color(0xFFFF4444).withValues(alpha: 0.3)
+                          : Colors.black.withValues(alpha: 0.08),
+                      blurRadius: isListening ? 12 * scale : 6 * scale,
                       offset: Offset(0, 3 * scale),
                     ),
                   ],
                 ),
                 child: Center(
-                  child: Image.asset(
-                    Assets.svgIcons.voice.path,
-                    width: 60 * scale,
-                    height: 60 * scale,
-                  ),
+                  child: isListening
+                      ? Icon(
+                          Icons.mic,
+                          color: Colors.white,
+                          size: 24 * scale,
+                        )
+                      : Image.asset(
+                          Assets.svgIcons.voice.path,
+                          width: 60 * scale,
+                          height: 60 * scale,
+                        ),
                 ),
               ),
             ),

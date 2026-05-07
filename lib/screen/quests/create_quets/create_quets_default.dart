@@ -12,6 +12,8 @@ import 'package:nowlii/screen/quests/create_quets/time_picker_card/time_picker_c
 import 'package:nowlii/screen/quests/create_quets/when_card/when_card.dart';
 import 'package:nowlii/services/quest_service.dart';
 import 'package:intl/intl.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 
 class CreateQuestPage extends StatefulWidget {
   const CreateQuestPage({super.key});
@@ -34,11 +36,95 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
   bool repeatQuest = true;
   List<String> subtasks = [];
   bool _isCreating = false;
+  
+  // Speech to text
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _speechAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
 
   @override
   void dispose() {
     _taskController.dispose();
+    _speech.stop();
     super.dispose();
+  }
+  
+  Future<void> _initSpeech() async {
+    _speech = stt.SpeechToText();
+    _speechAvailable = await _speech.initialize(
+      onError: (error) {
+        print('Speech recognition error: $error');
+        setState(() => _isListening = false);
+      },
+      onStatus: (status) {
+        print('Speech recognition status: $status');
+        if (status == 'done' || status == 'notListening') {
+          setState(() => _isListening = false);
+        }
+      },
+    );
+  }
+  
+  Future<void> _startListening() async {
+    // Request microphone permission
+    final status = await Permission.microphone.request();
+    
+    if (!status.isGranted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Microphone permission is required for voice input'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+    
+    if (!_speechAvailable) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Speech recognition not available'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+    
+    setState(() => _isListening = true);
+    
+    await _speech.listen(
+      onResult: (result) {
+        setState(() {
+          _taskController.text = result.recognizedWords;
+        });
+      },
+      listenFor: const Duration(seconds: 30),
+      pauseFor: const Duration(seconds: 3),
+      partialResults: true,
+      cancelOnError: true,
+    );
+  }
+  
+  Future<void> _stopListening() async {
+    await _speech.stop();
+    setState(() => _isListening = false);
+  }
+  
+  void _toggleListening() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
   }
 
   Future<void> _createQuest() async {
@@ -122,7 +208,10 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 10 * baseScale),
-                  TitleWidget(),
+                  TitleWidget(
+                    onMicPressed: _toggleListening,
+                    isListening: _isListening,
+                  ),
                   SizedBox(height: 14 * baseScale),
                   InputCardWidget(controller: _taskController),
                   SizedBox(height: 12 * baseScale),
