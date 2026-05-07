@@ -35,10 +35,19 @@ class InputCardWidget extends StatelessWidget {
       ),
       child: TextField(
         controller: effectiveController,
+        maxLines: null, // Allow multiple lines
+        expands: true, // Expand to fill container
+        textAlignVertical: TextAlignVertical.top, // Align text to top
+        style: AppTextStylesQutes.workSansExtraBold32.copyWith(
+          color: const Color(0xFF011F54), // Dark blue color for input text
+        ),
         decoration: InputDecoration(
           hintText: 'Write down your \n quest...',
-          hintStyle: AppTextStylesQutes.workSansExtraBold32,
+          hintStyle: AppTextStylesQutes.workSansExtraBold32.copyWith(
+            color: const Color(0xFFB3B2B0), // Light gray for hint
+          ),
           border: InputBorder.none,
+          contentPadding: EdgeInsets.zero, // Remove default padding
         ),
       ),
     );
