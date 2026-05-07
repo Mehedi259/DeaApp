@@ -666,8 +666,13 @@ class _HomeScreenState extends State<HomeScreen> {
           
           // Plan button
           GestureDetector(
-            onTap: () {
-              context.push(AppRoutespath.createQuestPage);
+            onTap: () async {
+              final result = await context.push(AppRoutespath.createQuestPage);
+              // If quest was created successfully, reload data
+              if (result == true && mounted) {
+                _loadQuests();
+                _loadAllQuestsForDates();
+              }
             },
             child: Container(
               width: 78,
@@ -810,8 +815,13 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(24),
           child: InkWell(
             borderRadius: BorderRadius.circular(24),
-            onTap: () {
-              context.push(AppRoutespath.createQuestPage);
+            onTap: () async {
+              final result = await context.push(AppRoutespath.createQuestPage);
+              // If quest was created successfully, reload data
+              if (result == true && mounted) {
+                _loadQuests();
+                _loadAllQuestsForDates();
+              }
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -907,8 +917,8 @@ class _HomeScreenState extends State<HomeScreen> {
           quest.taskDone,
           questId: quest.id,
         ),
-        onEdit: () {
-          context.push(
+        onEdit: () async {
+          final result = await context.push(
             AppRoutespath.editQuestPage,
             extra: {
               'taskId': quest.id,
@@ -928,6 +938,11 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             },
           );
+          // If quest was updated successfully, reload data
+          if (result == true && mounted) {
+            _loadQuests();
+            _loadAllQuestsForDates();
+          }
         },
         onDelete: () => _deleteQuest(index, quest.id),
         onTomorrow: () => _moveToTomorrow(index, quest.id),

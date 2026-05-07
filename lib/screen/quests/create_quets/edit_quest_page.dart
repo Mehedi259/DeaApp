@@ -130,7 +130,8 @@ class _EditQuestPageState extends State<EditQuestPage> {
           backgroundColor: Colors.green,
         ),
       );
-      context.pop(); // Go back to home screen
+      // Return true to indicate quest was updated successfully
+      context.pop(true);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

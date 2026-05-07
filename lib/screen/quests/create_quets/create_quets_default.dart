@@ -88,7 +88,8 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
           backgroundColor: Colors.green,
         ),
       );
-      context.pop(); // Go back to home screen
+      // Return true to indicate quest was created successfully
+      context.pop(true);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
