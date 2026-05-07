@@ -59,7 +59,7 @@ class NowliiOption {
 
 /// API service for fetching Nowlii avatar options
 class NowliiOptionsApi {
-  static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev';
+  static const String baseUrl = 'http://16.170.191.239:8000';
   
   /// Fetch all available Nowlii avatar options
   static Future<List<NowliiOption>> fetchNowliiOptions({String? token}) async {

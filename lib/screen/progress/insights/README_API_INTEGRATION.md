@@ -5,7 +5,7 @@
 
 ## API Endpoint
 ```
-GET https://partnerless-rochel-however.ngrok-free.dev/api/insights/
+GET http://16.170.191.239:8000/api/insights/
 ```
 
 ## Service File

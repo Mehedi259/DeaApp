@@ -1,9 +1,9 @@
 class ApiConstants {
   // Main Backend API URL
-  static const String baseUrl = 'https://partnerless-rochel-however.ngrok-free.dev';
+  static const String baseUrl = 'http://16.170.191.239:8000';
   
   // AI Backend API URL (separate server)
-  static const String aiBaseUrl = 'https://apricot-rhyme-humming.ngrok-free.dev';
+  static const String aiBaseUrl = 'http://16.170.191.239:8001';
   
   static const String apiPrefix = '/api/auth';
   static const String profilePrefix = '/api/profiles';
