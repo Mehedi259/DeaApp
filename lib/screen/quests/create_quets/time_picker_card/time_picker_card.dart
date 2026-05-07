@@ -6,11 +6,13 @@ import 'package:nowlii/themes/create_qutes.dart';
 class TimePickerCard extends StatefulWidget {
   final double scale;
   final String? initialTime;
+  final Function(String)? onTimeSelected; // Add callback
 
   const TimePickerCard({
     super.key, 
     this.scale = 1.0,
     this.initialTime,
+    this.onTimeSelected, // Add callback
   });
 
   @override
@@ -21,7 +23,6 @@ class _TimePickerCardState extends State<TimePickerCard> {
   bool _isExpanded = false;
   int _selectedHour = DateTime.now().hour;
   int _selectedMinute = DateTime.now().minute;
-  int _selectedSecond = DateTime.now().second;
   bool _isPM = DateTime.now().hour >= 12;
   Timer? _timer;
 
@@ -46,7 +47,10 @@ class _TimePickerCardState extends State<TimePickerCard> {
       }
     }
     
-    _startTimer();
+    // Notify initial time after build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyTimeChange();
+    });
   }
 
   @override
@@ -55,24 +59,52 @@ class _TimePickerCardState extends State<TimePickerCard> {
     super.dispose();
   }
 
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _selectedSecond++;
-        if (_selectedSecond >= 60) {
-          _selectedSecond = 0;
-          _selectedMinute++;
-          if (_selectedMinute >= 60) {
-            _selectedMinute = 0;
-            _selectedHour++;
-            if (_selectedHour >= 24) {
-              _selectedHour = 0;
-            }
-            _isPM = _selectedHour >= 12;
-          }
-        }
-      });
+  void _notifyTimeChange() {
+    // Format time as HH:MM (24-hour format)
+    final timeString = '${_selectedHour.toString().padLeft(2, '0')}:${_selectedMinute.toString().padLeft(2, '0')}';
+    widget.onTimeSelected?.call(timeString);
+  }
+  
+  void _incrementHour() {
+    setState(() {
+      _selectedHour++;
+      if (_selectedHour >= 24) {
+        _selectedHour = 0;
+      }
+      _isPM = _selectedHour >= 12;
     });
+    _notifyTimeChange();
+  }
+  
+  void _decrementHour() {
+    setState(() {
+      _selectedHour--;
+      if (_selectedHour < 0) {
+        _selectedHour = 23;
+      }
+      _isPM = _selectedHour >= 12;
+    });
+    _notifyTimeChange();
+  }
+  
+  void _incrementMinute() {
+    setState(() {
+      _selectedMinute++;
+      if (_selectedMinute >= 60) {
+        _selectedMinute = 0;
+      }
+    });
+    _notifyTimeChange();
+  }
+  
+  void _decrementMinute() {
+    setState(() {
+      _selectedMinute--;
+      if (_selectedMinute < 0) {
+        _selectedMinute = 59;
+      }
+    });
+    _notifyTimeChange();
   }
 
   int get _displayHour {
@@ -133,142 +165,200 @@ class _TimePickerCardState extends State<TimePickerCard> {
   }
 
   Widget _buildTimePicker(double s) {
-    return Column(
-      children: [
-        _buildTimeRow(
-          s,
-          (_displayHour - 1) <= 0 ? 12 : _displayHour - 1,
-          (_selectedMinute - 1) < 0 ? 59 : _selectedMinute - 1,
-          (_selectedSecond - 1) < 0 ? 59 : _selectedSecond - 1,
-          !_isPM,
-          isGrayed: true,
-        ),
-        SizedBox(height: 8 * s),
-        Container(height: 1, color: Colors.grey[300]),
-        SizedBox(height: 8 * s),
-        _buildTimeRow(
-          s,
-          _displayHour,
-          _selectedMinute,
-          _selectedSecond,
-          _isPM,
-          isSelected: true,
-        ),
-        SizedBox(height: 8 * s),
-        Container(height: 1, color: Colors.grey[300]),
-        SizedBox(height: 8 * s),
-        _buildTimeRow(
-          s,
-          (_displayHour + 1) > 12 ? 1 : _displayHour + 1,
-          (_selectedMinute + 1) >= 60 ? 0 : _selectedMinute + 1,
-          (_selectedSecond + 1) >= 60 ? 0 : _selectedSecond + 1,
-          _isPM,
-          isGrayed: true,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimeRow(
-    double s,
-    int hour,
-    int minute,
-    int second,
-    bool isPM, {
-    bool isSelected = false,
-    bool isGrayed = false,
-  }) {
-    final textColor = isSelected
-        ? Colors.blue[700]!
-        : isGrayed
-        ? Colors.grey[400]!
-        : Colors.grey[600]!;
-
-    final fontWeight = isSelected ? FontWeight.bold : FontWeight.normal;
-    final fontSize = isSelected ? 20.0 * s : 16.0 * s;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildTimeUnit(
-          hour.toString().padLeft(2, '0'),
-          textColor,
-          fontWeight,
-          fontSize,
-        ),
-        Text(
-          ' : ',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: fontWeight,
-            fontSize: fontSize,
+    return Container(
+      padding: EdgeInsets.all(16 * s),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12 * s),
+      ),
+      child: Column(
+        children: [
+          // Hour and Minute selectors
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Hour selector
+              _buildTimeSelector(
+                value: _displayHour,
+                onIncrement: _incrementHour,
+                onDecrement: _decrementHour,
+                label: 'Hour',
+                s: s,
+              ),
+              SizedBox(width: 16 * s),
+              Text(
+                ':',
+                style: TextStyle(
+                  fontSize: 32 * s,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1E3A8A),
+                ),
+              ),
+              SizedBox(width: 16 * s),
+              // Minute selector
+              _buildTimeSelector(
+                value: _selectedMinute,
+                onIncrement: _incrementMinute,
+                onDecrement: _decrementMinute,
+                label: 'Minute',
+                s: s,
+              ),
+              SizedBox(width: 16 * s),
+              // AM/PM toggle
+              _buildAmPmToggle(s),
+            ],
           ),
-        ),
-        _buildTimeUnit(
-          minute.toString().padLeft(2, '0'),
-          textColor,
-          fontWeight,
-          fontSize,
-        ),
-        Text(
-          ' : ',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: fontWeight,
-            fontSize: fontSize,
-          ),
-        ),
-        _buildTimeUnit(
-          second.toString().padLeft(2, '0'),
-          textColor,
-          fontWeight,
-          fontSize,
-        ),
-        SizedBox(width: 16 * s),
-        GestureDetector(
-          onTap: isSelected
-              ? () {
-                  setState(() {
-                    _isPM = !_isPM;
-                    if (_isPM) {
-                      _selectedHour = _selectedHour < 12
-                          ? _selectedHour + 12
-                          : _selectedHour;
-                    } else {
-                      _selectedHour = _selectedHour >= 12
-                          ? _selectedHour - 12
-                          : _selectedHour;
-                    }
-                  });
-                }
-              : null,
-          child: Text(
-            isPM ? 'PM' : 'AM',
+          SizedBox(height: 12 * s),
+          // Selected time display
+          Text(
+            'Selected: ${_displayHour.toString().padLeft(2, '0')}:${_selectedMinute.toString().padLeft(2, '0')} ${_isPM ? 'PM' : 'AM'}',
             style: TextStyle(
-              color: textColor,
-              fontWeight: fontWeight,
-              fontSize: fontSize,
+              fontSize: 14 * s,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF64748B),
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimeUnit(
-    String value,
-    Color color,
-    FontWeight weight,
-    double size,
-  ) {
-    return Text(
-      value,
-      style: TextStyle(
-        color: color,
-        fontWeight: weight,
-        fontSize: size,
-        fontFeatures: const [FontFeature.tabularFigures()],
+        ],
       ),
     );
   }
+  
+  Widget _buildTimeSelector({
+    required int value,
+    required VoidCallback onIncrement,
+    required VoidCallback onDecrement,
+    required String label,
+    required double s,
+  }) {
+    return Column(
+      children: [
+        // Increment button
+        GestureDetector(
+          onTap: onIncrement,
+          child: Container(
+            width: 48 * s,
+            height: 36 * s,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6),
+              borderRadius: BorderRadius.circular(8 * s),
+            ),
+            child: Icon(
+              Icons.keyboard_arrow_up,
+              color: Colors.white,
+              size: 24 * s,
+            ),
+          ),
+        ),
+        SizedBox(height: 8 * s),
+        // Value display
+        Container(
+          width: 60 * s,
+          height: 50 * s,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8 * s),
+            border: Border.all(
+              color: const Color(0xFF3B82F6),
+              width: 2,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              value.toString().padLeft(2, '0'),
+              style: TextStyle(
+                fontSize: 24 * s,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1E3A8A),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 8 * s),
+        // Decrement button
+        GestureDetector(
+          onTap: onDecrement,
+          child: Container(
+            width: 48 * s,
+            height: 36 * s,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6),
+              borderRadius: BorderRadius.circular(8 * s),
+            ),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              color: Colors.white,
+              size: 24 * s,
+            ),
+          ),
+        ),
+        SizedBox(height: 4 * s),
+        // Label
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12 * s,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildAmPmToggle(double s) {
+    return Column(
+      children: [
+        SizedBox(height: 36 * s), // Align with increment button
+        SizedBox(height: 8 * s),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isPM = !_isPM;
+              if (_isPM) {
+                _selectedHour = _selectedHour < 12
+                    ? _selectedHour + 12
+                    : _selectedHour;
+              } else {
+                _selectedHour = _selectedHour >= 12
+                    ? _selectedHour - 12
+                    : _selectedHour;
+              }
+            });
+            _notifyTimeChange();
+          },
+          child: Container(
+            width: 60 * s,
+            height: 50 * s,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6),
+              borderRadius: BorderRadius.circular(8 * s),
+            ),
+            child: Center(
+              child: Text(
+                _isPM ? 'PM' : 'AM',
+                style: TextStyle(
+                  fontSize: 18 * s,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 8 * s),
+        SizedBox(height: 36 * s), // Align with decrement button
+        SizedBox(height: 4 * s),
+        Text(
+          'Period',
+          style: TextStyle(
+            fontSize: 12 * s,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+
+
 }

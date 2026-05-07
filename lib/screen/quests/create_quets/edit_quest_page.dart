@@ -36,6 +36,7 @@ class _EditQuestPageState extends State<EditQuestPage> {
   final TextEditingController _taskController = TextEditingController();
   String? selectedZone;
   DateTime selectedDate = DateTime.now();
+  String? selectedTime; // Add time state
   bool enableCall = true;
   bool repeatQuest = true;
   List<String> subtasks = [];
@@ -50,6 +51,7 @@ class _EditQuestPageState extends State<EditQuestPage> {
       selectedZone = widget.taskData?['zone'];
       enableCall = widget.taskData?['enableCall'] ?? true;
       repeatQuest = widget.taskData?['repeatQuest'] ?? true;
+      selectedTime = widget.taskData?['time']; // Load existing time
       
       // Parse date if available
       if (widget.taskData?['selectADate'] != null) {
@@ -115,6 +117,7 @@ class _EditQuestPageState extends State<EditQuestPage> {
       task: _taskController.text.trim(),
       zone: selectedZone!,
       selectADate: DateFormat('yyyy-MM-dd').format(selectedDate),
+      selectATime: selectedTime, // Pass time to backend
       enableCall: enableCall,
       repeatQuest: repeatQuest,
       setAlarm: true,
@@ -187,6 +190,9 @@ class _EditQuestPageState extends State<EditQuestPage> {
                   SizedBox(height: 12 * baseScale),
                   TimePickerCard(
                     initialTime: widget.taskData?['time'],
+                    onTimeSelected: (String time) {
+                      setState(() => selectedTime = time);
+                    },
                   ),
                   SizedBox(height: 12 * baseScale),
                   EnableCallCard(

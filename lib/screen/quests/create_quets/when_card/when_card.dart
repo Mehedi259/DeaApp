@@ -78,42 +78,54 @@ class _WhenCardState extends State<WhenCard> {
         _updateDate(label, date);
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 8 * s),
+        padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 10 * s),
         decoration: BoxDecoration(
-          color: selected ? Colors.blue[50] : Colors.transparent,
+          color: selected ? const Color(0xFFBFDBFE) : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(8 * s),
+          border: Border.all(
+            color: selected ? const Color(0xFF3B82F6) : Colors.transparent,
+            width: 2,
+          ),
         ),
-        child: Text(label, style: AppTextStylesQutes.workSansBlack24),
+        child: Text(
+          label, 
+          style: AppTextStylesQutes.workSansBlack24.copyWith(
+            color: selected ? const Color(0xFF1E40AF) : const Color(0xFF64748B),
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
 
   Widget _selectDateButton(double s) {
+    final bool isCustomDateSelected = selectedDateOption.isNotEmpty &&
+        selectedDateOption != 'Today' &&
+        selectedDateOption != 'Tomorrow';
+    
     return GestureDetector(
       onTap: () {
         _showDateSelectionDialog();
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12 * s, horizontal: 16 * s),
+        padding: EdgeInsets.symmetric(vertical: 10 * s, horizontal: 12 * s),
         decoration: BoxDecoration(
-          color:
-              selectedDateOption.isNotEmpty &&
-                  selectedDateOption != 'Today' &&
-                  selectedDateOption != 'Tomorrow'
-              ? Colors.blue[50]
-              : Colors.transparent,
+          color: isCustomDateSelected ? const Color(0xFFBFDBFE) : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(8 * s),
+          border: Border.all(
+            color: isCustomDateSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+            width: 2,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
-              selectedDateOption.isNotEmpty &&
-                      selectedDateOption != 'Today' &&
-                      selectedDateOption != 'Tomorrow'
-                  ? selectedDateOption
-                  : 'Select a date',
-              style: AppTextStylesQutes.workSansBlack24,
+              isCustomDateSelected ? selectedDateOption : 'Select a date',
+              style: AppTextStylesQutes.workSansBlack24.copyWith(
+                color: isCustomDateSelected ? const Color(0xFF1E40AF) : const Color(0xFF64748B),
+                fontWeight: isCustomDateSelected ? FontWeight.w700 : FontWeight.w600,
+              ),
             ),
           ],
         ),

@@ -29,6 +29,7 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
   final TextEditingController _taskController = TextEditingController();
   String? selectedZone;
   DateTime selectedDate = DateTime.now();
+  String? selectedTime; // Add time state
   bool enableCall = true;
   bool repeatQuest = true;
   List<String> subtasks = [];
@@ -73,6 +74,7 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
       task: _taskController.text.trim(),
       zone: selectedZone!,
       selectADate: DateFormat('yyyy-MM-dd').format(selectedDate),
+      selectATime: selectedTime, // Pass time to backend
       enableCall: enableCall,
       repeatQuest: repeatQuest,
       setAlarm: true,
@@ -142,7 +144,11 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                     },
                   ),
                   SizedBox(height: 12 * baseScale),
-                  TimePickerCard(),
+                  TimePickerCard(
+                    onTimeSelected: (String time) {
+                      setState(() => selectedTime = time);
+                    },
+                  ),
                   SizedBox(height: 12 * baseScale),
                   EnableCallCard(
                     onCallEnabledChanged: (bool value) {

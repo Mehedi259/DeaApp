@@ -30,6 +30,7 @@ class Quest {
   final String task;
   final String zone;
   final String selectADate;
+  final String? selectATime; // Add time field
   final bool enableCall;
   final bool repeatQuest;
   final bool setAlarm;
@@ -41,6 +42,7 @@ class Quest {
     required this.task,
     required this.zone,
     required this.selectADate,
+    this.selectATime, // Add time parameter
     required this.enableCall,
     required this.repeatQuest,
     required this.setAlarm,
@@ -56,6 +58,7 @@ class Quest {
       task: json['task'],
       zone: json['zone'],
       selectADate: json['select_a_date'],
+      selectATime: json['select_a_time'], // Parse time from JSON
       enableCall: json['enable_call'],
       repeatQuest: json['repeat_quest'],
       setAlarm: json['set_alarm'],
@@ -205,6 +208,7 @@ class QuestService {
     required String task,
     required String zone,
     required String selectADate,
+    String? selectATime, // Add time parameter
     required bool enableCall,
     required bool repeatQuest,
     required bool setAlarm,
@@ -217,6 +221,7 @@ class QuestService {
         'task': task,
         'zone': zone,
         'select_a_date': selectADate,
+        if (selectATime != null) 'select_a_time': selectATime, // Add time to body
         'enable_call': enableCall,
         'repeat_quest': repeatQuest,
         'set_alarm': setAlarm,
@@ -251,6 +256,7 @@ class QuestService {
     String? task,
     String? zone,
     String? selectADate,
+    String? selectATime, // Add time parameter
     bool? enableCall,
     bool? repeatQuest,
     bool? setAlarm,
@@ -264,6 +270,7 @@ class QuestService {
       if (task != null) body['task'] = task;
       if (zone != null) body['zone'] = zone;
       if (selectADate != null) body['select_a_date'] = selectADate;
+      if (selectATime != null) body['select_a_time'] = selectATime; // Add time to body
       if (enableCall != null) body['enable_call'] = enableCall;
       if (repeatQuest != null) body['repeat_quest'] = repeatQuest;
       if (setAlarm != null) body['set_alarm'] = setAlarm;

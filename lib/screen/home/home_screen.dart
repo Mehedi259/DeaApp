@@ -909,11 +909,34 @@ class _HomeScreenState extends State<HomeScreen> {
     final items = _quests.asMap().entries.map((entry) {
       final index = entry.key;
       final quest = entry.value;
+      
+      // Format time for display (convert 24-hour to 12-hour format)
+      String displayTime = quest.zone; // Default to zone if no time
+      if (quest.selectATime != null && quest.selectATime!.isNotEmpty) {
+        try {
+          // Parse time (format: "06:11:00" or "06:11")
+          final timeParts = quest.selectATime!.split(':');
+          if (timeParts.length >= 2) {
+            int hour = int.parse(timeParts[0]);
+            int minute = int.parse(timeParts[1]);
+            
+            // Convert to 12-hour format
+            String period = hour >= 12 ? 'PM' : 'AM';
+            int displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+            
+            displayTime = '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period';
+          }
+        } catch (e) {
+          print('Error parsing time: $e');
+          displayTime = quest.zone; // Fallback to zone
+        }
+      }
+      
       return AnimatedTaskItem(
         key: ValueKey('quest_${quest.id}'),
         task: TaskItem(
           quest.task,
-          quest.zone,
+          displayTime, // Show time instead of zone
           quest.taskDone,
           questId: quest.id,
         ),
@@ -926,6 +949,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'title': quest.task,
                 'zone': quest.zone,
                 'selectADate': quest.selectADate,
+                'time': quest.selectATime, // Pass time for editing
                 'enableCall': quest.enableCall,
                 'repeatQuest': quest.repeatQuest,
                 'setAlarm': quest.setAlarm,
