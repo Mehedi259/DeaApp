@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/themes/create_qutes.dart';
 import 'package:nowlii/models/quest_suggestion_model.dart';
+import 'package:nowlii/services/quest_service.dart';
+import 'package:intl/intl.dart';
 
 class SuggestedTaskOverview extends StatefulWidget {
   final QuestSuggestion? suggestion;
@@ -15,9 +17,11 @@ class SuggestedTaskOverview extends StatefulWidget {
 }
 
 class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
+  final QuestService _questService = QuestService();
   bool isCallEnabled = true;
   bool isRepeatQuestEnabled = true;
   bool isSetAlarmEnabled = true;
+  bool _isCreating = false;
   
   // Default values if no suggestion is provided
   String get taskTitle => widget.suggestion?.task ?? 'TO SLEEP';
@@ -38,6 +42,89 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
         return const Color(0xFF9B59B6);
       default:
         return const Color(0xFFA0E871);
+    }
+  }
+
+  Future<void> _addQuest() async {
+    if (_isCreating) return; // Prevent double tap
+    
+    setState(() => _isCreating = true);
+
+    try {
+      print('\n🎯 Adding quest from suggestion...');
+      print('Task: $taskTitle');
+      print('Zone: $taskZone');
+      print('Time: $taskTime');
+      print('Enable Call: $isCallEnabled');
+      print('Repeat Quest: $isRepeatQuestEnabled');
+      print('Set Alarm: $isSetAlarmEnabled');
+
+      // Get today's date in the format expected by API
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      
+      final quest = await _questService.createQuest(
+        task: taskTitle,
+        zone: taskZone,
+        selectADate: today,
+        selectATime: taskTime,
+        enableCall: isCallEnabled,
+        repeatQuest: isRepeatQuestEnabled,
+        setAlarm: isSetAlarmEnabled,
+      );
+
+      if (quest != null && mounted) {
+        print('✅ Quest created successfully!');
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Quest "$taskTitle" added to Today\'s Plan!',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFA0E871),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        
+        // Go back and return true to indicate success
+        context.pop(true);
+      } else {
+        print('❌ Failed to create quest');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to add quest. Please try again.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ Error adding quest: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCreating = false);
+      }
     }
   }
 
@@ -215,12 +302,6 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
           width: 16 * s,
           fit: BoxFit.cover,
         ),
-
-        // Icon(
-        //   Icons.calendar_today,
-        //   size: 16 * s,
-        //   color: const Color(0xFF011F54),
-        // ),
         SizedBox(width: 6 * s),
         Text(
           'Today',
@@ -290,7 +371,7 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
             child: Text(
               '💬 A real-time 10-min support call will help you stay on track. You can add more time later if needed.',
               style: GoogleFonts.workSans(
-                color: const Color(0xFF4C586E), // Text-text-primary-default
+                color: const Color(0xFF4C586E),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 height: 1.40,
@@ -343,7 +424,7 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
             child: Text(
               'Turn this on to repeat the quest daily, weekly or on custom days.',
               style: GoogleFonts.workSans(
-                color: const Color(0xFF4C586E), // Text-text-primary-default
+                color: const Color(0xFF4C586E),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 height: 1.40,
@@ -422,34 +503,41 @@ class _SuggestedTaskOverviewState extends State<SuggestedTaskOverview> {
         bottom: 32 * s,
       ),
       child: GestureDetector(
-        onTap: () {
-          // Handle add quest
-        },
+        onTap: _isCreating ? null : _addQuest,
         child: Container(
           width: double.infinity,
           height: 64 * s,
           decoration: BoxDecoration(
-            color: const Color(0xFF4542EB),
+            color: _isCreating ? const Color(0xFF9B99D8) : const Color(0xFF4542EB),
             borderRadius: BorderRadius.circular(999),
           ),
           alignment: Alignment.center,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add, color: Colors.white, size: 24 * s),
-              SizedBox(width: 8 * s),
-              Text(
-                'Add quest',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.workSans(
-                  color: Colors.white,
-                  fontSize: 20 * s,
-                  fontWeight: FontWeight.w900,
-                  height: 0.80,
+          child: _isCreating
+              ? SizedBox(
+                  width: 24 * s,
+                  height: 24 * s,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add, color: Colors.white, size: 24 * s),
+                    SizedBox(width: 8 * s),
+                    Text(
+                      'Add quest',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.workSans(
+                        color: Colors.white,
+                        fontSize: 20 * s,
+                        fontWeight: FontWeight.w900,
+                        height: 0.80,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );

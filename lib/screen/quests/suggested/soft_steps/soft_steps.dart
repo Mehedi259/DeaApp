@@ -397,8 +397,12 @@ class SleepRoutineCard extends StatelessWidget {
             children: [
               Image.asset(emoji, width: 64, height: 64),
               GestureDetector(
-                onTap: () {
-                  context.push('/suggestedTaskOverview', extra: suggestion);
+                onTap: () async {
+                  final result = await context.push('/suggestedTaskOverview', extra: suggestion);
+                  // If quest was added successfully, show a brief feedback
+                  if (result == true) {
+                    print('✅ Quest added from Soft steps tab');
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -615,8 +619,12 @@ class RoutineCard extends StatelessWidget {
             children: [
               Image.asset(emoji, width: 64, height: 64),
               GestureDetector(
-                onTap: () {
-                  context.push('/suggestedTaskOverview', extra: suggestion);
+                onTap: () async {
+                  final result = await context.push('/suggestedTaskOverview', extra: suggestion);
+                  // If quest was added successfully, show a brief feedback
+                  if (result == true) {
+                    print('✅ Quest added from ${suggestion?.zone ?? "All zones"} tab');
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
