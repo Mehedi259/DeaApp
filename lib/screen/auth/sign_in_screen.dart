@@ -8,6 +8,7 @@ import 'package:nowlii/core/gen/assets.gen.dart' show Assets;
 import 'package:nowlii/screen/auth/sign_in_controller.dart';
 import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
 import 'package:nowlii/api/auth_controller.dart';
+import 'package:nowlii/services/profile_service.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -138,7 +139,19 @@ class _SignInScreenState extends State<SignInScreen>
 
     if (success) {
       if (context.mounted) {
-        context.push("/onboardingFlow");
+        // Check if user has completed profile setup
+        final profileService = ProfileService();
+        final profile = await profileService.fetchProfile();
+        
+        if (profile != null && profile.name.isNotEmpty) {
+          // Profile exists - go to home screen
+          print('✅ Profile found - Navigating to home screen');
+          context.go('/homeScreen');
+        } else {
+          // No profile - go to onboarding
+          print('⚠️ No profile found - Starting onboarding');
+          context.push("/onboardingFlow");
+        }
       }
     } else {
       if (context.mounted) {

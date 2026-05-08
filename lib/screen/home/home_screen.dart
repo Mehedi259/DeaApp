@@ -222,7 +222,8 @@ class _HomeScreenState extends State<HomeScreen> {
             buttonText: 'See progress',
             displayDuration: const Duration(seconds: 5),
             onButtonPressed: () {
-              debugPrint('See progress pressed');
+              debugPrint('See progress pressed - Navigating to Progress screen');
+              context.push(AppRoutespath.progress);
             },
           ),
         );
@@ -1044,7 +1045,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 subtitle: 'One chat at a time, you\'re getting stronger',
                 buttonText: 'See progress',
                 onButtonPressed: () {
-                  debugPrint('See progress pressed');
+                  debugPrint('See progress pressed - Navigating to Progress screen');
+                  context.push(AppRoutespath.progress);
                 },
               ),
             );
