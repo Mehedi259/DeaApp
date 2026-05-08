@@ -1,3 +1,5 @@
+import 'package:nowlii/models/quest_suggestion_model.dart';
+
 class InsightsResponse {
   final WeeklyInsights weekly;
   final MonthlyInsights monthly;
@@ -19,6 +21,7 @@ class WeeklyInsights {
   final int questsCompleted;
   final int totalQuests;
   final List<String> aiReflections;
+  final List<QuestSuggestion> questSuggestions;
   final List<ZoneProgress> zoneProgress;
   final List<String> skippedDays;
   final List<CalendarDay> calendar;
@@ -27,6 +30,7 @@ class WeeklyInsights {
     required this.questsCompleted,
     required this.totalQuests,
     required this.aiReflections,
+    required this.questSuggestions,
     required this.zoneProgress,
     required this.skippedDays,
     required this.calendar,
@@ -37,6 +41,10 @@ class WeeklyInsights {
       questsCompleted: json['quests_completed'] ?? 0,
       totalQuests: json['total_quests'] ?? 0,
       aiReflections: List<String>.from(json['ai_reflections'] ?? []),
+      questSuggestions: (json['quest_suggestions'] as List?)
+              ?.map((e) => QuestSuggestion.fromJson(e))
+              .toList() ??
+          [],
       zoneProgress: (json['zone_progress'] as List?)
               ?.map((e) => ZoneProgress.fromJson(e))
               .toList() ??

@@ -293,9 +293,9 @@ class _QuestHomePageState extends State<QuestHomePage>
           child: TabBarView(
             controller: suggestedTab,
             children: const [
-              ShuffleScreen(),
-              Today(), // Replace with actual Stretch zone widget
-              Today(), // Replace with actual Elevated widget
+              ShuffleScreen(filterZone: 'Soft steps'),
+              ShuffleScreen(filterZone: 'Stretch zone'),
+              ShuffleScreen(filterZone: 'Elevated'),
             ],
           ),
         ),
