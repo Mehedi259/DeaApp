@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
 import 'package:nowlii/utlis/color_palette/color_palette.dart';
@@ -22,14 +23,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
   final InsightsService _insightsService = InsightsService();
   InsightsResponse? _insightsData;
   bool _isLoading = true;
-
-  // Emoji overlays for specific calendar days (0-indexed)
-  final Map<int, String> dayEmojis = {
-    3: '😊', // Thu Week 1
-    9: '😰', // Wed Week 2
-    14: '😊', // Mon Week 3
-    17: '😡', // Thu Week 3
-  };
 
   @override
   void initState() {
@@ -963,6 +956,23 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildMonthlyOverview() {
+    final monthly = _insightsData!.monthly;
+    final questsCompleted = monthly.questsCompleted;
+    final completionRate = questsCompleted.assigned > 0
+        ? questsCompleted.completed / questsCompleted.assigned
+        : 0.0;
+    
+    // Get current month name from calendar data
+    String currentMonth = 'This month';
+    if (monthly.calendar.isNotEmpty) {
+      try {
+        final firstDate = DateTime.parse(monthly.calendar.first.date);
+        currentMonth = DateFormat('MMMM').format(firstDate);
+      } catch (e) {
+        print('Error parsing date: $e');
+      }
+    }
+    
     return Container(
       decoration: BoxDecoration(color: AppColorsApps.babyBlue),
       child: Padding(
@@ -1034,10 +1044,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Quests completed',
                           style: TextStyle(
                             fontSize: 14,
@@ -1046,8 +1056,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           ),
                         ),
                         Text(
-                          '66/100',
-                          style: TextStyle(
+                          '${questsCompleted.completed}/${questsCompleted.assigned}',
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A2B4F),
@@ -1063,7 +1073,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: FractionallySizedBox(
-                        widthFactor: 0.66,
+                        widthFactor: completionRate,
                         child: Container(
                           height: 25,
                           decoration: BoxDecoration(
@@ -1102,7 +1112,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'January',
+                        currentMonth,
                         style: GoogleFonts.workSans(
                           color: const Color(0xFF011F54),
                           fontSize: 20,
@@ -1204,24 +1214,21 @@ class _InsightsScreenState extends State<InsightsScreen> {
           return _buildDayCircle(
             DayStatus.empty,
             index + 1,
-            emoji: null,
           );
         }
         
         // Extract day number from date (e.g., "2026-04-16" -> 16)
         final dayNumber = int.tryParse(calendarDays[index].date.split('-').last) ?? (index + 1);
-        final emoji = dayEmojis[index];
         
         return _buildDayCircle(
           calendarStatuses[index],
           dayNumber,
-          emoji: emoji,
         );
       },
     );
   }
 
-  Widget _buildDayCircle(DayStatus status, int day, {String? emoji}) {
+  Widget _buildDayCircle(DayStatus status, int day) {
     Color backgroundColor;
     Color borderColor;
     String? imagePath;
@@ -1252,33 +1259,21 @@ class _InsightsScreenState extends State<InsightsScreen> {
     return SizedBox(
       width: 44,
       height: 44,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              shape: BoxShape.circle,
-              border: status == DayStatus.streak
-                  ? Border.all(color: borderColor, width: 2.5)
-                  : null,
-            ),
-            child: Center(
-              child: imagePath != null
-                  ? Image.asset(imagePath, width: 20, height: 20)
-                  : null,
-            ),
-          ),
-          if (emoji != null)
-            Positioned(
-              top: -6,
-              right: -4,
-              child: Text(emoji, style: const TextStyle(fontSize: 16)),
-            ),
-        ],
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          shape: BoxShape.circle,
+          border: status == DayStatus.streak
+              ? Border.all(color: borderColor, width: 2.5)
+              : null,
+        ),
+        child: Center(
+          child: imagePath != null
+              ? Image.asset(imagePath, width: 20, height: 20)
+              : null,
+        ),
       ),
     );
   }
