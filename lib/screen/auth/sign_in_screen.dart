@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart' show SvgPicture;
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nowlii/core/gen/assets.gen.dart' show Assets;
 import 'package:nowlii/screen/auth/sign_in_controller.dart';
 import 'package:nowlii/themes/text_styles.dart' show AppsTextStyles;
@@ -144,8 +145,13 @@ class _SignInScreenState extends State<SignInScreen>
         final profile = await profileService.fetchProfile();
         
         if (profile != null && profile.name.isNotEmpty) {
-          // Profile exists - go to home screen
+          // Profile exists - Returning user
           print('✅ Profile found - Navigating to home screen');
+          
+          // Ensure is_new_user flag is false for returning users
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('is_new_user', false);
+          
           context.go('/homeScreen');
         } else {
           // No profile - go to onboarding

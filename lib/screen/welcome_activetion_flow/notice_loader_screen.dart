@@ -63,6 +63,10 @@ class _NoticeLoaderScreenState extends State<NoticeLoaderScreen> {
         print('✅ Profile created successfully in onboarding!');
         print('👤 Profile: ${_profileController.profile?.toJson()}');
         
+        // Mark user as new user (for showing tooltips on first home screen visit)
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('is_new_user', true);
+        
         // Clear onboarding data after successful creation
         onboardingData.clear();
       } else {

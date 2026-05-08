@@ -42,6 +42,8 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
       context.go('/entryScreen');
     } else {
       // Returning user - go directly to home
+      // Ensure is_new_user flag is false for returning users
+      await prefs.setBool('is_new_user', false);
       context.go('/homeScreen');
     }
   }

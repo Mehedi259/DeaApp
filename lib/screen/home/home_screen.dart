@@ -171,13 +171,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _checkAndShowOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
+    
+    // Check if user just completed onboarding (new user)
+    final isNewUser = prefs.getBool('is_new_user') ?? false;
     final hasSeenHomeOnboarding = prefs.getBool('hasSeenHomeOnboarding') ?? false;
     
-    if (!hasSeenHomeOnboarding && mounted) {
+    // Only show tooltips and notifications to NEW users who haven't seen them yet
+    if (isNewUser && !hasSeenHomeOnboarding && mounted) {
       // Mark as seen
       await prefs.setBool('hasSeenHomeOnboarding', true);
+      // Clear the new user flag
+      await prefs.setBool('is_new_user', false);
       
-      // Show onboarding
+      // Show onboarding tooltips
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           OnboardingOverlay.show(context, onComplete: _showAllNotifications);
@@ -205,8 +211,17 @@ class _HomeScreenState extends State<HomeScreen> {
             'Send a voice note to your bestie- me! Tell me what\'s on your mind, or how you\'re feeling before the session.',
         buttonText: 'Send a quick note',
         displayDuration: const Duration(seconds: 5),
-        onButtonPressed: () {
-          debugPrint('Navigate to voice note screen');
+        onButtonPressed: () async {
+          // Same logic as swipe to talk
+          final needsEmotionDetection = await EmotionDetectionHelper.shouldShowEmotionDetection();
+          
+          if (needsEmotionDetection) {
+            // First time today - show emotion detection flow
+            context.push(AppRoutespath.emotionShareScreen);
+          } else {
+            // Already done today - go directly to AI voice calling screen
+            context.push(AppRoutespath.aiVoice);
+          }
         },
       ),
     );
