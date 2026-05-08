@@ -213,7 +213,9 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                     isListening: _isListening,
                   ),
                   SizedBox(height: 14 * baseScale),
-                  InputCardWidget(controller: _taskController),
+                  InputCardWidget(
+                    controller: _taskController,
+                  ),
                   SizedBox(height: 12 * baseScale),
                   AddSubtasksButton(
                     onSubtasksChanged: (List<String> newSubtasks) {

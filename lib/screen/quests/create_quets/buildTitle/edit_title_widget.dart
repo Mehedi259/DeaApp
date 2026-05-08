@@ -7,11 +7,14 @@ class EditTitleWidget extends StatelessWidget {
   final double scale;
   final VoidCallback? onBackPressed;
   final VoidCallback? onMicPressed;
+  final bool isListening;
+  
   const EditTitleWidget({
     super.key,
     this.scale = 1.0,
     this.onBackPressed,
     this.onMicPressed,
+    this.isListening = false,
   });
 
   @override
@@ -62,6 +65,7 @@ class EditTitleWidget extends StatelessWidget {
                 width: 44 * scale,
                 height: 44 * scale,
                 decoration: BoxDecoration(
+                  color: isListening ? const Color(0xFFFF6B6B) : Colors.transparent,
                   borderRadius: BorderRadius.circular(10 * scale),
                   boxShadow: [
                     BoxShadow(
@@ -72,11 +76,17 @@ class EditTitleWidget extends StatelessWidget {
                   ],
                 ),
                 child: Center(
-                  child: Image.asset(
-                    Assets.svgIcons.voice.path,
-                    width: 60 * scale,
-                    height: 60 * scale,
-                  ),
+                  child: isListening
+                      ? Icon(
+                          Icons.mic,
+                          color: Colors.white,
+                          size: 28 * scale,
+                        )
+                      : Image.asset(
+                          Assets.svgIcons.voice.path,
+                          width: 60 * scale,
+                          height: 60 * scale,
+                        ),
                 ),
               ),
             ),
