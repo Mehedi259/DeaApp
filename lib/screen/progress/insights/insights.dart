@@ -16,8 +16,6 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  int selectedTabIndex = 0;
-  final List<String> tabs = ['All', 'Recent sessions', 'AI insights'];
   String selectedWeek = 'This week';
   String selectedMonth = 'This month';
   
@@ -105,214 +103,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTabNavigation(),
-                  const SizedBox(height: 24),
-                  if (selectedTabIndex == 0) ...[
-                    _buildRecentSessions(),
-                    const SizedBox(height: 24),
-                    _buildAIInsights(),
-                    _buildWeeklyReflection(),
-                    _buildMonthlyOverview(),
-                    _buildMilestonesAndAchievements(),
-                  ] else if (selectedTabIndex == 1) ...[
-                    _buildRecentSessions(),
-                  ] else ...[
-                    _buildAIInsights(),
-                    const SizedBox(height: 24),
-                    _buildWeeklyReflection(),
-                    const SizedBox(height: 24),
-                    _buildMonthlyOverview(),
-                    const SizedBox(height: 24),
-                    _buildMilestonesAndAchievements(),
-                  ],
+                  _buildAIInsights(),
+                  _buildWeeklyReflection(),
+                  _buildMonthlyOverview(),
+                  _buildMilestonesAndAchievements(),
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabNavigation() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFEF8),
-          borderRadius: BorderRadius.circular(28),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(tabs.length, (index) {
-            final isSelected = selectedTabIndex == index;
-            return GestureDetector(
-              onTap: () => setState(() => selectedTabIndex = index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: EdgeInsets.only(right: index < tabs.length - 1 ? 8 : 0),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFFC3DBFF)
-                        : const Color(0xFFE0E0E0),
-                    width: 1,
-                  ),
-                  color: isSelected
-                      ? const Color(0xFFC3DBFF)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  tabs[index],
-                  style: AppsTextStyles.workSansSemiBold15.copyWith(
-                    color: isSelected
-                        ? const Color(0xFF1A2B4F)
-                        : const Color(0xFF6B7280),
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecentSessions() {
-    return Center(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(10),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(25),
-          decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFFFCB9B), width: 1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Recent sessions',
-                style: AppsTextStyles.extraBold32Centered,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your focus moments and reflections saved for you.',
-                style: AppsTextStyles.workSansRegularF16,
-              ),
-              const SizedBox(height: 20),
-              _buildSessionCard(
-                'Today',
-                'Focused on confidence',
-                const Color(0xFF4542EB),
-                GoogleFonts.workSans(
-                  fontWeight: FontWeight.w800,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 20,
-                  height: 1.2,
-                  letterSpacing: -0.5,
-                  color: Colors.white,
-                ),
-                Image.asset(
-                  Assets.svgIcons.todayBack.path,
-                  height: 48,
-                  width: 48,
-                ),
-                focusTextStyle: AppsTextStyles.myWorkSansStyle.copyWith(
-                  color: const Color(0xFFFFFDF7) /* Text-text-light */,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildSessionCard(
-                'Yesterday',
-                'Focused on clarity',
-                const Color(0xFFFF8F26),
-                AppsTextStyles.textDefaultStyle,
-                Image.asset(
-                  Assets.svgIcons.yesterdayBack.path,
-                  height: 48,
-                  width: 48,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildSessionCard(
-                'Monday',
-                'Focused on getting unstuck',
-                const Color(0xFFA0E871),
-                AppsTextStyles.textDefaultStyle,
-                Image.asset(
-                  Assets.svgIcons.mondayBack.path,
-                  height: 48,
-                  width: 48,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSessionCard(
-    String day,
-    String focus,
-    Color color,
-    TextStyle dayTextStyle,
-    Widget trailing, {
-    TextStyle? focusTextStyle,
-  }) {
-    return Center(
-      child: Container(
-        width: double.infinity,
-        height: 100,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            day,
-                            style: dayTextStyle,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            focus,
-                            style: focusTextStyle ?? AppsTextStyles.myWorkSansStyle,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              trailing,
-            ],
           ),
         ),
       ),
@@ -847,17 +644,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildInsightItem(
-                        'You’ve been most consistent on Thursdays 🌿 ',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInsightItem(
-                        'You tend to complete more tasks on days you report feeling neutral or focused',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInsightItem(
-                        'Your average mood this week improved by 12%',
-                      ),
+                      // Display AI reflections from API dynamically
+                      ...weekly.aiReflections.asMap().entries.map((entry) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: entry.key < weekly.aiReflections.length - 1 ? 12 : 0,
+                          ),
+                          child: _buildInsightItem(entry.value),
+                        );
+                      }).toList(),
                     ],
                   ),
                 ),
