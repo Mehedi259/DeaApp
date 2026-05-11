@@ -257,7 +257,8 @@ class _HomeScreenState extends State<HomeScreen> {
             buttonText: 'Add quest',
             displayDuration: const Duration(seconds: 5),
             onButtonPressed: () {
-              debugPrint('Add quest pressed');
+              debugPrint('Add quest pressed - Navigating to Create Quest screen');
+              context.push(AppRoutespath.createQuestPage);
             },
           ),
         );
@@ -275,7 +276,8 @@ class _HomeScreenState extends State<HomeScreen> {
             buttonText: 'Add another quest',
             displayDuration: const Duration(seconds: 5),
             onButtonPressed: () {
-              debugPrint('Add another quest');
+              debugPrint('Add another quest - Navigating to Create Quest screen');
+              context.push(AppRoutespath.createQuestPage);
             },
           ),
         );
