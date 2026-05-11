@@ -20,6 +20,10 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
   String selectedLanguage = 'English';
   String typingText = '';
   bool showLetsStart = false;
+  
+  // Countdown timer
+  int countdownSeconds = 10;
+  bool isRecording = false;
 
   @override
   void initState() {
@@ -63,9 +67,33 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
   }
 
   void _startTypingAnimation() {
-    Future.delayed(Duration(seconds: 3), () {
+    // Start countdown timer
+    _startCountdown();
+  }
+  
+  void _startCountdown() {
+    setState(() {
+      isRecording = true;
+      countdownSeconds = 10;
+    });
+    
+    // Countdown from 10 to 0
+    Future.doWhile(() async {
+      await Future.delayed(Duration(seconds: 1));
+      
+      if (!mounted || currentScreen != 1) return false;
+      
+      setState(() {
+        countdownSeconds--;
+      });
+      
+      // Continue until countdown reaches 0
+      return countdownSeconds > 0;
+    }).then((_) {
+      // After countdown completes, show "Let's start!" and navigate
       if (mounted && currentScreen == 1) {
         setState(() {
+          isRecording = false;
           showLetsStart = true;
         });
         _typeText("Let's start!");
@@ -622,6 +650,132 @@ class _PopupSpeakingState extends State<PopupSpeaking> with TickerProviderStateM
                     fontFamily: 'Work Sans',
                     fontWeight: FontWeight.w900,
                     height: 0.80,
+                  ),
+                ),
+              SizedBox(height: 30),
+              // Countdown Timer Display (Optimized)
+              if (isRecording)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC3DBFF),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x1A4542EB),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Animated recording dot
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.8, end: 1.0),
+                        duration: Duration(milliseconds: 800),
+                        curve: Curves.easeInOut,
+                        builder: (context, scale, child) {
+                          return Transform.scale(
+                            scale: scale,
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.red.withValues(alpha: 0.5),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(width: 12),
+                      Text(
+                        'Recording',
+                        style: TextStyle(
+                          color: const Color(0xFF011F54),
+                          fontSize: 16,
+                          fontFamily: 'Work Sans',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      // Simple countdown timer (removed heavy 3D transform)
+                      AnimatedSwitcher(
+                        duration: Duration(milliseconds: 300),
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          key: ValueKey<int>(countdownSeconds),
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color(0xFF1a2744),
+                                const Color(0xFF011F54),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black38,
+                                blurRadius: 8,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: const Color(0xFF2a3f5f),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            countdownSeconds.toString().padLeft(2, '0'),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontFamily: 'Work Sans',
+                              fontWeight: FontWeight.w900,
+                              height: 1.0,
+                              letterSpacing: 3,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black26,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'sec',
+                        style: TextStyle(
+                          color: const Color(0xFF011F54),
+                          fontSize: 14,
+                          fontFamily: 'Work Sans',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               Spacer(),
