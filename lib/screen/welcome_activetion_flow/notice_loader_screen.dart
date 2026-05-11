@@ -54,6 +54,7 @@ class _NoticeLoaderScreenState extends State<NoticeLoaderScreen> {
         language: onboardingData.language!,
         voice: onboardingData.voice!,
         profileImage: onboardingData.profileImage,
+        avatarLogo: onboardingData.avatarLogo,  // ✅ Add avatar logo URL
         nowliiName: onboardingData.nowliiName,
         customNowliiName: onboardingData.customNowliiName,
         avatarLogoFile: avatarLogoFile,

@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/themes/create_qutes.dart';
+import 'package:nowlii/services/subtask_service.dart';
 
 class AddSubtasksButton extends StatefulWidget {
   final double scale;
   final Function(List<String>)? onSubtasksChanged;
+  final TextEditingController? questController; // Quest text controller
 
-  const AddSubtasksButton({super.key, this.scale = 1.0, this.onSubtasksChanged});
+  const AddSubtasksButton({
+    super.key, 
+    this.scale = 1.0, 
+    this.onSubtasksChanged,
+    this.questController,
+  });
 
   @override
   State<AddSubtasksButton> createState() => _AddSubtasksButtonState();
@@ -16,25 +23,76 @@ class AddSubtasksButton extends StatefulWidget {
 class _AddSubtasksButtonState extends State<AddSubtasksButton> {
   bool showSubtaskGenerator = false;
   bool showGeneratedSubtasks = false;
+  bool isGenerating = false;
 
-  // Sample generated subtasks
-  final List<String> generatedSubtasks = [
-    'Clean kitchen',
-    'Wash dishes',
-    'Take out trash',
-  ];
+  // Generated subtasks from API
+  List<String> generatedSubtasks = [];
 
   // Chosen/selected subtasks
   final List<String> chosenSubtasks = [];
+  
+  final SubtaskService _subtaskService = SubtaskService();
 
   void _notifyParent() {
     widget.onSubtasksChanged?.call(chosenSubtasks);
   }
 
-  void _onGenerateSubtasks() {
+  Future<void> _onGenerateSubtasks() async {
+    // Get quest text from controller
+    final questText = widget.questController?.text.trim() ?? '';
+    
+    // Validate quest text
+    if (questText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please write down your quest first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     setState(() {
-      showGeneratedSubtasks = true;
+      isGenerating = true;
     });
+
+    try {
+      final subtasks = await _subtaskService.generateSubtasks(questText);
+      
+      if (subtasks != null && subtasks.isNotEmpty) {
+        setState(() {
+          generatedSubtasks = subtasks;
+          showGeneratedSubtasks = true;
+          isGenerating = false;
+        });
+      } else {
+        setState(() {
+          isGenerating = false;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to generate subtasks. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        isGenerating = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _onToggleSubtask(String subtask) {
@@ -56,10 +114,8 @@ class _AddSubtasksButtonState extends State<AddSubtasksButton> {
   }
 
   void _onRefreshGenerate() {
-    // Re-generate subtasks (can be replaced with actual logic)
-    setState(() {
-      showGeneratedSubtasks = true;
-    });
+    // Re-generate subtasks with API call
+    _onGenerateSubtasks();
   }
 
   @override
@@ -121,25 +177,45 @@ class _AddSubtasksButtonState extends State<AddSubtasksButton> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12 * s),
               child: GestureDetector(
-                onTap: _onGenerateSubtasks,
+                onTap: isGenerating ? null : _onGenerateSubtasks,
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 14 * s),
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFA9A8F6)),
+                    border: Border.all(
+                      color: isGenerating 
+                        ? const Color(0xFFB3C6E6) 
+                        : const Color(0xFFA9A8F6),
+                    ),
                     borderRadius: BorderRadius.circular(25 * s),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        Assets.svgIcons.star.path,
-                        height: 20 * s,
-                        width: 20 * s,
-                      ),
+                      if (isGenerating)
+                        SizedBox(
+                          height: 20 * s,
+                          width: 20 * s,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              const Color(0xFF4542EB),
+                            ),
+                          ),
+                        )
+                      else
+                        Image.asset(
+                          Assets.svgIcons.star.path,
+                          height: 20 * s,
+                          width: 20 * s,
+                        ),
                       SizedBox(width: 8 * s),
                       Text(
-                        "Generate subtasks",
-                        style: AppTextStylesQutes.workSansBlack18,
+                        isGenerating ? "Generating..." : "Generate subtasks",
+                        style: AppTextStylesQutes.workSansBlack18.copyWith(
+                          color: isGenerating 
+                            ? const Color(0xFFB3C6E6) 
+                            : const Color(0xFF011F54),
+                        ),
                       ),
                     ],
                   ),

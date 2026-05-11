@@ -218,6 +218,7 @@ class _CreateQuestPageState extends State<CreateQuestPage> {
                   ),
                   SizedBox(height: 12 * baseScale),
                   AddSubtasksButton(
+                    questController: _taskController,
                     onSubtasksChanged: (List<String> newSubtasks) {
                       setState(() => subtasks = newSubtasks);
                     },
