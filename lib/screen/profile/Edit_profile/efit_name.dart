@@ -6,6 +6,7 @@ import 'package:nowlii/themes/text_styles.dart';
 import 'package:nowlii/utlis/color_palette/color_palette.dart';
 import 'package:nowlii/api/profile_controller.dart';
 import 'package:nowlii/api/profile_model.dart';
+import 'package:nowlii/api/nowlii_options_api.dart';
 
 class EditNameScreen extends StatefulWidget {
   const EditNameScreen({super.key});
@@ -21,16 +22,30 @@ class _EditNameScreenState extends State<EditNameScreen> {
   String _selectedName = '';
   bool _isLoading = false;
   ProfileModel? _currentProfile;
+  List<NowliiOption> avatarOptions = [];
 
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _loadData();
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
     
+    // Load avatar options from API
+    try {
+      final options = await NowliiOptionsApi.fetchNowliiOptions();
+      setState(() {
+        avatarOptions = options;
+      });
+    } catch (e) {
+      print('Error loading avatar options: $e');
+      // Fallback to local assets if API fails
+      avatarOptions = _getFallbackOptions();
+    }
+    
+    // Load current profile
     await _profileController.fetchProfile();
     
     if (_profileController.profile != null) {
@@ -45,6 +60,17 @@ class _EditNameScreenState extends State<EditNameScreen> {
     } else {
       setState(() => _isLoading = false);
     }
+  }
+  
+  List<NowliiOption> _getFallbackOptions() {
+    return [
+      NowliiOption(id: 1, name: 'milo', avatarLogo: 'assets/svg_images/A.png'),
+      NowliiOption(id: 2, name: 'bloop', avatarLogo: 'assets/svg_images/B.png'),
+      NowliiOption(id: 3, name: 'gumo', avatarLogo: 'assets/svg_images/C.png'),
+      NowliiOption(id: 4, name: 'knotty', avatarLogo: 'assets/svg_images/D.png'),
+      NowliiOption(id: 5, name: 'fizzy', avatarLogo: 'assets/svg_images/E.png'),
+      NowliiOption(id: 6, name: 'zee', avatarLogo: 'assets/svg_images/F.png'),
+    ];
   }
 
   Future<void> _updateAvatarName() async {
@@ -62,23 +88,25 @@ class _EditNameScreenState extends State<EditNameScreen> {
     setState(() => _isLoading = false);
 
     if (success) {
-      _showSuccessDialog('Avatar name updated successfully!');
+      // Show success dialog and return true to parent
+      _showSuccessDialogAndReturn('Avatar name updated successfully!');
     } else {
       _showErrorDialog(_profileController.errorMessage ?? 'Failed to update avatar name');
     }
   }
 
-  void _showSuccessDialog(String message) {
+  void _showSuccessDialogAndReturn(String message) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Success'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context, true); // Go back with success result
             },
             child: const Text('OK'),
           ),
@@ -146,10 +174,15 @@ class _EditNameScreenState extends State<EditNameScreen> {
                   NameSelectionPage(
                     selectedName: _selectedName,
                     currentProfile: _currentProfile,
+                    avatarOptions: avatarOptions,
                     onNameSelected: (name) {
                       setState(() {
                         _selectedName = name;
                       });
+                    },
+                    onReloadNeeded: () async {
+                      // Reload data when avatar is updated
+                      await _loadData();
                     },
                   ),
                 ],
@@ -211,13 +244,17 @@ class _EditNameScreenState extends State<EditNameScreen> {
 class NameSelectionPage extends StatefulWidget {
   final String selectedName;
   final ProfileModel? currentProfile;
+  final List<NowliiOption> avatarOptions;
   final Function(String) onNameSelected;
+  final Future<void> Function()? onReloadNeeded;
 
   const NameSelectionPage({
     super.key,
     required this.selectedName,
     this.currentProfile,
+    required this.avatarOptions,
     required this.onNameSelected,
+    this.onReloadNeeded,
   });
 
   @override
@@ -234,40 +271,6 @@ class _NameSelectionPageState extends State<NameSelectionPage>
   int _currentAvatarIndex = 0;
   bool _showNameDisplay = true;
 
-  // Avatar list with PNG images
-  final List<AvatarData> avatars = [
-    AvatarData(
-      name: 'KNOTTY',
-      assetPath: 'assets/svg_images/A.png',
-      isLottie: false,
-    ),
-    AvatarData(
-      name: 'BLOOBY',
-      assetPath: 'assets/svg_images/B.png',
-      isLottie: false,
-    ),
-    AvatarData(
-      name: 'FIZZY',
-      assetPath: 'assets/svg_images/C.png',
-      isLottie: false,
-    ),
-    AvatarData(
-      name: 'BOUNCY',
-      assetPath: 'assets/svg_images/D.png',
-      isLottie: false,
-    ),
-    AvatarData(
-      name: 'ZIPPY',
-      assetPath: 'assets/svg_images/E.png',
-      isLottie: false,
-    ),
-    AvatarData(
-      name: 'MELON',
-      assetPath: 'assets/svg_images/F.png',
-      isLottie: false,
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -283,14 +286,16 @@ class _NameSelectionPageState extends State<NameSelectionPage>
 
     // Load existing avatar name if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.avatarOptions.isEmpty) return;
+      
       if (widget.currentProfile != null) {
         final existingName = widget.currentProfile!.customNowliiName ?? 
                             widget.currentProfile!.nowliiName ?? '';
         
         if (existingName.isNotEmpty) {
-          // Check if it matches any preset avatar
-          final matchedIndex = avatars.indexWhere(
-            (avatar) => avatar.name.toUpperCase() == existingName.toUpperCase()
+          // Check if it matches any preset avatar from API
+          final matchedIndex = widget.avatarOptions.indexWhere(
+            (avatar) => avatar.name.toLowerCase() == existingName.toLowerCase()
           );
           
           if (matchedIndex != -1) {
@@ -306,21 +311,23 @@ class _NameSelectionPageState extends State<NameSelectionPage>
           }
           widget.onNameSelected(existingName);
         } else {
-          widget.onNameSelected(avatars[_currentAvatarIndex].name);
+          widget.onNameSelected(widget.avatarOptions[_currentAvatarIndex].name);
         }
       } else {
-        widget.onNameSelected(avatars[_currentAvatarIndex].name);
+        widget.onNameSelected(widget.avatarOptions[_currentAvatarIndex].name);
       }
     });
   }
 
   void _rotateAvatar() {
+    if (widget.avatarOptions.isEmpty) return;
+    
     setState(() {
-      _currentAvatarIndex = (_currentAvatarIndex + 1) % avatars.length;
+      _currentAvatarIndex = (_currentAvatarIndex + 1) % widget.avatarOptions.length;
       _showTextField = false;
       _nameController.clear();
     });
-    widget.onNameSelected(avatars[_currentAvatarIndex].name);
+    widget.onNameSelected(widget.avatarOptions[_currentAvatarIndex].name);
     _bounceController.forward(from: 0);
   }
 
@@ -349,6 +356,10 @@ class _NameSelectionPageState extends State<NameSelectionPage>
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+
+    if (widget.avatarOptions.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SingleChildScrollView(
       child: Padding(
@@ -384,13 +395,19 @@ class _NameSelectionPageState extends State<NameSelectionPage>
                 ),
                 child: Center(
                   child: CharacterWidget(
-                    assetPath: _showTextField
-                        ? avatars[0].assetPath
-                        : avatars[_currentAvatarIndex].assetPath,
-                    avatarUrl: widget.currentProfile?.avatarLogo,
-                    onEditTap: () {
-                      // Add your edit functionality here
-                      debugPrint('Edit icon tapped');
+                    avatarOption: _showTextField
+                        ? widget.avatarOptions[0]
+                        : widget.avatarOptions[_currentAvatarIndex],
+                    onEditTap: () async {
+                      // Navigate to edit form screen and reload when returning
+                      final result = await context.push("/editFrom");
+                      // Reload profile if avatar was updated
+                      if (result == true && mounted) {
+                        // Call parent's reload callback
+                        if (widget.onReloadNeeded != null) {
+                          await widget.onReloadNeeded!();
+                        }
+                      }
                     },
                   ),
                 ),
@@ -407,7 +424,7 @@ class _NameSelectionPageState extends State<NameSelectionPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      avatars[_currentAvatarIndex].name,
+                      widget.avatarOptions[_currentAvatarIndex].name.toUpperCase(),
                       style: AppsTextStyles.signupText28,
                     ),
                     const SizedBox(width: 16),
@@ -500,7 +517,7 @@ class _NameSelectionPageState extends State<NameSelectionPage>
                         _showNameDisplay = true;
                         if (_nameController.text.trim().isEmpty) {
                           widget.onNameSelected(
-                            avatars[_currentAvatarIndex].name,
+                            widget.avatarOptions[_currentAvatarIndex].name,
                           );
                         }
                       });
@@ -541,59 +558,84 @@ class _NameSelectionPageState extends State<NameSelectionPage>
   }
 }
 
-// Avatar data model
-class AvatarData {
-  final String name;
-  final String assetPath;
-  final bool isLottie;
-
-  AvatarData({
-    required this.name,
-    required this.assetPath,
-    this.isLottie = false,
-  });
-}
-
 class CharacterWidget extends StatelessWidget {
-  final String assetPath;
-  final String? avatarUrl;
+  final NowliiOption avatarOption;
   final VoidCallback? onEditTap;
 
   const CharacterWidget({
     super.key, 
-    required this.assetPath, 
-    this.avatarUrl,
+    required this.avatarOption,
     this.onEditTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isUrl = avatarOption.avatarLogo.startsWith('http');
+    
     return Stack(
       children: [
         // Main image - show network image if available, otherwise local asset
-        ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: avatarUrl != null && avatarUrl!.isNotEmpty
-              ? Image.network(
-                  avatarUrl!,
-                  width: 260,
-                  height: 210,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      assetPath,
-                      width: 260,
-                      height: 210,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                )
-              : Image.asset(
-                  assetPath,
-                  width: 260,
-                  height: 210,
-                  fit: BoxFit.cover,
-                ),
+        Container(
+          decoration: BoxDecoration(
+            color: avatarOption.backgroundColor,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: isUrl
+                ? Image.network(
+                    avatarOption.avatarLogo,
+                    width: 260,
+                    height: 210,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading image from ${avatarOption.avatarLogo}: $error');
+                      return Image.asset(
+                        'assets/svg_images/A.png',
+                        width: 260,
+                        height: 210,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) {
+                          return Container(
+                            width: 260,
+                            height: 210,
+                            color: avatarOption.backgroundColor,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 50,
+                              color: Colors.white54,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 260,
+                        height: 210,
+                        color: avatarOption.backgroundColor,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : Image.asset(
+                    avatarOption.avatarLogo,
+                    width: 260,
+                    height: 210,
+                    fit: BoxFit.contain,
+                  ),
+          ),
         ),
 
         // Edit icon on the right side (top-right)
@@ -601,9 +643,7 @@ class CharacterWidget extends StatelessWidget {
           right: 12,
           top: 12,
           child: GestureDetector(
-            onTap: () {
-              context.push("/editFrom");
-            },
+            onTap: onEditTap,
             child: Container(
               width: 36,
               height: 36,

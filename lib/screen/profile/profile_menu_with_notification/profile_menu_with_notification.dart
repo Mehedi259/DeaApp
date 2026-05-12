@@ -14,7 +14,7 @@ class ProfileNotificationsScreen extends StatefulWidget {
   State<ProfileNotificationsScreen> createState() => _ProfileNotificationsScreenState();
 }
 
-class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen> {
+class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen> with WidgetsBindingObserver {
   ProfileData? _profileData;
   int _streakCount = 0;
   bool _isLoading = true;
@@ -22,6 +22,28 @@ class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadProfileData();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Reload profile when app comes to foreground
+      _loadProfileData();
+    }
+  }
+
+  @override
+  void didUpdateWidget(ProfileNotificationsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload profile when widget updates
     _loadProfileData();
   }
 
@@ -254,8 +276,13 @@ class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen>
               _buildActionButton(
                 'Edit Profile',
                 Assets.svgIcons.editProfilePng.path,
-                () {
-                  context.push('/editProfileScreen');
+                () async {
+                  // Navigate and reload when returning
+                  await context.push('/editProfileScreen');
+                  // Reload profile data
+                  if (mounted) {
+                    _loadProfileData();
+                  }
                 },
               ),
               const SizedBox(height: 12),

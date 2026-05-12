@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/api/profile_controller.dart';
+import 'package:nowlii/api/nowlii_options_api.dart';
 
 class EditFrom extends StatefulWidget {
   const EditFrom({super.key});
@@ -16,36 +17,42 @@ class _EditFromState extends State<EditFrom> {
   int selectedIndex = -1;
   bool showConfirmation = false;
   bool _isLoading = false;
-
-  // Avatar mapping - index to asset path
-  final Map<int, String> avatarPaths = {
-    0: 'assets/svg_images/A.png',
-    1: 'assets/svg_images/B.png',
-    2: 'assets/svg_images/C.png',
-    3: 'assets/svg_images/D.png',
-    4: 'assets/svg_images/E.png',
-    5: 'assets/svg_images/F.png',
-  };
+  List<NowliiOption> avatarOptions = [];
 
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _loadData();
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
+    
+    // Load avatar options from API
+    try {
+      final options = await NowliiOptionsApi.fetchNowliiOptions();
+      setState(() {
+        avatarOptions = options;
+      });
+    } catch (e) {
+      print('Error loading avatar options: $e');
+      // Fallback to local assets if API fails
+      avatarOptions = _getFallbackOptions();
+    }
+    
+    // Load current profile
     await _profileController.fetchProfile();
     
-    // Check if current avatar matches any of the preset avatars
-    if (_profileController.profile?.avatarLogo != null) {
-      final currentAvatar = _profileController.profile!.avatarLogo!;
+    // Check if current avatar matches any of the loaded avatars
+    if (_profileController.profile?.avatarLogo != null && avatarOptions.isNotEmpty) {
+      final currentAvatarUrl = _profileController.profile!.avatarLogo!;
       
-      // Try to match with local avatars
-      for (var entry in avatarPaths.entries) {
-        if (currentAvatar.contains(entry.value.split('/').last.split('.').first)) {
+      // Try to match with loaded avatar options
+      for (int i = 0; i < avatarOptions.length; i++) {
+        if (currentAvatarUrl == avatarOptions[i].avatarLogo ||
+            currentAvatarUrl.contains(avatarOptions[i].name.toLowerCase())) {
           setState(() {
-            selectedIndex = entry.key;
+            selectedIndex = i;
           });
           break;
         }
@@ -54,9 +61,20 @@ class _EditFromState extends State<EditFrom> {
     
     setState(() => _isLoading = false);
   }
+  
+  List<NowliiOption> _getFallbackOptions() {
+    return [
+      NowliiOption(id: 1, name: 'milo', avatarLogo: 'assets/svg_images/A.png'),
+      NowliiOption(id: 2, name: 'bloop', avatarLogo: 'assets/svg_images/B.png'),
+      NowliiOption(id: 3, name: 'gumo', avatarLogo: 'assets/svg_images/C.png'),
+      NowliiOption(id: 4, name: 'knotty', avatarLogo: 'assets/svg_images/D.png'),
+      NowliiOption(id: 5, name: 'fizzy', avatarLogo: 'assets/svg_images/E.png'),
+      NowliiOption(id: 6, name: 'zee', avatarLogo: 'assets/svg_images/F.png'),
+    ];
+  }
 
   Future<void> _updateAvatar() async {
-    if (selectedIndex == -1) {
+    if (selectedIndex == -1 || avatarOptions.isEmpty) {
       _showErrorDialog('Please select an avatar');
       return;
     }
@@ -66,33 +84,36 @@ class _EditFromState extends State<EditFrom> {
       showConfirmation = false;
     });
 
-    // Get selected avatar path
-    final selectedAvatarPath = avatarPaths[selectedIndex];
+    // Get selected avatar option
+    final selectedOption = avatarOptions[selectedIndex];
 
+    // Update profile with avatar URL and nowlii name
     final success = await _profileController.updateProfile(
-      avatarLogo: selectedAvatarPath,
+      avatarLogo: selectedOption.avatarLogo,
+      nowliiName: selectedOption.name,
     );
 
     setState(() => _isLoading = false);
 
     if (success) {
-      _showSuccessDialog('Avatar updated successfully!');
+      _showSuccessDialogAndReturn('Avatar updated successfully!');
     } else {
       _showErrorDialog(_profileController.errorMessage ?? 'Failed to update avatar');
     }
   }
 
-  void _showSuccessDialog(String message) {
+  void _showSuccessDialogAndReturn(String message) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Success'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context, true); // Go back with success result
             },
             child: const Text('OK'),
           ),
@@ -171,67 +192,56 @@ class _EditFromState extends State<EditFrom> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
+                    child: avatarOptions.isEmpty
+                        ? const Center(child: Text('No avatars available'))
+                        : Column(
                       children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildCharacterCard(
-                                  0,
-                                  'assets/svg_images/A.png',
+                        if (avatarOptions.length >= 2)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildCharacterCard(0, avatarOptions[0]),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildCharacterCard(
-                                  1,
-                                  'assets/svg_images/B.png',
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _buildCharacterCard(1, avatarOptions[1]),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildCharacterCard(
-                                  2,
-                                  'assets/svg_images/C.png',
+                        if (avatarOptions.length >= 4) ...[
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildCharacterCard(2, avatarOptions[2]),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildCharacterCard(
-                                  3,
-                                  'assets/svg_images/D.png',
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _buildCharacterCard(3, avatarOptions[3]),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildCharacterCard(
-                                  4,
-                                  'assets/svg_images/E.png',
+                        ],
+                        if (avatarOptions.length >= 6) ...[
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildCharacterCard(4, avatarOptions[4]),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildCharacterCard(
-                                  5,
-                                  'assets/svg_images/F.png',
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _buildCharacterCard(5, avatarOptions[5]),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -535,8 +545,9 @@ class _EditFromState extends State<EditFrom> {
     );
   }
 
-  Widget _buildCharacterCard(int index, String imagePath) {
+  Widget _buildCharacterCard(int index, NowliiOption option) {
     final isSelected = selectedIndex == index;
+    final isUrl = option.avatarLogo.startsWith('http');
 
     return GestureDetector(
       onTap: () {
@@ -546,6 +557,7 @@ class _EditFromState extends State<EditFrom> {
       },
       child: Container(
         decoration: BoxDecoration(
+          color: option.backgroundColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? const Color(0xFF4B7BF5) : Colors.transparent,
@@ -553,18 +565,56 @@ class _EditFromState extends State<EditFrom> {
           ),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(4.0),
+          padding: const EdgeInsets.all(8.0),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(imagePath, fit: BoxFit.cover),
+            borderRadius: BorderRadius.circular(12),
+            child: isUrl
+                ? Image.network(
+                    option.avatarLogo,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading image from ${option.avatarLogo}: $error');
+                      // Fallback to local asset if network image fails
+                      return Image.asset(
+                        'assets/svg_images/${String.fromCharCode(65 + index)}.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) {
+                          return Container(
+                            color: option.backgroundColor,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 50,
+                              color: Colors.white54,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: option.backgroundColor,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : Image.asset(option.avatarLogo, fit: BoxFit.contain),
           ),
         ),
       ),

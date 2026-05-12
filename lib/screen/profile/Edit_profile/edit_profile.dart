@@ -31,7 +31,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    // Listen to profile controller changes
+    _profileController.addListener(_onProfileChanged);
     _loadProfile();
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _profileController.removeListener(_onProfileChanged);
+    super.dispose();
+  }
+
+  // Called when profile controller notifies changes
+  void _onProfileChanged() {
+    if (mounted && _profileController.profile != null) {
+      setState(() {
+        _currentProfile = _profileController.profile;
+        _usernameController.text = _currentProfile?.name ?? '';
+        _selectedGender = _currentProfile?.gender ?? "I'm a woman";
+      });
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -94,6 +114,81 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       width: 120,
       height: 120,
     );
+  }
+
+  // Build avatar image for the Nowlii card
+  Widget _buildAvatarImage() {
+    if (_currentProfile?.avatarLogo != null && _currentProfile!.avatarLogo!.isNotEmpty) {
+      final avatarUrl = _currentProfile!.avatarLogo!;
+      
+      // Check if it's a network URL
+      if (avatarUrl.startsWith('http')) {
+        return Image.network(
+          avatarUrl,
+          width: 100,
+          height: 100,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildFallbackAvatarImage();
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            );
+          },
+        );
+      } else {
+        // Local asset path
+        return Image.asset(
+          avatarUrl,
+          width: 100,
+          height: 100,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildFallbackAvatarImage();
+          },
+        );
+      }
+    }
+    
+    return _buildFallbackAvatarImage();
+  }
+
+  // Fallback avatar image
+  Widget _buildFallbackAvatarImage() {
+    return Center(
+      child: Image.asset(
+        Assets.svgIcons.readyToMakeTodayCount.path,
+        width: 60,
+        height: 60,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+
+  // Get display name for avatar
+  String _getDisplayName() {
+    if (_currentProfile?.customNowliiName != null && 
+        _currentProfile!.customNowliiName!.isNotEmpty) {
+      return _currentProfile!.customNowliiName!;
+    }
+    
+    if (_currentProfile?.nowliiName != null && 
+        _currentProfile!.nowliiName!.isNotEmpty) {
+      // Capitalize first letter
+      final name = _currentProfile!.nowliiName!;
+      return name[0].toUpperCase() + name.substring(1);
+    }
+    
+    return 'Your Nowlii';
   }
 
   Future<void> _pickProfileImage() async {
@@ -247,12 +342,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   @override
-  void dispose() {
-    _usernameController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColorsApps.iceBlue,
@@ -334,7 +423,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // Fizzy Card
+                // Avatar Card (Nowlii Form)
                 Container(
                   height: 140,
                   padding: const EdgeInsets.all(16),
@@ -344,6 +433,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   child: Row(
                     children: [
+                      // Avatar Image Container
                       Container(
                         width: 100,
                         height: 100,
@@ -351,42 +441,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           color: AppColorsApps.royalBlue,
                           borderRadius: BorderRadius.circular(15),
                         ),
-                        child: Center(
-                          child: _currentProfile?.avatarLogo != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: Image.network(
-                                    _currentProfile!.avatarLogo!,
-                                    height: 100,
-                                    width: 100,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Image.asset(
-                                        Assets.svgIcons.readyToMakeTodayCount.path,
-                                        height: 60,
-                                        width: 60,
-                                      );
-                                    },
-                                  ),
-                                )
-                              : Image.asset(
-                                  Assets.svgIcons.readyToMakeTodayCount.path,
-                                  height: 60,
-                                  width: 60,
-                                ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: _buildAvatarImage(),
                         ),
                       ),
                       const SizedBox(width: 16),
+                      // Avatar Name and Description
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min, // Fix overflow
+                          mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              _currentProfile?.customNowliiName ?? 
-                              _currentProfile?.nowliiName ?? 
-                              'Fizzy',
+                              _getDisplayName(),
                               style: GoogleFonts.workSans(
                                 color: const Color(0xFF011F54),
                                 fontSize: 20,
@@ -402,9 +471,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               child: Text(
                                 'Pick a new form or \ncustomize your current one',
                                 style: GoogleFonts.workSans(
-                                  color: const Color(
-                                    0xFF011F54,
-                                  ), // Text-text-default
+                                  color: const Color(0xFF011F54),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w400,
                                   height: 1.40,
@@ -417,9 +484,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ],
                         ),
                       ),
+                      // Edit Icon
                       GestureDetector(
-                        onTap: () {
-                          context.push("/editNameScreen");
+                        onTap: () async {
+                          // Navigate to edit name screen and wait for result
+                          final result = await context.push("/editNameScreen");
+                          // Reload profile when returning (regardless of result)
+                          if (mounted) {
+                            await _loadProfile();
+                          }
                         },
                         child: Image.asset(
                           Assets.svgIcons.editProfilIcon.path,

@@ -29,7 +29,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   late ConfettiController _confettiController;
   ProfileData? _profileData;
@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
@@ -54,6 +55,29 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadAllQuestsForDates();
     _checkAndShowOnboarding();
     _checkAndShowVoiceSavedPopup();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _scrollController.dispose();
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Reload profile when app comes to foreground
+      _loadProfile();
+    }
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload profile when widget updates
+    _loadProfile();
   }
 
   Future<void> _loadProfile() async {
@@ -190,13 +214,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       });
     }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _confettiController.dispose();
-    super.dispose();
   }
 
   void _showAllNotifications() {
@@ -427,8 +444,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         GestureDetector(
-          onTap: () {
-            context.push(AppRoutespath.profileNotificationsScreen);
+          onTap: () async {
+            // Navigate to profile and reload when returning
+            await context.push(AppRoutespath.profileNotificationsScreen);
+            // Reload profile data
+            if (mounted) {
+              _loadProfile();
+            }
           },
           child: _isLoadingProfile
               ? const CircleAvatar(
