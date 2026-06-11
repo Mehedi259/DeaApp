@@ -150,10 +150,24 @@ class _TimePickerCardState extends State<TimePickerCard> {
                   ),
                 ),
                 SizedBox(width: 8 * s),
-                //  AppTextStylesQutes.workSansExtraBold32
-                Text(
-                  'What time?',
-                  style: AppTextStylesQutes.workSansExtraBold32,
+                Expanded(
+                  child: Text(
+                    'What time?',
+                    style: AppTextStylesQutes.workSansExtraBold32,
+                  ),
+                ),
+                Container(
+                  width: 32 * s,
+                  height: 32 * s,
+                  decoration: BoxDecoration(
+                    color: Colors.blue[700],
+                    borderRadius: BorderRadius.circular(8 * s),
+                  ),
+                  child: Icon(
+                    _isExpanded ? Icons.remove : Icons.add,
+                    color: Colors.white,
+                    size: 20 * s,
+                  ),
                 ),
               ],
             ),
