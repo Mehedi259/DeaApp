@@ -23,11 +23,18 @@ class _InsightsScreenState extends State<InsightsScreen> {
   final InsightsService _insightsService = InsightsService();
   InsightsResponse? _insightsData;
   bool _isLoading = true;
+  final TextEditingController _personalNoteController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadInsights();
+  }
+
+  @override
+  void dispose() {
+    _personalNoteController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadInsights() async {
@@ -1141,11 +1148,23 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFE8E8FF), width: 1),
               ),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Write short note to yourself for this month...',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
+              child: TextField(
+                controller: _personalNoteController,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF011F54),
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Write short note to yourself for this month...',
+                  hintStyle: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
                 ),
               ),
             ),

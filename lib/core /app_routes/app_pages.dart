@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nowlii/core%20/app_routes/app_routes.dart';
 import 'package:nowlii/screen/Onboarding/energy_check_in_screen.dart';
 import 'package:nowlii/screen/Onboarding/pop_spking_loding.dart';
@@ -58,6 +59,53 @@ import '../../screen/Onboarding/onboarding_features/avatar_logo_selection.dart';
 class AppPages {
   static final GoRouter router = GoRouter(
     debugLogDiagnostics: true,
+    redirect: (context, state) async {
+      // Skip redirect for splash screen
+      if (state.matchedLocation == AppRoutespath.splash) {
+        return null;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+      // Public routes that don't need authentication
+      final publicRoutes = [
+        AppRoutespath.entryScreen,
+        AppRoutespath.welcomeScreen,
+        AppRoutespath.readyToStartScreen,
+        AppRoutespath.signInScreen,
+        AppRoutespath.signUpScreen,
+        AppRoutespath.otpVerificationScreen,
+        AppRoutespath.resentPasswordPage,
+        '/resetPasswordOtpScreen',
+        AppRoutespath.enterNewPassword,
+        AppRoutespath.passwordUpdatedPopupScreen,
+      ];
+
+      final isPublicRoute = publicRoutes.contains(state.matchedLocation);
+
+      // If user has valid token, allow access to protected routes
+      if (accessToken != null && accessToken.isNotEmpty) {
+        // If user is on public route but already authenticated, redirect to home
+        if (isPublicRoute) {
+          return AppRoutespath.homeScreen;
+        }
+        return null; // Allow access to requested route
+      }
+
+      // No token - user not authenticated
+      if (!isPublicRoute) {
+        // Redirect to appropriate screen based on first time status
+        if (isFirstTime) {
+          return AppRoutespath.entryScreen;
+        } else {
+          return AppRoutespath.signInScreen;
+        }
+      }
+
+      return null; // Allow access to public routes
+    },
     routes: [
       GoRoute(
         path: AppRoutespath.splash,

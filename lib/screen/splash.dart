@@ -36,15 +36,25 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
     
     final prefs = await SharedPreferences.getInstance();
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+    final accessToken = prefs.getString('access_token');
     
+    // If user has valid access token, go to home
+    if (accessToken != null && accessToken.isNotEmpty) {
+      await prefs.setBool('is_new_user', false);
+      if (!mounted) return;
+      context.go('/homeScreen');
+      return;
+    }
+    
+    // No token - check if first time user
     if (isFirstTime) {
       // First time user - show onboarding
+      if (!mounted) return;
       context.go('/entryScreen');
     } else {
-      // Returning user - go directly to home
-      // Ensure is_new_user flag is false for returning users
-      await prefs.setBool('is_new_user', false);
-      context.go('/homeScreen');
+      // Returning user without token - go to sign in
+      if (!mounted) return;
+      context.go('/signInScreen');
     }
   }
 
