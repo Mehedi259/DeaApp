@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 import 'package:nowlii/core%20/app_routes/app_routes.dart';
 import 'package:nowlii/api/auth_controller.dart';
@@ -23,6 +24,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _soundsEnabled = true;
   String _selectedLanguage = 'English';
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _soundsEnabled = prefs.getBool('settings_sounds_enabled') ?? true;
+      _selectedLanguage = prefs.getString('settings_language') ?? 'English';
+    });
+  }
+
+  Future<void> _saveSoundsEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('settings_sounds_enabled', value);
+  }
+
+  Future<void> _saveLanguage(String language) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('settings_language', language);
+  }
+
   void _showLanguageSelector() {
     showModalBottomSheet(
       context: context,
@@ -32,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ).then((value) {
       if (value != null) {
         setState(() => _selectedLanguage = value);
+        _saveLanguage(value);
       }
     });
   }
@@ -105,6 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       height: 40,
                     ),
                     title: 'Language',
+                    subtitle: _selectedLanguage,
                     onTap: _showLanguageSelector,
                   ),
                   const SizedBox(height: 12),
@@ -121,6 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         setState(() {
                           _soundsEnabled = value;
                         });
+                        _saveSoundsEnabled(value);
                       },
                       activeThumbColor: Colors.white,
                       activeTrackColor: const Color(0xFF4542EB),
@@ -215,6 +243,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     IconData? icon,
     Widget? iconWidget, // <-- New optional widget
     required String title,
+    String? subtitle,
     Widget? trailing,
     VoidCallback? onTap,
     Color? titleColor,
@@ -239,7 +268,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Text(title, style: AppsTextStyles.textDefaultStyle),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppsTextStyles.textDefaultStyle),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.workSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
               trailing ??
                   Icon(

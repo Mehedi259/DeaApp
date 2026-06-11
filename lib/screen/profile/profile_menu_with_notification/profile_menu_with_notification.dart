@@ -194,30 +194,6 @@ class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen>
                     ),
                     const SizedBox(height: 8),
 
-                    // Quests Active
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          Assets.svgIcons.magicWand.path,
-                          height: 20,
-                          width: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '32 quests active',
-                          style: GoogleFonts.workSans(
-                            color: const Color(0xFF011F54),
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            height: 1.20,
-                            letterSpacing: -0.50,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
                     // Optional Image — tap to open NowliProSubscription
                     Assets.svgIcons.nowliJuli.path.isNotEmpty
                         ? GestureDetector(
@@ -330,7 +306,7 @@ class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '2',
+                  '0',
                   style: GoogleFonts.workSans(
                     color: const Color(0xFF011F54),
                     fontSize: 12,
@@ -340,57 +316,6 @@ class _ProfileNotificationsScreenState extends State<ProfileNotificationsScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // Today Section
-          const Text(
-            'Today',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          _buildNotificationCard(
-            iconPath: Assets.svgIcons.profileNotificationLove.path,
-            title: "Fizzy noticed you're most productive around 11am.",
-            subtitle: "Let's use that time strategically!",
-            action: 'Create task',
-            time: '9m',
-            isNew: true,
-          ),
-          const SizedBox(height: 12),
-
-          _buildNotificationCard(
-            iconPath: Assets.svgIcons.fireLove.path,
-            title: "🔥 You've kept your streak for 3 days straight — keep going!",
-            subtitle: "You completed 7 quests today. Tiny wins really add up.",
-            action: 'See progress',
-            time: '2h',
-          ),
-          const SizedBox(height: 20),
-
-          // Yesterday Section
-          const Text(
-            'Yesterday',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          _buildNotificationCard(
-            iconPath: Assets.svgIcons.yoyyRese.path,
-            title: "You reached your first 7-day streak",
-            subtitle: "That's real consistency!",
-            action: 'See progress',
-            time: '1d',
-          ),
-
           const SizedBox(height: 40),
         ],
       ),

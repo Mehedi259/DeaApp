@@ -157,6 +157,7 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nowlii/themes/text_styles.dart';
 import 'package:nowlii/core/gen/assets.gen.dart';
 
@@ -175,6 +176,53 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     'Streak Progress': true,
     'AI Insights & Reflections': true,
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSettings();
+  }
+
+  Future<void> _loadNotificationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notifications['Task Reminders'] = 
+          prefs.getBool('notif_task_reminders') ?? true;
+      _notifications['Daily Tips'] = 
+          prefs.getBool('notif_daily_tips') ?? true;
+      _notifications['Nowlli Check-ins'] = 
+          prefs.getBool('notif_nowlli_checkins') ?? true;
+      _notifications['Streak Progress'] = 
+          prefs.getBool('notif_streak_progress') ?? true;
+      _notifications['AI Insights & Reflections'] = 
+          prefs.getBool('notif_ai_insights') ?? true;
+    });
+  }
+
+  Future<void> _saveNotificationSetting(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    String prefKey = '';
+    switch (key) {
+      case 'Task Reminders':
+        prefKey = 'notif_task_reminders';
+        break;
+      case 'Daily Tips':
+        prefKey = 'notif_daily_tips';
+        break;
+      case 'Nowlli Check-ins':
+        prefKey = 'notif_nowlli_checkins';
+        break;
+      case 'Streak Progress':
+        prefKey = 'notif_streak_progress';
+        break;
+      case 'AI Insights & Reflections':
+        prefKey = 'notif_ai_insights';
+        break;
+    }
+    if (prefKey.isNotEmpty) {
+      await prefs.setBool(prefKey, value);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -317,6 +365,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               setState(() {
                 _notifications[key] = value;
               });
+              _saveNotificationSetting(key, value);
             },
             activeThumbColor: Colors.white,
             activeTrackColor: const Color(0xFF4542EB),

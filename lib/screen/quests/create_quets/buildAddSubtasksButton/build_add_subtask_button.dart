@@ -161,10 +161,10 @@ class _AddSubtasksButtonState extends State<AddSubtasksButton> {
                       color: Colors.blue[700],
                       borderRadius: BorderRadius.circular(8 * s),
                     ),
-                    child: Image.asset(
-                      Assets.svgIcons.quests.path,
-                      height: 20 * s,
-                      width: 20 * s,
+                    child: Icon(
+                      showSubtaskGenerator ? Icons.remove : Icons.add,
+                      color: Colors.white,
+                      size: 20 * s,
                     ),
                   ),
                 ),

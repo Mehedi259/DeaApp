@@ -245,6 +245,7 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nowlii/screen/settings/api_personalization_screen/clear_memory_popup/clear_memory_popup.dart';
 import 'package:nowlii/screen/settings/api_personalization_screen/restricted_topiccs_popup/restricted_topiccs_popup.dart';
 import 'package:nowlii/screen/settings/api_personalization_screen/voice_selector_popup/voice_selector_popup.dart';
@@ -261,6 +262,24 @@ class AIPersonalizationScreen extends StatefulWidget {
 
 class _AIPersonalizationScreenState extends State<AIPersonalizationScreen> {
   bool _useDataToImproveAI = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _useDataToImproveAI = prefs.getBool('ai_use_data_to_improve') ?? true;
+    });
+  }
+
+  Future<void> _saveUseDataSetting(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('ai_use_data_to_improve', value);
+  }
 
   void _showClearMemoryDialog(BuildContext context) async {
     final confirmed = await ClearMemoryPopup.show(context);
@@ -389,6 +408,7 @@ class _AIPersonalizationScreenState extends State<AIPersonalizationScreen> {
                       setState(() {
                         _useDataToImproveAI = value;
                       });
+                      _saveUseDataSetting(value);
                     },
                   ),
                   const SizedBox(height: 12),
