@@ -309,10 +309,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
         children: [
           Row(
             children: [
-              Image.asset(
-                Assets.svgIcons.insightCheckBox.path,
-                height: 21.6,
-                width: 21.6,
+              Icon(
+                Icons.check_circle,
+                color: const Color(0xFF4CAF50),
+                size: 24,
               ),
               const SizedBox(width: 12),
               Text(
