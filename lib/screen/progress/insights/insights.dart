@@ -526,11 +526,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
               const SizedBox(height: 16),
 
               Container(
-                padding: const EdgeInsets.only(
-                  top: 8,
-                  left: 16,
-                  right: 12,
-                  bottom: 8,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 decoration: ShapeDecoration(
                   color: const Color(
@@ -555,8 +553,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         letterSpacing: -0.50,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Image.asset(Assets.images.arow.path, height: 20, width: 20),
                   ],
                 ),
               ),
@@ -984,11 +980,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
             const SizedBox(height: 14),
 
             Container(
-              padding: const EdgeInsets.only(
-                top: 8,
-                left: 16,
-                right: 12,
-                bottom: 8,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
               ),
               decoration: ShapeDecoration(
                 color: const Color(0xFF89B6F7), // Background-bg-primary-level-3
@@ -1009,16 +1003,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       fontWeight: FontWeight.w700,
                       height: 1.40,
                       letterSpacing: -0.50,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: Image.asset(
-                      Assets.images.arow.path,
-                      height: 20,
-                      width: 20,
                     ),
                   ),
                 ],

@@ -374,11 +374,9 @@ class _MyProgressState extends State<MyProgress> {
             children: [
               Text('Your moves', style: AppTextStylesQutes.workSansBlack20),
               Container(
-                padding: const EdgeInsets.only(
-                  top: 4,
-                  left: 8,
-                  right: 4,
-                  bottom: 4,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
                 ),
                 decoration: ShapeDecoration(
                   color: const Color(0xFFFAE3CE),
@@ -397,16 +395,6 @@ class _MyProgressState extends State<MyProgress> {
                         fontWeight: FontWeight.w600,
                         height: 1,
                         letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Image.asset(
-                        Assets.images.arow.path,
-                        height: 20,
-                        width: 20,
                       ),
                     ),
                   ],
@@ -534,11 +522,9 @@ class _MyProgressState extends State<MyProgress> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.only(
-                  top: 4,
-                  left: 8,
-                  right: 4,
-                  bottom: 4,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
                 ),
                 decoration: ShapeDecoration(
                   color: const Color(0xFFC3DBFF),
@@ -557,16 +543,6 @@ class _MyProgressState extends State<MyProgress> {
                         fontWeight: FontWeight.w600,
                         height: 1,
                         letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Image.asset(
-                        Assets.images.arow.path,
-                        height: 20,
-                        width: 20,
                       ),
                     ),
                   ],
